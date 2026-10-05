@@ -101,7 +101,9 @@ Détail dans `docs/security/initial-audit.md`.
 
 Mise à jour du 6 octobre 2026 : les points 1 et 2 sont levés (Git initialisé ;
 Next.js + Supabase retenus, voir `docs/architecture/adr-0001-nextjs-supabase.md`).
-Le reste de ce document décrit l'état constaté le 5 octobre.
+Les écarts 2, 3 et 4 de cohérence sont levés (9 agents, format de rapport unique dans
+`AGENTS.md`, `CLAUDE.md` et `AGENTS.md` déclarés source de vérité). Le reste de ce
+document décrit l'état constaté le 5 octobre.
 
 1. ~~Pas de dépôt Git.~~
 2. ~~Stack non décidée.~~

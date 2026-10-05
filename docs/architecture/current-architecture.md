@@ -73,8 +73,10 @@ Aucun n'est tranché à ce jour.
 | Internationalisation | Bibliothèque à choisir, fr et en dès le départ | Tous les composants |
 | Mobile | PWA d'abord, React Native / Expo ensuite | Périmètre du MVP |
 
-Chaque décision doit faire l'objet d'un enregistrement de décision d'architecture
-dans `docs/architecture/` avant le premier code (tâche B-02 du backlog).
+Mise à jour du 6 octobre 2026 : ces choix sont tranchés par ADR-0001 à ADR-0006
+(Next.js, Supabase avec RLS, monorepo npm workspaces, backend dans Next.js, recherche
+plein texte PostgreSQL, `next-intl`, Vercel). Restent ouverts : file de tâches et
+outillage de test.
 
 ## Contraintes d'architecture déjà fixées
 

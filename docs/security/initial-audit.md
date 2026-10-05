@@ -120,6 +120,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   reste à faire (B-08).
 - 6 octobre 2026 — S-05 levé : Supabase avec RLS retenu, règles d'usage de `service_role`
   écrites dans `docs/architecture/adr-0001-nextjs-supabase.md`.
+- 6 octobre 2026 — S-03 levé en partie : interdiction de `.env` et `.env.*` étendue aux
+  sous-dossiers et aux commandes Bash de lecture courantes. Limite : les motifs Bash
+  ne couvrent pas toutes les façons de lire un fichier ; la vraie protection reste de ne
+  placer aucun secret de production sur le poste. Conséquence : les agents ne peuvent
+  ni lire ni écrire `.env.example`.
+- 6 octobre 2026 — S-04 levé : `git clean`, `git push -f`, `rm -r`, Prisma, déploiement
+  et suppression Vercel en production, `supabase db push --linked` interdits ; commandes
+  Supabase et Vercel restantes soumises à confirmation.
+- 6 octobre 2026 — S-08 levé : `security-reviewer` n'a plus que Read, Grep et Glob.
 
 ## Suivi
 

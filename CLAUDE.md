@@ -10,7 +10,8 @@ Tu ne dois jamais développer toute la plateforme en une seule étape.
 ## Avant toute tâche
 
 1. Lire AGENTS.md.
-2. Lire le cahier des charges disponible dans docs/.
+2. Lire le cahier des charges : docs/EDUSCHOLAR_CAHIER_DES_CHARGES_COMPLET.md,
+   puis les décisions dans docs/architecture/ et docs/backlog.md.
 3. Inspecter la structure actuelle du dépôt.
 4. Vérifier les modules et fonctionnalités existantes.
 5. Identifier les fichiers concernés.
@@ -39,14 +40,14 @@ Pour chaque fonctionnalité :
 
 Utilise les agents spécialisés pour :
 
-- base de données et RLS ;
-- backend et API ;
-- frontend et UX ;
-- recherche et ingestion de contenu ;
-- sécurité ;
-- QA et tests ;
-- IA documentaire ;
-- mobile et offline.
+- base de données et RLS : database-engineer ;
+- backend et API : backend-engineer ;
+- frontend et UX : frontend-engineer ;
+- recherche et ingestion de contenu : content-ingestion-engineer ;
+- sécurité : security-reviewer (lecture seule) ;
+- QA et tests : qa-engineer ;
+- IA documentaire : document-ai-engineer ;
+- mobile et offline : mobile-offline-engineer.
 
 Ne délègue pas une tâche avant d'avoir défini son objectif,
 son périmètre, ses fichiers concernés et ses critères de validation.
@@ -64,7 +65,7 @@ son périmètre, ses fichiers concernés et ses critères de validation.
 
 ## Format de rapport
 
-À la fin de chaque tâche :
+À la fin de chaque tâche, le format unique défini dans AGENTS.md :
 
 ## Résumé
 ## Fichiers modifiés

@@ -1,6 +1,6 @@
 # Backlog EduScholar
 
-**Mise à jour :** 5 octobre 2026
+**Mise à jour :** 6 octobre 2026
 **Phase en cours :** Phase 0 — Fondation
 
 Statuts : `à faire`, `en cours`, `bloqué`, `fait`.
@@ -11,12 +11,12 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | ID | Tâche | Agent | Dépend de | Critère de validation | Statut |
 |---|---|---|---|---|---|
 | B-01 | Initialiser Git, créer `.gitignore`, premier commit | orchestrateur | — | `git status` propre, `.env*` ignoré | fait |
-| B-02 | Décisions d'architecture : monorepo, framework web, backend, données et autorisation, authentification, recherche, hébergement, i18n | orchestrateur + décision du porteur de projet | — | Un enregistrement de décision par choix dans `docs/architecture/` | en cours — ADR-0001 accepté (Next.js + Supabase) ; structure, backend, recherche, i18n, hébergement restent à valider |
+| B-02 | Décisions d'architecture : monorepo, framework web, backend, données et autorisation, authentification, recherche, hébergement, i18n | orchestrateur + décision du porteur de projet | — | Un enregistrement de décision par choix dans `docs/architecture/` | fait — ADR-0001 à ADR-0006 |
 | B-03 | Matrice rôles × ressources × opérations et modèle multi-tenant | orchestrateur, security-reviewer | B-02 | Les 8 rôles du cahier §4 couverts, règles d'appartenance projet et organisation écrites | à faire |
 | B-04 | Modèle de menaces initial | security-reviewer | B-02 | `docs/security/threat-model.md` couvrant les 10 menaces du cahier §17 | à faire |
 | B-05 | Brouillons des politiques : confidentialité, contenu et licences, retrait, consentement IA, mineurs | orchestrateur | — | Documents dans `docs/product/`, marqués « à valider juridiquement » | à faire |
 | B-06 | Taxonomie pilote (informatique) et liste des sources autorisées avec licences | orchestrateur | — | Filière, matières, niveaux, pays ISO, langues, sources et conditions d'usage documentés | à faire |
-| B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | à faire |
+| B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | fait |
 | B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | à faire |
 | B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | à faire |
 | B-10 | Authentification : inscription, connexion, déconnexion, réinitialisation, sessions | backend-engineer, frontend-engineer, qa-engineer, security-reviewer | B-08, B-09 | Messages d'erreur génériques, cookies sécurisés, limitation de débit, tests verts | à faire |
@@ -47,8 +47,8 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 |---|---|
 | Nom | EduScholar, StudyHub ou ScholarCampus |
 | Données | Tranché le 6 octobre 2026 : Supabase avec RLS (ADR-0001) |
-| Backend | API séparée ou routes du framework web |
-| Hébergement | Vercel ou autre |
+| Backend | Tranché : routes et Server Actions de Next.js pour le MVP (ADR-0003) |
+| Hébergement | Tranché : Vercel et Supabase hébergé (ADR-0006) ; région des données à choisir |
 | Pays pilotes | Lesquels pour le lancement |
 | Mineurs | La plateforme accueille-t-elle des lycéens mineurs dès le MVP |
 

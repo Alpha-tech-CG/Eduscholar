@@ -55,16 +55,15 @@ PostgreSQL + Prisma avec autorisation dans le code backend : contrôle plus fin 
 code, mais authentification, stockage signé et isolation à construire, et aucune barrière
 au niveau de la base en cas d'oubli dans un service.
 
-## Décisions encore ouvertes
+## Décisions liées
 
-À traiter par des ADR distincts avant le socle technique (B-08) :
-
-| Sujet | Proposition de l'orchestrateur |
+| Sujet | Décision |
 |---|---|
-| Structure du dépôt | Monorepo npm workspaces : `apps/web`, `packages/*`, `supabase/` |
-| Backend | Route handlers et Server Actions de Next.js pour le MVP ; `apps/api` séparée seulement si les workers l'exigent |
-| Recherche | Recherche plein texte PostgreSQL pour le MVP ; moteur dédié ensuite |
-| Internationalisation | `next-intl`, fr et en |
-| Hébergement | Vercel pour le web, Supabase hébergé pour les données |
-| File de tâches | À étudier avec les connecteurs (B-15) |
-| Tests | Vitest, Playwright, tests RLS sur Supabase local |
+| Structure du dépôt | ADR-0002 |
+| Backend | ADR-0003 |
+| Recherche | ADR-0004 |
+| Internationalisation | ADR-0005 |
+| Hébergement | ADR-0006 |
+
+Encore ouvertes : file de tâches (avec les connecteurs, B-15) et outillage de test
+(avec le socle technique, B-08).

@@ -36,7 +36,8 @@ Commence toujours par :
 
 1. Lire `AGENTS.md`.
 2. Lire `CLAUDE.md`.
-3. Chercher le cahier des charges dans `docs/`.
+3. Lire le cahier des charges `docs/EDUSCHOLAR_CAHIER_DES_CHARGES_COMPLET.md`,
+   les décisions `docs/architecture/adr-*.md` et `docs/backlog.md`.
 4. Inspecter la structure du dépôt.
 5. Lire les scripts de développement.
 6. Vérifier l'état Git.
@@ -103,12 +104,21 @@ Ne touche pas au frontend. Ajoute les tests d'isolation."
 ## Risques
 ## Validation attendue
 
-Après implémentation :
+Après implémentation : le format unique de rapport défini dans `AGENTS.md`
+(section « Règles de fin de tâche »).
 
-## Résumé
-## Fichiers modifiés
-## Tests exécutés
-## Revue sécurité
-## Documentation mise à jour
-## Risques restants
-## Prochaine étape
+## Agents spécialisés
+
+- `database-engineer`
+- `backend-engineer`
+- `frontend-engineer`
+- `content-ingestion-engineer`
+- `document-ai-engineer`
+- `mobile-offline-engineer`
+- `qa-engineer`
+- `security-reviewer` : lecture seule, sans Bash ; fournis-lui les sorties de commandes
+  dont il a besoin.
+
+## Source de vérité
+
+`CLAUDE.md` et `AGENTS.md` font foi. En cas de divergence avec ce fichier, ils priment.
