@@ -12,10 +12,10 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 |---|---|---|---|---|---|
 | B-01 | Initialiser Git, créer `.gitignore`, premier commit | orchestrateur | — | `git status` propre, `.env*` ignoré | fait |
 | B-02 | Décisions d'architecture : monorepo, framework web, backend, données et autorisation, authentification, recherche, hébergement, i18n | orchestrateur + décision du porteur de projet | — | Un enregistrement de décision par choix dans `docs/architecture/` | fait — ADR-0001 à ADR-0006 |
-| B-03 | Matrice rôles × ressources × opérations et modèle multi-tenant | orchestrateur, security-reviewer | B-02 | Les 8 rôles du cahier §4 couverts, règles d'appartenance projet et organisation écrites | fait — `docs/security/authorization-model.md` v2, revu par l'agent sécurité ; en attente de validation du porteur de projet (avec ADR-0007) |
+| B-03 | Matrice rôles × ressources × opérations et modèle multi-tenant | orchestrateur, security-reviewer | B-02 | Les 8 rôles du cahier §4 couverts, règles d'appartenance projet et organisation écrites | fait — `docs/security/authorization-model.md` v2, revu par l'agent sécurité ; validé le 6 octobre 2026 avec ADR-0007 |
 | B-04 | Modèle de menaces initial | security-reviewer | B-02 | `docs/security/threat-model.md` couvrant les 10 menaces du cahier §17 | fait — 56 menaces, revu par l'agent sécurité |
-| B-05 | Brouillons des politiques : confidentialité, contenu et licences, retrait, consentement IA, mineurs | orchestrateur | — | Documents dans `docs/product/`, marqués « à valider juridiquement » | à faire |
-| B-06 | Taxonomie pilote (informatique) et liste des sources autorisées avec licences | orchestrateur | — | Filière, matières, niveaux, pays ISO, langues, sources et conditions d'usage documentés | à faire |
+| B-05 | Brouillons des politiques : confidentialité, contenu et licences, retrait, consentement IA, mineurs | orchestrateur | — | Documents dans `docs/product/`, marqués « à valider juridiquement » | fait — cinq brouillons ; validation juridique à obtenir avant ouverture au public |
+| B-06 | Taxonomie pilote (informatique) et liste des sources autorisées avec licences | orchestrateur | — | Filière, matières, niveaux, pays ISO, langues, sources et conditions d'usage documentés | fait — `taxonomy-pilot.md`, `authorized-sources.md` ; à valider par le porteur de projet |
 | B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | fait |
 | B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | à faire |
 | B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | à faire |
@@ -50,9 +50,13 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | Backend | Tranché : routes et Server Actions de Next.js pour le MVP (ADR-0003) |
 | Hébergement | Tranché : Vercel et Supabase hébergé (ADR-0006) ; région des données à choisir |
 | Pays pilotes | Lesquels pour le lancement |
-| Mineurs | La plateforme accueille-t-elle des lycéens mineurs dès le MVP |
-| Accès aux données | Valider ADR-0007 : aucun client Supabase dans le navigateur, donc pas de temps réel pour l'instant |
-| Modèle d'autorisation | Valider `docs/security/authorization-model.md`, dont ses six positions par défaut (section 9) |
+| Mineurs | La plateforme accueille-t-elle des lycéens mineurs dès le MVP ; par défaut : majeurs uniquement (`docs/product/minors-policy.md`) |
+| Accès aux données | Tranché le 6 octobre 2026 : ADR-0007 accepté |
+| Modèle d'autorisation | Tranché le 6 octobre 2026 : `authorization-model.md` accepté |
+| Modèle économique | Gratuit, payant ou institutionnel : conditionne les licences non commerciales et l'usage de CORE |
+| Taxonomie et sources | Valider `docs/product/taxonomy-pilot.md` et `docs/product/authorized-sources.md` |
+| Juriste | Désigner qui valide les cinq brouillons de `docs/product/` |
+| Entité et contact | Entité juridique responsable et adresse de contact, à porter dans les politiques |
 
 ## Couverture des critères d'acceptation du MVP (cahier §20)
 

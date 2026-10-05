@@ -1,7 +1,7 @@
 # Modèle d'autorisation et modèle multi-tenant
 
 **Date :** 6 octobre 2026
-**Statut :** proposé — à valider par le porteur de projet avant la première migration (B-09)
+**Statut :** accepté (validé par le porteur de projet le 6 octobre 2026, y compris les positions par défaut de la section 9)
 **Version :** 2, après revue de l'agent sécurité (5 constats HIGH, 8 MEDIUM, 2 LOW, tous intégrés)
 **Tâche :** B-03
 **Références :** cahier §4, §6.11, §11.2, §11.3, §12.3 ; ADR-0001, ADR-0003, ADR-0004, ADR-0007

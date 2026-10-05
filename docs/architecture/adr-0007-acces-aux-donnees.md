@@ -1,7 +1,7 @@
 # ADR-0007 — Aucun client de données Supabase dans le navigateur
 
 **Date :** 6 octobre 2026
-**Statut :** proposé — à valider par le porteur de projet
+**Statut :** accepté (validé par le porteur de projet le 6 octobre 2026)
 **Tâche :** B-03 (issu de la revue de sécurité du modèle d'autorisation)
 
 ## Contexte
