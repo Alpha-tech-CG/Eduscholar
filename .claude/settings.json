@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Grep(*)",
+      "Glob(*)",
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm test)",
+      "Bash(npm run test:e2e)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git log --oneline -10)"
+    ],
+    "ask": [
+      "Edit(*)",
+      "Write(*)",
+      "Bash(npm install *)",
+      "Bash(npm run build)",
+      "Bash(git checkout *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(npx prisma migrate *)",
+      "Bash(supabase db push *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Edit(.env)",
+      "Edit(.env.*)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Bash(rm -rf *)",
+      "Bash(git reset --hard *)",
+      "Bash(git push --force *)",
+      "Bash(supabase db reset *)"
+    ]
+  }
+}
