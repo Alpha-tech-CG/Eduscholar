@@ -129,6 +129,10 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   et suppression Vercel en production, `supabase db push --linked` interdits ; commandes
   Supabase et Vercel restantes soumises à confirmation.
 - 6 octobre 2026 — S-08 levé : `security-reviewer` n'a plus que Read, Grep et Glob.
+- 6 octobre 2026 — S-02 levé sur le plan documentaire : `authorization-model.md` et
+  `threat-model.md` rédigés puis revus par l'agent sécurité (5 HIGH, 8 MEDIUM, 2 LOW,
+  tous intégrés). Les corrections n'ont pas fait l'objet d'une seconde revue. Le modèle
+  d'autorisation reste à valider par le porteur de projet avant la première migration.
 
 ## Suivi
 
