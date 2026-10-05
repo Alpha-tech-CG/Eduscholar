@@ -1,0 +1,25 @@
+{
+  "Metadata": {
+    "title": "EduScholar",
+    "description": "Recherche académique, bibliothèque personnelle et accompagnement à la rédaction."
+  },
+  "Layout": {
+    "skipToContent": "Aller au contenu",
+    "languageSwitcher": "Langue",
+    "footer": "EduScholar — socle technique, aucune fonctionnalité disponible pour l'instant."
+  },
+  "Home": {
+    "title": "EduScholar",
+    "tagline": "Trouver, organiser, produire.",
+    "status": "La plateforme est en cours de construction."
+  },
+  "Locales": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "NotFound": {
+    "title": "Page introuvable",
+    "description": "La page demandée n'existe pas.",
+    "backHome": "Retour à l'accueil"
+  }
+}

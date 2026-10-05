@@ -1,0 +1,25 @@
+{
+  "Metadata": {
+    "title": "EduScholar",
+    "description": "Academic search, personal library and writing support."
+  },
+  "Layout": {
+    "skipToContent": "Skip to content",
+    "languageSwitcher": "Language",
+    "footer": "EduScholar — technical foundation, no feature available yet."
+  },
+  "Home": {
+    "title": "EduScholar",
+    "tagline": "Find, organise, produce.",
+    "status": "The platform is under construction."
+  },
+  "Locales": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The requested page does not exist.",
+    "backHome": "Back to home"
+  }
+}

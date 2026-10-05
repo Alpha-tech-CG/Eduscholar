@@ -1,0 +1,4 @@
+#!/bin/sh
+# Bloque un commit qui contient un secret potentiel (audit initial S-01).
+# Activation, une fois par clone : git config core.hooksPath .githooks
+exec node scripts/check-secrets.mjs --staged

@@ -97,6 +97,17 @@ Détail dans `docs/security/initial-audit.md`.
 - Checklist « Avant le code » (§22) : 0 sur 7.
 - Phase 0 (§18) : aucun livrable.
 
+## Mise à jour du 6 octobre 2026 — socle technique
+
+- Monorepo npm workspaces ; `apps/web` en Next.js 16.3, React 19.2, TypeScript strict,
+  Tailwind CSS 4, next-intl 4 (français et anglais).
+- Scripts à la racine : `dev`, `lint`, `typecheck`, `test`, `build`, `test:e2e`,
+  `check:secrets`, `check:audit`, `check:bundle`.
+- 19 tests de scripts, 14 tests unitaires, 34 tests de bout en bout (bureau et mobile).
+- CSP stricte avec nonce, en-têtes de sécurité, contrôle de secrets en pre-commit.
+- Toujours aucune base de données, aucune authentification, aucune fonctionnalité métier.
+- CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
+
 ## Problèmes bloquants
 
 Mise à jour du 6 octobre 2026 : les points 1 et 2 sont levés (Git initialisé ;

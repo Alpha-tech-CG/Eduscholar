@@ -133,6 +133,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   `threat-model.md` rédigés puis revus par l'agent sécurité (5 HIGH, 8 MEDIUM, 2 LOW,
   tous intégrés). Les corrections n'ont pas fait l'objet d'une seconde revue. Le modèle
   d'autorisation reste à valider par le porteur de projet avant la première migration.
+- 6 octobre 2026 — S-01 levé : contrôle de secrets en pre-commit (activé par
+  `npm install`) et en CI, complété par Gitleaks en CI.
+- 6 octobre 2026 — S-07 levé en partie : la chaîne lint, typecheck, tests, build, audit
+  des dépendances et contrôle du bundle existe et passe en local. La CI est écrite mais
+  n'a jamais tourné, faute de dépôt distant.
+- 6 octobre 2026 — S-10 ouvert : aucune variable n'existe encore ; la liste prévue est
+  dans `docs/environment.md`. Les agents ne peuvent pas écrire `.env.example`.
+- 6 octobre 2026 — Socle technique relu par l'agent sécurité : aucun constat critique ou
+  élevé, 6 moyens et 6 faibles, traités ou reportés avec échéance dans ADR-0008.
 
 ## Suivi
 

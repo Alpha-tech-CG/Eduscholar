@@ -1,0 +1,11 @@
+{
+  "$comment": "Avis npm de gravité élevée ou critique acceptés temporairement. Chaque entrée exige une justification et une date d'expiration ; toute modification passe en revue de sécurité. Voir docs/architecture/adr-0008-outillage-socle.md.",
+  "exceptions": [
+    {
+      "id": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "reason": "Déni de service sur des motifs imbriqués. Présent uniquement dans l'outillage de lint (eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces), absent de l'application livrée (npm audit --omit=dev : 0). Ne traite que les motifs de fichiers du dépôt. Aucune version corrigée publiée au 2026-10-06.",
+      "expires": "2027-01-06"
+    }
+  ]
+}

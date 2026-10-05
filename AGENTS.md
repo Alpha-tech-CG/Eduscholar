@@ -40,6 +40,8 @@ de bibliothèque numérique et d'accompagnement à la rédaction.
 - Migrations SQL versionnées dans `supabase/migrations/`.
 - `next-intl` pour le français et l'anglais.
 - Vercel pour le web, Supabase hébergé pour les données.
+- Tailwind CSS, Vitest, Playwright (ADR-0008).
+- Le navigateur n'appelle jamais Supabase (ADR-0007).
 
 ## Agents
 
@@ -64,6 +66,21 @@ de bibliothèque numérique et d'accompagnement à la rédaction.
 - Les projets de recherche sont privés par défaut.
 - La RLS est activée sur toute table exposée, avec une politique explicite par opération.
 - La clé `service_role` reste côté serveur ; son usage est limité et audité.
+
+## Commandes
+
+À lancer depuis la racine avant de déclarer une tâche terminée :
+
+- `npm run lint`
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- `npm run test:e2e` (après le build)
+- `npm run check:secrets` et `npm run check:audit`
+
+Dans `apps/web`, lire la documentation embarquée de Next.js
+(`node_modules/next/dist/docs/`) avant d'écrire du code : la version installée diffère
+des versions antérieures (voir `apps/web/AGENTS.md`).
 
 ## Règles de fin de tâche
 

@@ -17,7 +17,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-05 | Brouillons des politiques : confidentialité, contenu et licences, retrait, consentement IA, mineurs | orchestrateur | — | Documents dans `docs/product/`, marqués « à valider juridiquement » | fait — cinq brouillons ; validation juridique à obtenir avant ouverture au public |
 | B-06 | Taxonomie pilote (informatique) et liste des sources autorisées avec licences | orchestrateur | — | Filière, matières, niveaux, pays ISO, langues, sources et conditions d'usage documentés | fait — `taxonomy-pilot.md`, `authorized-sources.md` ; à valider par le porteur de projet |
 | B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | fait |
-| B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | à faire |
+| B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | fait — ADR-0008 à valider ; la CI n'a jamais tourné faute de dépôt distant |
 | B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | à faire |
 | B-10 | Authentification : inscription, connexion, déconnexion, réinitialisation, sessions | backend-engineer, frontend-engineer, qa-engineer, security-reviewer | B-08, B-09 | Messages d'erreur génériques, cookies sécurisés, limitation de débit, tests verts | à faire |
 
@@ -56,6 +56,9 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | Modèle économique | Gratuit, payant ou institutionnel : conditionne les licences non commerciales et l'usage de CORE |
 | Taxonomie et sources | Valider `docs/product/taxonomy-pilot.md` et `docs/product/authorized-sources.md` |
 | Juriste | Désigner qui valide les cinq brouillons de `docs/product/` |
+| Outillage du socle | Valider ADR-0008, dont l'exception d'audit sur `braces` (expire le 6 janvier 2027) |
+| Dépôt distant | Créer le dépôt GitHub : première exécution de la CI, protection de `main`, `CODEOWNERS` |
+| `.env.example` | Le créer à la main en B-09, ou autoriser les agents à écrire ce seul fichier |
 | Entité et contact | Entité juridique responsable et adresse de contact, à porter dans les politiques |
 
 ## Couverture des critères d'acceptation du MVP (cahier §20)

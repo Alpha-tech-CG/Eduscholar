@@ -1,0 +1,90 @@
+name: CI
+
+# Ce workflow ne reçoit aucun secret. Déploiements et migrations iront dans un
+# workflow séparé, lié à un environnement protégé (modèle de menaces M-54).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Contrôle local des secrets
+        run: node scripts/check-secrets.mjs
+      - name: Le hook de pre-commit est exécutable
+        run: git ls-files -s .githooks/pre-commit | grep -q '^100755'
+      - name: Gitleaks sur tout l'historique
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
+            git /repo --redact --no-banner
+
+  quality:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build avec valeurs sentinelles
+        # Valeurs factices : si l'une d'elles se retrouve dans le bundle client,
+        # un module serveur a fui vers le navigateur.
+        run: |
+          export SUPABASE_SECRET_KEY="$(openssl rand -hex 24)"
+          export SUPABASE_PUBLISHABLE_KEY="$(openssl rand -hex 24)"
+          export SUPABASE_URL="https://$(openssl rand -hex 12).invalid"
+          npm run build
+          npm run check:bundle
+      - name: Installer le navigateur de test
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/test-results
+          retention-days: 7
+
+  dependencies:
+    name: Dépendances
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Avis élevés et critiques, hors exceptions datées
+        run: npm run check:audit

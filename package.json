@@ -1,0 +1,25 @@
+{
+  "name": "eduscholar",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @eduscholar/web",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "node --test \"scripts/*.test.mjs\" && npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspace @eduscholar/web",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check": "npm run check:secrets && npm run lint && npm run typecheck && npm run test",
+    "prepare": "git config core.hooksPath .githooks",
+    "check:audit": "node scripts/check-audit.mjs",
+    "check:bundle": "node scripts/check-client-bundle.mjs"
+  }
+}

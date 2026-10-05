@@ -78,6 +78,28 @@ Mise à jour du 6 octobre 2026 : ces choix sont tranchés par ADR-0001 à ADR-00
 plein texte PostgreSQL, `next-intl`, Vercel). Restent ouverts : file de tâches et
 outillage de test.
 
+## Mise à jour du 6 octobre 2026 — socle technique
+
+```text
+eduscholar/
+├── package.json            workspaces et scripts communs
+├── apps/web/               application Next.js
+│   ├── messages/           catalogues fr et en
+│   ├── src/proxy.ts        routage par langue et CSP avec nonce
+│   ├── src/i18n/           configuration next-intl
+│   ├── src/lib/security/   en-têtes de sécurité
+│   ├── src/app/[locale]/   pages
+│   ├── tests/              tests unitaires (Vitest)
+│   └── e2e/                tests de bout en bout (Playwright)
+├── scripts/                contrôles : secrets, bundle client, audit
+├── security/               exceptions d'audit datées
+├── .githooks/              pre-commit
+└── .github/workflows/      CI
+```
+
+Toutes les pages sont rendues dynamiquement, conséquence de la CSP avec nonce (ADR-0008).
+Les couches données, authentification, recherche et stockage restent absentes.
+
 ## Contraintes d'architecture déjà fixées
 
 Issues d'`AGENTS.md`, de `CLAUDE.md` et du cahier ; elles s'imposent quel que soit le choix
