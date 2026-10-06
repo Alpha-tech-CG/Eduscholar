@@ -89,6 +89,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"licenses": {
+                  Row: {
+                    "allows_commercial_use": boolean,"can_host": string,"can_redistribute": string,"code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number,"requires_attribution": boolean
+                  }
+                  Insert: {
+                    "allows_commercial_use"?: boolean,"can_host": string,"can_redistribute": string,"code": string,"is_active"?: boolean,"labels": NonNullable<Json>,"position"?: number,"requires_attribution"?: boolean
+                  }
+                  Update: {
+                    "allows_commercial_use"?: boolean,"can_host"?: string,"can_redistribute"?: string,"code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>,"position"?: number,"requires_attribution"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"organization_members": {
                   Row: {
                     "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"user_id": string
@@ -209,6 +222,125 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"resource_internal": {
+                  Row: {
+                    "contributor_comment": string | null,"moderation_notes": string | null,"permission_proof": string | null,"resource_id": string,"rights_declared_at": string | null
+                  }
+                  Insert: {
+                    "contributor_comment"?: string | null,"moderation_notes"?: string | null,"permission_proof"?: string | null,"resource_id": string,"rights_declared_at"?: string | null
+                  }
+                  Update: {
+                    "contributor_comment"?: string | null,"moderation_notes"?: string | null,"permission_proof"?: string | null,"resource_id"?: string,"rights_declared_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resource_internal_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: true
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"resource_reports": {
+                  Row: {
+                    "created_at": string,"details": string | null,"handled_at": string | null,"handled_by": string | null,"id": string,"reason": string,"reporter_id": string | null,"resolution_note": string | null,"resource_id": string,"status": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"details"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reason": string,"reporter_id"?: string | null,"resolution_note"?: string | null,"resource_id": string,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"details"?: string | null,"handled_at"?: string | null,"handled_by"?: string | null,"id"?: string,"reason"?: string,"reporter_id"?: string | null,"resolution_note"?: string | null,"resource_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resource_reports_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"resource_status_history": {
+                  Row: {
+                    "action": string,"actor_id": string | null,"from_status": string | null,"id": number,"occurred_at": string,"reason": string | null,"resource_id": string,"to_status": string
+                  }
+                  Insert: {
+                    "action": string,"actor_id"?: string | null,"from_status"?: string | null,"id"?: never,"occurred_at"?: string,"reason"?: string | null,"resource_id": string,"to_status": string
+                  }
+                  Update: {
+                    "action"?: string,"actor_id"?: string | null,"from_status"?: string | null,"id"?: never,"occurred_at"?: string,"reason"?: string | null,"resource_id"?: string,"to_status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resource_status_history_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"resource_types": {
+                  Row: {
+                    "code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"labels": NonNullable<Json>,"position"?: number
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>,"position"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"resources": {
+                  Row: {
+                    "abstract": string | null,"access_status": string,"authors": (string)[],"country_code": string | null,"created_at": string,"doi": string | null,"editorial_status": string,"id": string,"institution_name": string | null,"language_code": string,"last_verified_at": string | null,"level_codes": (string)[],"license_code": string,"official_url": string | null,"organization_id": string | null,"program_code": string,"publication_year": number | null,"published_at": string | null,"retrieved_at": string | null,"source_identifier": string | null,"source_kind": string,"source_name": string,"subject_codes": (string)[],"submitted_by": string | null,"tags": (string)[],"thesis_degree": string | null,"title": string,"type_code": string,"updated_at": string,"visibility": string
+                  }
+                  Insert: {
+                    "abstract"?: string | null,"access_status"?: string,"authors"?: (string)[],"country_code"?: string | null,"created_at"?: string,"doi"?: string | null,"editorial_status"?: string,"id"?: string,"institution_name"?: string | null,"language_code": string,"last_verified_at"?: string | null,"level_codes"?: (string)[],"license_code"?: string,"official_url"?: string | null,"organization_id"?: string | null,"program_code": string,"publication_year"?: number | null,"published_at"?: string | null,"retrieved_at"?: string | null,"source_identifier"?: string | null,"source_kind": string,"source_name": string,"subject_codes"?: (string)[],"submitted_by"?: string | null,"tags"?: (string)[],"thesis_degree"?: string | null,"title": string,"type_code": string,"updated_at"?: string,"visibility"?: string
+                  }
+                  Update: {
+                    "abstract"?: string | null,"access_status"?: string,"authors"?: (string)[],"country_code"?: string | null,"created_at"?: string,"doi"?: string | null,"editorial_status"?: string,"id"?: string,"institution_name"?: string | null,"language_code"?: string,"last_verified_at"?: string | null,"level_codes"?: (string)[],"license_code"?: string,"official_url"?: string | null,"organization_id"?: string | null,"program_code"?: string,"publication_year"?: number | null,"published_at"?: string | null,"retrieved_at"?: string | null,"source_identifier"?: string | null,"source_kind"?: string,"source_name"?: string,"subject_codes"?: (string)[],"submitted_by"?: string | null,"tags"?: (string)[],"thesis_degree"?: string | null,"title"?: string,"type_code"?: string,"updated_at"?: string,"visibility"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resources_country_code_fkey"
+      columns: ["country_code"]
+isOneToOne: false
+      referencedRelation: "countries"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "resources_language_code_fkey"
+      columns: ["language_code"]
+isOneToOne: false
+      referencedRelation: "languages"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "resources_license_code_fkey"
+      columns: ["license_code"]
+isOneToOne: false
+      referencedRelation: "licenses"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "resources_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "resources_program_code_fkey"
+      columns: ["program_code"]
+isOneToOne: false
+      referencedRelation: "academic_programs"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "resources_type_code_fkey"
+      columns: ["type_code"]
+isOneToOne: false
+      referencedRelation: "resource_types"
+      referencedColumns: ["code"]
+    }
+                  ]
                 },"subjects": {
                   Row: {
                     "code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number,"program_code": string
@@ -240,10 +372,31 @@ isOneToOne: false
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"moderate_resource":
+{ Args: { "action": string,"reason"?: string,"resource_id": string }; Returns: string
+                           },
+"moderator_update_resource":
+{ Args: { "payload": Json,"resource_id": string }; Returns: string
+                           },
+"report_resource":
+{ Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
+                           },
+"resolve_report":
+{ Args: { "note"?: string,"report_id": string,"status": string }; Returns: undefined
+                           },
 "second_factor_status":
 { Args: Record<PropertyKey, never>; Returns: {
               "has_verified_factor": boolean,"session_verified": boolean
             }[]
+                           },
+"submit_resource":
+{ Args: { "payload": Json }; Returns: string
+                           },
+"update_submission":
+{ Args: { "payload": Json,"resource_id": string }; Returns: undefined
+                           },
+"withdraw_submission":
+{ Args: { "resource_id": string }; Returns: undefined
                            }
           }
           Enums: {

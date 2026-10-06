@@ -222,10 +222,16 @@ select is(
      from pg_policies
      where schemaname in ('public', 'private')
    ) q),
-  concat_ws(E'\n',
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'public.academic_domains | academic_domains_select_authenticated | SELECT | {authenticated}',
     'public.academic_programs | academic_programs_select_authenticated | SELECT | {authenticated}',
     'public.audit_logs | audit_logs_select | SELECT | {authenticated}',
+    'public.licenses | licenses_select_authenticated | SELECT | {authenticated}',
+    'public.resource_internal | resource_internal_select | SELECT | {authenticated}',
+    'public.resource_reports | resource_reports_select | SELECT | {authenticated}',
+    'public.resource_status_history | resource_status_history_select | SELECT | {authenticated}',
+    'public.resource_types | resource_types_select_authenticated | SELECT | {authenticated}',
+    'public.resources | resources_select | SELECT | {authenticated}',
     'public.countries | countries_select_authenticated | SELECT | {authenticated}',
     'public.education_levels | education_levels_select_authenticated | SELECT | {authenticated}',
     'public.languages | languages_select_authenticated | SELECT | {authenticated}',
@@ -238,7 +244,7 @@ select is(
     'public.profiles | profiles_update_own | UPDATE | {authenticated}',
     'public.program_specialties | program_specialties_select_authenticated | SELECT | {authenticated}',
     'public.subjects | subjects_select_authenticated | SELECT | {authenticated}'
-  ),
+  ]) as x),
   'La liste des politiques est celle attendue'
 );
 
@@ -254,7 +260,7 @@ select is(
        and c.relkind in ('r', 'p', 'v')
        and has_column_privilege('authenticated', c.oid, a.attnum, 'UPDATE')
    ) q),
-  concat_ws(E'\n',
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'public.profile_public.display_name',
     'public.profile_public.is_public',
     'public.profiles.age_confirmed_at',
@@ -266,7 +272,7 @@ select is(
     'public.profiles.program_code',
     'public.profiles.specialty_code',
     'public.profiles.subject_codes'
-  ),
+  ]) as x),
   'Les colonnes modifiables par authenticated sont celles attendues'
 );
 
@@ -296,8 +302,26 @@ select is(
      where n.nspname in ('public', 'private')
        and has_function_privilege('authenticated', p.oid, 'execute')
    ) q),
-  concat_ws(E'\n',
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.account_deletion_check()',
+    'private.are_valid_tags(p_values text[])',
+    'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
+    'private.moderate_resource(p_resource_id uuid, p_action text, p_reason text)',
+    'private.moderator_update_resource(p_resource_id uuid, p jsonb)',
+    'private.my_report_ids()',
+    'private.my_submission_ids()',
+    'private.report_resource(p_resource_id uuid, p_reason text, p_details text)',
+    'private.resolve_report(p_report_id uuid, p_status text, p_note text)',
+    'private.submit_resource(p jsonb)',
+    'private.update_submission(p_resource_id uuid, p jsonb)',
+    'private.withdraw_submission(p_resource_id uuid)',
+    'public.moderate_resource(resource_id uuid, action text, reason text)',
+    'public.moderator_update_resource(resource_id uuid, payload jsonb)',
+    'public.report_resource(resource_id uuid, reason text, details text)',
+    'public.resolve_report(report_id uuid, status text, note text)',
+    'public.submit_resource(payload jsonb)',
+    'public.update_submission(resource_id uuid, payload jsonb)',
+    'public.withdraw_submission(resource_id uuid)',
     'private.has_distinct_values(p_values text[])',
     'private.has_org_role(p_organization_id uuid, p_roles text[])',
     'private.has_platform_role(p_roles text[])',
@@ -308,7 +332,7 @@ select is(
     'private.my_org_ids(p_roles text[])',
     'public.account_deletion_check()',
     'public.second_factor_status()'
-  ),
+  ]) as x),
   'Les fonctions exécutables par authenticated sont celles attendues'
 );
 
@@ -324,8 +348,10 @@ select is(
        and c.relkind in ('r', 'p')
        and has_table_privilege('service_role', c.oid, p.privilege)
    ) q),
-  concat_ws(E'\n',
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.rate_limit_buckets DELETE',
+    'public.resources INSERT',
+    'public.resources UPDATE',
     'private.rate_limit_buckets INSERT',
     'private.rate_limit_buckets UPDATE',
     'public.organization_members DELETE',
@@ -337,7 +363,7 @@ select is(
     'public.platform_roles DELETE',
     'public.platform_roles INSERT',
     'public.platform_roles UPDATE'
-  ),
+  ]) as x),
   'service_role n''écrit que dans les tables attendues, jamais dans le journal d''audit'
 );
 
