@@ -90,7 +90,8 @@ export function AuthForm({
 type TextFieldProps = {
   name: string;
   label: string;
-  type: "email" | "password";
+  /** "code" : code à usage unique, saisi sur un clavier numérique. */
+  type: "email" | "password" | "code";
   autoComplete: string;
   hint?: string;
 };
@@ -112,11 +113,13 @@ export function TextField({ name, label, type, autoComplete, hint }: TextFieldPr
       <input
         id={name}
         name={name}
-        type={type}
+        type={type === "code" ? "text" : type}
+        inputMode={type === "code" ? "numeric" : undefined}
+        maxLength={type === "code" ? 12 : undefined}
         autoComplete={autoComplete}
         required
-        // Un mot de passe n'est jamais renvoyé par le serveur ni réaffiché.
-        defaultValue={type === "password" ? undefined : value}
+        // Ni un mot de passe ni un code ne sont renvoyés par le serveur.
+        defaultValue={type === "email" ? value : undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy || undefined}
         className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"

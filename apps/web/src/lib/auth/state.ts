@@ -13,6 +13,7 @@ export type AuthErrorCode =
   | "weak_password"
   | "same_password"
   | "session_expired"
+  | "invalid_code"
   | "last_org_admin"
   | "unavailable";
 

@@ -1,16 +1,13 @@
 import "server-only";
 import { getLocale } from "next-intl/server";
-import { cookies } from "next/headers";
 import { cache } from "react";
 import { redirect } from "@/i18n/navigation";
-import { isSessionCookie } from "@/lib/supabase/cookies";
-import { isRecoveryMethodList } from "./recovery";
 import { createSessionClient, type User } from "@/lib/supabase/server";
+import { isRecoveryMethodList } from "./recovery";
+import { getSecondFactorState, needsSecondFactor } from "./second-factor";
+import { hasSessionCookie } from "./session-cookie";
 
-export async function hasSessionCookie(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return cookieStore.getAll().some(({ name }) => isSessionCookie(name));
-}
+export { hasSessionCookie };
 
 /**
  * Utilisateur courant, vérifié auprès du service d'authentification.
@@ -18,6 +15,9 @@ export async function hasSessionCookie(): Promise<boolean> {
  * `getUser()` interroge le serveur d'authentification : contrairement à la
  * simple lecture du cookie, le résultat ne peut pas être falsifié par le
  * client (modèle de menaces M-49). Une seule vérification par requête.
+ *
+ * Attention : un utilisateur renvoyé ici peut encore devoir saisir son second
+ * facteur. Les pages protégées utilisent `requireUser`.
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
   if (!(await hasSessionCookie())) return null;
@@ -30,18 +30,37 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
 });
 
 /**
- * À appeler en tête de toute page ou action protégée. Redirige vers la
- * connexion si personne n'est connecté. Le proxy ne protège rien (M-53).
+ * À appeler en tête de toute page protégée. Redirige vers la connexion si
+ * personne n'est connecté, et vers la saisie du code si le compte a un second
+ * facteur que la session n'a pas vérifié. Le proxy ne protège rien (M-53).
  */
 export async function requireUser(nextPath: string): Promise<User> {
   const user = await getCurrentUser();
-  if (user) return user;
-
   const locale = await getLocale();
-  return redirect({
-    href: { pathname: "/sign-in", query: { next: nextPath } },
-    locale,
-  });
+
+  if (!user) {
+    return redirect({
+      href: { pathname: "/sign-in", query: { next: nextPath } },
+      locale,
+    });
+  }
+  if (needsSecondFactor(await getSecondFactorState())) {
+    return redirect({
+      href: { pathname: "/sign-in/verify", query: { next: nextPath } },
+      locale,
+    });
+  }
+  return user;
+}
+
+/**
+ * Pour une action serveur : l'utilisateur, seulement si sa session est
+ * complète (second facteur vérifié lorsqu'il est activé).
+ */
+export async function getFullySignedInUser(): Promise<User | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return needsSecondFactor(await getSecondFactorState()) ? null : user;
 }
 
 /**

@@ -88,7 +88,8 @@
       "session_expired": "Votre session a expiré. Recommencez la procédure.",
       "unavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
       "already_signed_in": "Vous êtes déjà connecté. Déconnectez-vous avant d'utiliser ce lien.",
-      "last_org_admin": "Vous êtes le seul administrateur d'une organisation. Transférez d'abord son administration, puis recommencez."
+      "last_org_admin": "Vous êtes le seul administrateur d'une organisation. Transférez d'abord son administration, puis recommencez.",
+      "invalid_code": "Code incorrect ou expiré. Saisissez le code affiché en ce moment par votre application."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -100,6 +101,37 @@
       "required": "Ce champ est obligatoire.",
       "invalid_choice": "Ce choix n'est pas valable.",
       "institution_length": "Le nom de l'établissement doit compter entre 2 et 200 caractères."
+    },
+    "secondFactor": {
+      "title": "Sécurité du compte",
+      "intro": "La validation en deux étapes demande, en plus du mot de passe, un code fourni par une application d'authentification.",
+      "stateEnabled": "Validation en deux étapes : activée",
+      "stateDisabled": "Validation en deux étapes : désactivée",
+      "lossWarning": "Si vous perdez l'accès à votre application d'authentification, vous devrez contacter l'assistance pour récupérer votre compte.",
+      "enable": "Activer la validation en deux étapes",
+      "pending": "Un instant…",
+      "stepScan": "Dans votre application d'authentification, ajoutez un compte en scannant ce code, ou en saisissant la clé ci-dessous.",
+      "stepCode": "Saisissez ensuite le code à six chiffres qu'elle affiche.",
+      "qrAlt": "Code à scanner avec votre application d'authentification",
+      "secretLabel": "Clé à saisir à la main",
+      "codeLabel": "Code à six chiffres",
+      "codeHint": "Il change toutes les trente secondes.",
+      "confirm": "Vérifier et activer",
+      "enabledNotice": "La validation en deux étapes est activée. Un code vous sera demandé à chaque connexion.",
+      "disabledNotice": "La validation en deux étapes est désactivée.",
+      "disableIntro": "Pour la désactiver, saisissez un code de votre application.",
+      "disable": "Désactiver la validation en deux étapes",
+      "verifyTitle": "Validation en deux étapes",
+      "verifyIntro": "Saisissez le code affiché par votre application d'authentification.",
+      "verifySubmit": "Vérifier",
+      "signOut": "Me déconnecter",
+      "back": "Retour à mon compte",
+      "enrollErrors": {
+        "session_expired": "Votre session a expiré. Reconnectez-vous.",
+        "already_enabled": "La validation en deux étapes est déjà activée.",
+        "rate_limited": "Trop de tentatives. Réessayez dans quelques minutes.",
+        "unavailable": "Le service est momentanément indisponible. Réessayez plus tard."
+      }
     }
   },
   "Account": {
@@ -115,7 +147,8 @@
     "profileSaved": "Votre profil est enregistré.",
     "editProfile": "Modifier mon profil",
     "signOut": "Se déconnecter",
-    "deleteAccount": "Supprimer mon compte"
+    "deleteAccount": "Supprimer mon compte",
+    "security": "Sécurité du compte"
   },
   "Profile": {
     "title": "Mon profil",

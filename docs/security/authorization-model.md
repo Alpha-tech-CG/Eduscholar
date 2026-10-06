@@ -446,6 +446,7 @@ has_platform_role(roles[])               rôle de plateforme
 my_org_ids(roles[])                      organisations où l'appelant détient l'un des rôles
 is_account_active()                      compte non suspendu
 is_onboarded()                           profil minimal complété, déclaration d'âge comprise
+has_verified_factor()                    second facteur activé
 ```
 
 Règles :

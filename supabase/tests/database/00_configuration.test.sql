@@ -301,11 +301,13 @@ select is(
     'private.has_distinct_values(p_values text[])',
     'private.has_org_role(p_organization_id uuid, p_roles text[])',
     'private.has_platform_role(p_roles text[])',
+    'private.has_verified_factor()',
     'private.is_account_active()',
     'private.is_onboarded()',
     'private.is_session_aal2()',
     'private.my_org_ids(p_roles text[])',
-    'public.account_deletion_check()'
+    'public.account_deletion_check()',
+    'public.second_factor_status()'
   ),
   'Les fonctions exécutables par authenticated sont celles attendues'
 );

@@ -4,7 +4,7 @@ import { getLocale } from "next-intl/server";
 import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthFormState } from "@/lib/auth/state";
 import { isSessionCookie, sessionCookieOptions } from "@/lib/supabase/cookies";
 import {
@@ -31,7 +31,7 @@ export async function deleteAccount(
   _previous: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  const user = await getCurrentUser();
+  const user = await getFullySignedInUser();
   if (!user?.email) return { status: "error", error: "session_expired" };
 
   const password = formData.get("password");

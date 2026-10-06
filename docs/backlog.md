@@ -40,7 +40,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | ID | Sujet | Échéance |
 |---|---|---|
 | D-01 | Fonctions d'attribution de rôle, de suspension et de gestion des organisations, exécutées sous la session de l'administrateur plutôt que par `service_role` ; retirer ensuite à `service_role` l'écriture sur `platform_roles` | Avec l'administration (B-14) |
-| D-02 | Refuser un rôle privilégié à un compte sans second facteur vérifié ; authentification récente pour les opérations d'administration | Avec D-01 |
+| D-02 | Refuser un rôle privilégié à un compte sans second facteur vérifié ; authentification récente pour les opérations d'administration. L'activation et la vérification du second facteur sont faites ; reste ce contrôle à l'attribution du rôle. | Avec D-01 |
 | D-03 | Journal d'audit : partitionnement par mois, conservation, export hors base | Avant la production |
 | D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
 | D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
@@ -54,6 +54,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-13 | Neutraliser ou personnaliser les modèles de courriel non utilisés (lien magique, changement d'adresse, invitation), dont les liens agissent par simple chargement | Avant l'ouverture publique |
 | D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | fait en B-11 ; le transfert d'administration reste à construire (D-04) |
 | D-15 | Requêtes imbriquées coûteuses par l'API (un utilisateur connecté peut encore en lancer sur les référentiels, jusqu'au délai de 8 secondes) : limitation de débit devant l'API, mesure de charge | Avant l'ouverture publique, avec D-09 |
+| D-17 | Second facteur : codes de secours, procédure d'assistance en cas de perte de l'application d'authentification | Avant l'ouverture publique |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)

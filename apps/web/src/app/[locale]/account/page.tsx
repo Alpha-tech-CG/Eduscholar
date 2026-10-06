@@ -86,11 +86,18 @@ export default async function AccountPage({
         </form>
       </div>
 
-      <p className="text-sm">
-        <Link href="/account/delete" className="underline underline-offset-4">
-          {t("deleteAccount")}
-        </Link>
-      </p>
+      <ul className="flex flex-col gap-2 text-sm">
+        <li>
+          <Link href="/account/security" className="underline underline-offset-4">
+            {t("security")}
+          </Link>
+        </li>
+        <li>
+          <Link href="/account/delete" className="underline underline-offset-4">
+            {t("deleteAccount")}
+          </Link>
+        </li>
+      </ul>
     </section>
   );
 }

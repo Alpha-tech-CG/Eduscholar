@@ -88,7 +88,8 @@
       "session_expired": "Your session has expired. Start the procedure again.",
       "unavailable": "The service is temporarily unavailable. Try again later.",
       "already_signed_in": "You are already signed in. Sign out before using this link.",
-      "last_org_admin": "You are the only administrator of an organisation. Transfer its administration first, then try again."
+      "last_org_admin": "You are the only administrator of an organisation. Transfer its administration first, then try again.",
+      "invalid_code": "Incorrect or expired code. Enter the code your app is showing right now."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -100,6 +101,37 @@
       "required": "This field is required.",
       "invalid_choice": "This choice is not valid.",
       "institution_length": "The institution name must be between 2 and 200 characters long."
+    },
+    "secondFactor": {
+      "title": "Account security",
+      "intro": "Two-step verification asks, in addition to your password, for a code from an authenticator app.",
+      "stateEnabled": "Two-step verification: on",
+      "stateDisabled": "Two-step verification: off",
+      "lossWarning": "If you lose access to your authenticator app, you will have to contact support to recover your account.",
+      "enable": "Turn on two-step verification",
+      "pending": "One moment…",
+      "stepScan": "In your authenticator app, add an account by scanning this code, or by entering the key below.",
+      "stepCode": "Then enter the six-digit code it shows.",
+      "qrAlt": "Code to scan with your authenticator app",
+      "secretLabel": "Key to enter by hand",
+      "codeLabel": "Six-digit code",
+      "codeHint": "It changes every thirty seconds.",
+      "confirm": "Verify and turn on",
+      "enabledNotice": "Two-step verification is on. A code will be requested each time you sign in.",
+      "disabledNotice": "Two-step verification is off.",
+      "disableIntro": "To turn it off, enter a code from your app.",
+      "disable": "Turn off two-step verification",
+      "verifyTitle": "Two-step verification",
+      "verifyIntro": "Enter the code shown by your authenticator app.",
+      "verifySubmit": "Verify",
+      "signOut": "Sign me out",
+      "back": "Back to my account",
+      "enrollErrors": {
+        "session_expired": "Your session has expired. Sign in again.",
+        "already_enabled": "Two-step verification is already on.",
+        "rate_limited": "Too many attempts. Try again in a few minutes.",
+        "unavailable": "The service is temporarily unavailable. Try again later."
+      }
     }
   },
   "Account": {
@@ -115,7 +147,8 @@
     "profileSaved": "Your profile has been saved.",
     "editProfile": "Edit my profile",
     "signOut": "Sign out",
-    "deleteAccount": "Delete my account"
+    "deleteAccount": "Delete my account",
+    "security": "Account security"
   },
   "Profile": {
     "title": "My profile",

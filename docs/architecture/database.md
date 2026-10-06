@@ -45,6 +45,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006000500_reference_tables.sql` | Référentiels : pays, langues, niveaux, domaines, filières, spécialités, matières |
 | `20261006000600_reference_data.sql` | Données des référentiels, générées par `scripts/generate-reference-data.mjs` |
 | `20261006000700_academic_profile.sql` | Champs académiques du profil, déclaration d'âge, complétion |
+| `20261006000900_second_factor.sql` | Second facteur imposé en base à tout compte qui l'a activé |
 | `20261006000800_profile_hardening.sql` | Corrections de la revue de sécurité : complétion vérifiable en base, audit et contrôle de la suppression de compte, référentiels fermés aux visiteurs |
 
 ## Tables
@@ -234,7 +235,8 @@ autorisée. Elle est `security invoker` et n'est exécutable que par `service_ro
 
 | Fonction | Rôle |
 |---|---|
-| `is_account_active()` | Vrai si l'appelant est connecté, non anonyme et non suspendu |
+| `is_account_active()` | Vrai si l'appelant est connecté, non anonyme, non suspendu et, s'il a activé un second facteur, si sa session l'a vérifié |
+| `has_verified_factor()` | Vrai si l'appelant a un second facteur vérifié |
 | `is_onboarded()` | Vrai si l'appelant a complété son profil minimal, déclaration d'âge comprise |
 | `account_deletion_check()` | Contrôle préalable à la suppression de son compte : `ok`, `forbidden` (compte suspendu) ou `last_org_admin` ; journalise la demande. Exposée par une enveloppe `security invoker` du même nom dans `public`. |
 | `is_session_aal2()` | Vrai si la session a validé un second facteur |

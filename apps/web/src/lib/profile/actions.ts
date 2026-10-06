@@ -4,7 +4,7 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthFormState } from "@/lib/auth/state";
 import { createSessionClient } from "@/lib/supabase/server";
 import { getOwnProfile } from "./queries";
@@ -30,7 +30,7 @@ export async function saveProfile(
   _previous: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  const user = await getCurrentUser();
+  const user = await getFullySignedInUser();
   if (!user) return { status: "error", error: "session_expired" };
 
   const current = await getOwnProfile();

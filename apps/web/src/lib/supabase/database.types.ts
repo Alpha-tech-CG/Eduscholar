@@ -239,6 +239,11 @@ isOneToOne: false
                            },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
+                           },
+"second_factor_status":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "has_verified_factor": boolean,"session_verified": boolean
+            }[]
                            }
           }
           Enums: {

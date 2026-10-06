@@ -48,6 +48,11 @@ const RULES = {
   },
   // Mot de passe redemandé pour une action sensible. Compteur distinct de la
   // connexion : des essais ratés ici ne consomment pas la limite du titulaire.
+  // Codes du second facteur : six chiffres, donc peu d'essais permis.
+  "second-factor": {
+    ip: { limit: 60, windowSeconds: 15 * MINUTE },
+    pair: { limit: 8, windowSeconds: 15 * MINUTE },
+  },
   reauthentication: {
     ip: { limit: 20, windowSeconds: 15 * MINUTE },
     pair: { limit: 5, windowSeconds: 15 * MINUTE },

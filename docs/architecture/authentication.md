@@ -82,6 +82,7 @@ instances du serveur. Les clés sont des empreintes : ni adresse IP ni adresse
 | Confirmation d'un lien | 30 / 15 min | — | — |
 | Nouveau mot de passe | 20 / h | — | — |
 | Mot de passe redemandé (suppression de compte) | 20 / 15 min | 5 / 15 min | — |
+| Code du second facteur | 60 / 15 min | 8 / 15 min | — |
 
 - Le refus courant porte sur le couple client + compte : il ne gêne pas le titulaire qui
   se connecte d'ailleurs.
@@ -100,6 +101,30 @@ par préfixe /64.
 
 `safeNextPath` n'accepte qu'un chemin interne ; toute autre valeur mène au compte. Le
 texte des messages affichés après redirection vient d'une liste fermée, jamais de l'adresse.
+
+### Validation en deux étapes
+
+Tout utilisateur peut activer un second facteur par application d'authentification
+(TOTP) depuis `/account/security`. Elle est indispensable aux rôles privilégiés : leurs
+droits n'existent que dans une session où le second facteur a été vérifié.
+
+- **Activation** : le serveur crée le facteur, affiche le code à scanner et la clé, puis
+  un premier code prouve que l'application est configurée.
+- **Connexion** : après le mot de passe, `/sign-in/verify` demande le code. Tant qu'il
+  n'est pas fourni, aucune page protégée n'est accessible.
+- **En base** : un compte qui a un facteur vérifié n'a aucun droit dans une session
+  ouverte par le seul mot de passe (`private.is_account_active`). La règle vaut donc
+  aussi pour un appel direct à l'API ; un test d'intégration le vérifie.
+- **Désactivation** : un code saisi à l'instant est exigé.
+- **Mot de passe oublié** : le lien de réinitialisation fonctionne pour un compte à deux
+  étapes ; le code reste demandé à la connexion suivante.
+
+Limites connues :
+
+- aucun code de secours : la perte de l'application d'authentification demande une
+  intervention de l'assistance (dette D-17) ;
+- le service d'authentification accepte qu'un même code serve deux fois pendant sa
+  demi-minute de validité ; la limitation de débit borne les essais.
 
 ### Profil exigé à la première connexion
 
@@ -145,8 +170,8 @@ Les deux derniers ont besoin de l'instance Supabase locale (`npm run db:start`).
 ## Ce qui reste à faire
 
 Voir la dette de sécurité du backlog : CAPTCHA et mots de passe compromis (D-09),
-changement de mot de passe par appel direct (D-10), enregistrement de la déclaration
-d'âge (D-11), purge des comptes non confirmés (D-12), second facteur (D-02).
+changement de mot de passe par appel direct (D-10), purge des comptes non confirmés
+(D-12), codes de secours du second facteur (D-17).
 
 Risques résiduels connus :
 

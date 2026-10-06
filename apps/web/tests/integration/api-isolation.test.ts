@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -443,5 +443,68 @@ describe("profil académique, par appel direct à l'API", () => {
   it("le contrôle de suppression n'est pas appelable par un visiteur", async () => {
     const { error } = await anonymous.rpc("account_deletion_check" as never);
     expect(error).not.toBeNull();
+  });
+});
+
+// Second facteur imposé en base (modèle de menaces M-48), par appel direct.
+describe("compte avec second facteur, par appel direct à l'API", () => {
+  const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+  function totp(secret: string): string {
+    let bits = "";
+    for (const char of secret.replace(/=+$/, "").toUpperCase()) {
+      bits += ALPHABET.indexOf(char).toString(2).padStart(5, "0");
+    }
+    const key = Buffer.from((bits.match(/.{8}/g) ?? []).map((byte) => Number.parseInt(byte, 2)));
+    const counter = Buffer.alloc(8);
+    counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30_000)));
+    const digest = createHmac("sha1", key).update(counter).digest();
+    const offset = (digest[digest.length - 1] ?? 0) & 0x0f;
+    return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000).padStart(6, "0");
+  }
+
+  it("une session ouverte par le seul mot de passe n'obtient plus rien", async () => {
+    const erin = await createActor("erin");
+    try {
+      // Avant l'activation : le profil est lisible.
+      expect((await erin.client.from("profiles").select("user_id")).data).toHaveLength(1);
+
+      const enrollment = await erin.client.auth.mfa.enroll({ factorType: "totp" });
+      if (enrollment.error || enrollment.data.type !== "totp") throw new Error("activation impossible");
+      const verified = await erin.client.auth.mfa.challengeAndVerify({
+        factorId: enrollment.data.id,
+        code: totp(enrollment.data.totp.secret),
+      });
+      expect(verified.error).toBeNull();
+
+      // Session où le second facteur est vérifié : accès normal.
+      expect((await erin.client.from("profiles").select("user_id")).data).toHaveLength(1);
+
+      // Nouvelle session par mot de passe seul, comme un attaquant qui le connaît.
+      const attacker = createClient(url, publishableKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const session = await attacker.auth.signInWithPassword({ email: erin.email, password });
+      expect(session.error).toBeNull();
+
+      const profile = await attacker.from("profiles").select("user_id");
+      expect(profile.error).toBeNull();
+      expect(profile.data).toEqual([]);
+
+      const update = await attacker
+        .from("profiles")
+        .update({ preferred_locale: "en" })
+        .eq("user_id", erin.id)
+        .select("user_id");
+      expect(update.data).toEqual([]);
+
+      const countries = await attacker.from("countries").select("code").limit(1);
+      expect(countries.data).toEqual([]);
+
+      const deletion = await attacker.rpc("account_deletion_check" as never);
+      expect(deletion.data).toBe("forbidden");
+    } finally {
+      await admin.auth.admin.deleteUser(erin.id);
+    }
   });
 });
