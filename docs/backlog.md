@@ -43,7 +43,7 @@ Phase 3, un projet n'a d'autre lecteur que son propriétaire.
 |---|---|---|---|
 | C-01 | Projet de recherche privé : fiche du projet (cahier §6.7), création, modification, suppression logique | B-11 | fait — fiche complète, strictement privée, purge à trente jours écrite mais non planifiée (D-23) |
 | C-02 | Sources du projet, saisies ou reprises du catalogue ; fiche de lecture par source ; matrice de littérature (§6.8) | C-01, B-16 | fait — sources saisies ou reprises d'une fiche publiée, fiche de lecture, matrice ; rien n'est inventé ni complété |
-| C-03 | Bibliographie de base (APA) construite à partir des seules sources du projet ; références incomplètes et doublons signalés (§6.10) | C-02 | à faire |
+| C-03 | Bibliographie de base (APA) construite à partir des seules sources du projet ; références incomplètes et doublons signalés (§6.10) | C-02 | fait — APA 7e édition en français ou en anglais, signalements, texte à copier ; autres styles et import BibTeX/RIS non faits |
 | C-04 | Plan du mémoire : chapitres et sections rédigés en texte, citations liées aux sources (§6.9, version simple) | C-02 | à faire |
 | C-05 | Export du projet (document imprimable en PDF, DOCX) ; export des données personnelles, bibliothèque comprise (D-22) | C-03, C-04 | à faire |
 
@@ -116,7 +116,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | Collection privée | B-17 | couvert |
 | Projet de recherche privé | Phase 3 (C-01) | couvert |
 | Sources et fiches de lecture | Phase 3 (C-02) | couvert |
-| Bibliographie sans source inventée | Phase 3 | non couvert |
+| Bibliographie sans source inventée | Phase 3 (C-03) | couvert |
 | Export du projet | Phase 3 | non couvert |
 | Pas d'accès sans partage explicite | B-09, Phase 3 (C-01) | couvert pour la fiche du projet ; à étendre aux sources et sections |
 | Pas d'URL publique permanente pour un fichier privé | Phase 3 | non couvert |

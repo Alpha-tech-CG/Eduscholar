@@ -304,6 +304,20 @@ Règles :
   compris ;
 - aucune ligne d'audit ; ni `anon` ni `service_role` n'ont de droit sur ces tables.
 
+**Bibliographie.** Elle n'est pas stockée : la page `/projects/[id]/bibliography` la
+calcule à chaque affichage à partir des sources du projet
+(`apps/web/src/lib/projects/bibliography.ts`), au format APA 7e édition, en français ou
+en anglais. Règles :
+
+- chaque source y figure une fois, et rien d'autre ; un champ absent donne la mention
+  convenue (« s. d. ») et un signalement, jamais une valeur supposée ;
+- un auteur saisi « Nom, Prénom » est abrégé (« Nom, P. ») ; sans virgule, il est repris
+  tel quel et signalé, car rien ne dit où finit le prénom ni s'il s'agit d'un organisme ;
+- sont signalés : auteur, année, revue ou ouvrage, éditeur, pages d'un chapitre, adresse
+  d'une page web manquants ; doublon par DOI, ou par titre et année ;
+- si toutes les sources ne peuvent pas être lues, rien n'est affiché plutôt qu'une
+  bibliographie incomplète.
+
 ### `private.rate_limit_buckets`
 
 Compteurs de tentatives par fenêtre fixe. Aucun accès utilisateur.

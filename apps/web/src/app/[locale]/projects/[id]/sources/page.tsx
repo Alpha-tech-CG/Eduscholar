@@ -59,11 +59,21 @@ export default async function ProjectSourcesPage({
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("list", { count: listing.total })}</h2>
         {listing.total > 0 ? (
-          <p>
-            <Link href={`/projects/${project.id}/matrix`} className="underline underline-offset-4">
-              {t("toMatrix")}
-            </Link>
-          </p>
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            <li>
+              <Link href={`/projects/${project.id}/matrix`} className="underline underline-offset-4">
+                {t("toMatrix")}
+              </Link>
+            </li>
+            <li>
+              <Link
+                href={`/projects/${project.id}/bibliography`}
+                className="underline underline-offset-4"
+              >
+                {t("toBibliography")}
+              </Link>
+            </li>
+          </ul>
         ) : null}
         {listing.failed ? (
           <p role="alert" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">

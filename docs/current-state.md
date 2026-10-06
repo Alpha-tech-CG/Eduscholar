@@ -129,7 +129,8 @@ Détail dans `docs/security/initial-audit.md`.
 - Le MVP du catalogue (B-13 à B-17) est complet.
 - Phase 3 découpée en cinq tâches (C-01 à C-05). C-01 fait : projet de recherche privé,
   avec sa fiche. C-02 fait : sources, fiches de lecture et matrice de littérature.
-  Bibliographie, plan rédigé et export restent à faire.
+  C-03 fait : bibliographie APA calculée à partir des seules sources du projet.
+  Plan rédigé et export restent à faire.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

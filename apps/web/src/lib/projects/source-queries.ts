@@ -152,6 +152,30 @@ export async function getSources(projectId: string, page = 1): Promise<SourcePag
   };
 }
 
+/**
+ * Toutes les sources d'un projet (trois cents au plus), lues par pages : l'API
+ * plafonne chaque réponse. `null` si une lecture échoue : une bibliographie
+ * partielle ne doit pas passer pour complète.
+ */
+export async function getAllSources(projectId: string): Promise<Source[] | null> {
+  if (!UUID.test(projectId)) return [];
+
+  const supabase = await createSessionClient();
+  const sources: Source[] = [];
+  for (let from = 0; from < 300; from += 100) {
+    const { data, error } = await supabase
+      .from("project_sources")
+      .select(SOURCE_COLUMNS)
+      .eq("project_id", projectId)
+      .order("id")
+      .range(from, from + 99);
+    if (error) return null;
+    sources.push(...((data ?? []) as SourceRow[]).map(toSource));
+    if ((data ?? []).length < 100) break;
+  }
+  return sources;
+}
+
 /** Fiches de lecture d'une liste de sources, par identifiant de source. */
 export async function getNotes(sourceIds: string[]): Promise<Map<string, LiteratureNote>> {
   const ids = sourceIds.filter((id) => UUID.test(id)).slice(0, 100);

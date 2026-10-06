@@ -647,7 +647,7 @@
         "sourceType": "Type de source",
         "title": "Titre de la source",
         "authors": "Auteurs de la source",
-        "authorsHint": "Un auteur par ligne, dans l'ordre de la publication.",
+        "authorsHint": "Un auteur par ligne, dans l'ordre de la publication. Saisissez « Nom, Prénom » pour que la bibliographie abrège le prénom ; un organisme s'écrit tel quel.",
         "publicationYear": "Année",
         "containerTitle": "Revue, ouvrage ou site",
         "containerTitleHint": "Le titre de la revue, de l'ouvrage collectif, des actes ou du site.",
@@ -678,7 +678,8 @@
         "targetChapter": "Chapitre visé"
       },
       "loadFailed": "Les sources n'ont pas pu être chargées. Réessayez dans un instant ; rien n'a été modifié.",
-      "withdrawn": "Cette source avait été reprise d'une fiche qui ne figure plus au catalogue. Votre référence est conservée ; vérifiez la source avant de la citer ou d'en suivre le lien."
+      "withdrawn": "Cette source avait été reprise d'une fiche qui ne figure plus au catalogue. Votre référence est conservée ; vérifiez la source avant de la citer ou d'en suivre le lien.",
+      "toBibliography": "Bibliographie"
     },
     "matrix": {
       "title": "Matrice de littérature",
@@ -701,6 +702,39 @@
         "use": "Utilité"
       },
       "loadFailed": "Les sources n'ont pas pu être chargées. Réessayez dans un instant ; rien n'a été modifié."
+    },
+    "bibliography": {
+      "title": "Bibliographie",
+      "intro": "Projet : {project}. Format APA, 7e édition, forme de base.",
+      "backToProject": "Retour au projet",
+      "ruleOnlySources": "Seules les sources de votre projet y figurent, telles que vous les avez saisies : aucune référence n'est inventée ni complétée.",
+      "ruleCheck": "Une mise en forme automatique ne remplace pas votre relecture : vérifiez chaque référence avant de la remettre.",
+      "ruleAuthors": "Un auteur saisi « Nom, Prénom » est abrégé (« Nom, P. ») ; sans virgule, il est repris tel quel.",
+      "language": "Langue de la bibliographie :",
+      "languages": {
+        "fr": "Français",
+        "en": "Anglais"
+      },
+      "heading": {
+        "fr": "Références",
+        "en": "References"
+      },
+      "empty": "Ajoutez des sources au projet : la bibliographie se construit à partir d'elles.",
+      "loadFailed": "Les sources n'ont pas pu être toutes lues. La bibliographie n'est pas affichée, pour ne pas en montrer une incomplète. Réessayez dans un instant.",
+      "summary": "{count, plural, one {# référence} other {# références}}, dont {flagged, plural, =0 {aucune à vérifier} one {# à vérifier} other {# à vérifier}}.",
+      "editSource": "Corriger cette source",
+      "copyHeading": "Texte à copier",
+      "copyHint": "Texte brut, sans italique : rétablissez l'italique des titres dans votre traitement de texte.",
+      "issues": {
+        "missing_authors": "Auteur manquant : le titre prend sa place.",
+        "missing_year": "Année manquante : la mention « sans date » est utilisée.",
+        "missing_container": "Titre de la revue, de l'ouvrage ou des actes manquant.",
+        "missing_publisher": "Éditeur ou établissement manquant.",
+        "missing_pages": "Pages du chapitre manquantes.",
+        "missing_locator": "Adresse web manquante.",
+        "author_not_inverted": "Un auteur au moins n'est pas saisi « Nom, Prénom » : il est repris tel quel.",
+        "duplicate": "Doublon possible : une autre source a le même DOI, ou le même titre et la même année."
+      }
     }
   }
 }

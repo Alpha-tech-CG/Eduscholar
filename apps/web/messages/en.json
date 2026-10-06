@@ -647,7 +647,7 @@
         "sourceType": "Source type",
         "title": "Source title",
         "authors": "Source authors",
-        "authorsHint": "One author per line, in the order of the publication.",
+        "authorsHint": "One author per line, in the order of the publication. Enter “Family name, Given name” so the bibliography can abbreviate the given name; write an organisation as is.",
         "publicationYear": "Year",
         "containerTitle": "Journal, book or site",
         "containerTitleHint": "The title of the journal, edited book, proceedings or site.",
@@ -678,7 +678,8 @@
         "targetChapter": "Target chapter"
       },
       "loadFailed": "The sources could not be loaded. Try again in a moment; nothing has been changed.",
-      "withdrawn": "This source was taken from a record that is no longer in the catalogue. Your reference is kept; check the source before citing it or following its link."
+      "withdrawn": "This source was taken from a record that is no longer in the catalogue. Your reference is kept; check the source before citing it or following its link.",
+      "toBibliography": "Bibliography"
     },
     "matrix": {
       "title": "Literature matrix",
@@ -701,6 +702,39 @@
         "use": "Use"
       },
       "loadFailed": "The sources could not be loaded. Try again in a moment; nothing has been changed."
+    },
+    "bibliography": {
+      "title": "Bibliography",
+      "intro": "Project: {project}. APA style, 7th edition, basic form.",
+      "backToProject": "Back to the project",
+      "ruleOnlySources": "Only your project's sources appear, as you entered them: no reference is invented or completed.",
+      "ruleCheck": "Automatic formatting does not replace your own check: verify each reference before handing it in.",
+      "ruleAuthors": "An author entered as “Family name, Given name” is abbreviated (“Family name, G.”); without a comma, it is kept as is.",
+      "language": "Bibliography language:",
+      "languages": {
+        "fr": "French",
+        "en": "English"
+      },
+      "heading": {
+        "fr": "Références",
+        "en": "References"
+      },
+      "empty": "Add sources to the project: the bibliography is built from them.",
+      "loadFailed": "Not all sources could be read. The bibliography is not shown, so that an incomplete one is not displayed. Try again in a moment.",
+      "summary": "{count, plural, one {# reference} other {# references}}, of which {flagged, plural, =0 {none to check} one {# to check} other {# to check}}.",
+      "editSource": "Correct this source",
+      "copyHeading": "Text to copy",
+      "copyHint": "Plain text, without italics: restore the italics of titles in your word processor.",
+      "issues": {
+        "missing_authors": "Author missing: the title takes its place.",
+        "missing_year": "Year missing: “no date” is used.",
+        "missing_container": "Title of the journal, book or proceedings missing.",
+        "missing_publisher": "Publisher or institution missing.",
+        "missing_pages": "Chapter pages missing.",
+        "missing_locator": "Web address missing.",
+        "author_not_inverted": "At least one author is not entered as “Family name, Given name”: it is kept as is.",
+        "duplicate": "Possible duplicate: another source has the same DOI, or the same title and year."
+      }
     }
   }
 }

@@ -148,11 +148,21 @@ export default async function ProjectPage({
             </Link>
           </li>
           {sourceCount > 0 ? (
-            <li>
-              <Link href={`/projects/${project.id}/matrix`} className="underline underline-offset-4">
-                {t("sources.toMatrix")}
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link href={`/projects/${project.id}/matrix`} className="underline underline-offset-4">
+                  {t("sources.toMatrix")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/projects/${project.id}/bibliography`}
+                  className="underline underline-offset-4"
+                >
+                  {t("bibliography.title")}
+                </Link>
+              </li>
+            </>
           ) : null}
         </ul>
       </section>
