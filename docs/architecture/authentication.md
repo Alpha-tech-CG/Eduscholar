@@ -108,23 +108,44 @@ Tout utilisateur peut activer un second facteur par application d'authentificati
 (TOTP) depuis `/account/security`. Elle est indispensable aux rôles privilégiés : leurs
 droits n'existent que dans une session où le second facteur a été vérifié.
 
-- **Activation** : le serveur crée le facteur, affiche le code à scanner et la clé, puis
-  un premier code prouve que l'application est configurée.
+- **Activation** : le mot de passe est redemandé, pour qu'une session laissée ouverte
+  ne permette pas à un tiers d'enrôler son propre téléphone. Le serveur crée ensuite le
+  facteur, affiche le code à scanner et la clé, puis un premier code prouve que
+  l'application est configurée. Le facteur confirmé est celui que le serveur a créé :
+  aucun identifiant ne vient du formulaire.
 - **Connexion** : après le mot de passe, `/sign-in/verify` demande le code. Tant qu'il
   n'est pas fourni, aucune page protégée n'est accessible.
 - **En base** : un compte qui a un facteur vérifié n'a aucun droit dans une session
   ouverte par le seul mot de passe (`private.is_account_active`). La règle vaut donc
   aussi pour un appel direct à l'API ; un test d'intégration le vérifie.
-- **Désactivation** : un code saisi à l'instant est exigé.
-- **Mot de passe oublié** : le lien de réinitialisation fonctionne pour un compte à deux
-  étapes ; le code reste demandé à la connexion suivante.
+- **Essais bornés, en base** : un hook du service d'authentification
+  (`private.hook_mfa_verification_attempt`) compte les codes erronés par facteur. Au
+  onzième en quinze minutes, l'essai est refusé, même avec le bon code, jusqu'à la fin
+  de la fenêtre. Un code déjà accepté ne sert pas une seconde fois. La règle vaut pour
+  un appel direct à l'API. Par l'interface, la limite de l'application se déclenche plus
+  tôt (8 essais par quart d'heure pour une même adresse IP et un même compte, 30 par
+  compte) : le blocage en base est le filet pour qui contourne l'application.
+- **Effet d'un refus** : le service d'authentification ferme alors toutes les sessions
+  du compte. L'application efface le cookie et renvoie à la connexion avec une
+  explication. Un jeton d'accès déjà émis reste valable jusqu'à son expiration, dix
+  minutes au plus.
+- **Désactivation** : un code saisi à l'instant est exigé. Elle est refusée à un compte
+  qui détient un rôle privilégié (`must_keep_second_factor`).
+- **Mot de passe oublié** : le service refuse de changer le mot de passe d'un compte à
+  deux étapes dans une session qui n'a pas présenté le code. Après le lien, la page
+  renvoie donc vers `/sign-in/verify?next=/reset-password`, puis propose le choix du
+  mot de passe. La session reste reconnue comme une session de réinitialisation : une
+  entrée `otp` récente, jamais accompagnée d'une entrée `password`.
+- **Rôles privilégiés** : le facteur doit avoir été vérifié avant l'attribution du rôle.
 
 Limites connues :
 
 - aucun code de secours : la perte de l'application d'authentification demande une
   intervention de l'assistance (dette D-17) ;
-- le service d'authentification accepte qu'un même code serve deux fois pendant sa
-  demi-minute de validité ; la limitation de débit borne les essais.
+- qui connaît le mot de passe d'un compte peut, par onze codes erronés, fermer ses
+  sessions et bloquer son second facteur un quart d'heure : une gêne, pas un accès ;
+- aucun courriel ne prévient de l'activation ou de la désactivation du second facteur
+  (dette D-18).
 
 ### Profil exigé à la première connexion
 
@@ -171,7 +192,8 @@ Les deux derniers ont besoin de l'instance Supabase locale (`npm run db:start`).
 
 Voir la dette de sécurité du backlog : CAPTCHA et mots de passe compromis (D-09),
 changement de mot de passe par appel direct (D-10), purge des comptes non confirmés
-(D-12), codes de secours du second facteur (D-17).
+(D-12), codes de secours du second facteur (D-17), courriel de notification du second
+facteur (D-18).
 
 Risques résiduels connus :
 

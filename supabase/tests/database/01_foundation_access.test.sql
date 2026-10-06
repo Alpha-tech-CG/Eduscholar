@@ -78,6 +78,16 @@ select is(
   'Aucun profil n''est public par défaut'
 );
 
+-- Les comptes privilégiés ont un second facteur vérifié, antérieur à leur rôle :
+-- sans lui, le rôle ne donne aucun droit.
+insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret) values
+  ('fa000000-0000-0000-0000-000000000004', 'd0000000-0000-0000-0000-000000000004', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-000000000005', 'e0000000-0000-0000-0000-000000000005', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-000000000006', 'f0000000-0000-0000-0000-000000000006', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000007', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-000000000008', 'a2000000-0000-0000-0000-000000000008', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-000000000009', 'a3000000-0000-0000-0000-000000000009', 'test', 'totp', 'verified', now(), now(), 'secret-de-test');
+
 -- Amorçage par session directe (sans jeton) : seul chemin où l'acteur peut manquer.
 insert into public.platform_roles (user_id, role) values
   ('a3000000-0000-0000-0000-000000000009', 'super_admin');
@@ -271,9 +281,9 @@ reset role;
 -- ---------------------------------------------------------------------------
 select tests.login('f0000000-0000-0000-0000-000000000006', 'aal1');
 select ok(not private.has_platform_role(array['moderator']), 'Un modérateur en session aal1 n''a aucun droit de modération');
-select results_eq(
-  $$ select role from public.platform_roles $$, $$ values ('moderator') $$,
-  'Il lit tout de même son propre rôle'
+select is_empty(
+  $$ select role from public.platform_roles $$,
+  'Son compte ayant un second facteur, il ne lit rien du tout en aal1'
 );
 select is_empty(
   $$ select 1 from public.audit_logs where category = 'moderation' $$,
@@ -298,6 +308,31 @@ select results_eq(
   'Un modérateur ne lit que les événements de modération'
 );
 reset role;
+
+-- Le rôle exige un second facteur vérifié, antérieur à son attribution.
+select tests.logout();
+update public.platform_roles set granted_at = now() - interval '1 hour'
+  where user_id = 'f0000000-0000-0000-0000-000000000006';
+select tests.login('f0000000-0000-0000-0000-000000000006', 'aal2');
+select ok(
+  not private.has_platform_role(array['moderator']),
+  'Un facteur ajouté après l''attribution du rôle ne rend pas les droits'
+);
+reset role;
+select tests.logout();
+update public.platform_roles set granted_at = now()
+  where user_id = 'f0000000-0000-0000-0000-000000000006';
+update auth.mfa_factors set status = 'unverified'
+  where user_id = 'f0000000-0000-0000-0000-000000000006';
+select tests.login('f0000000-0000-0000-0000-000000000006', 'aal2');
+select ok(
+  not private.has_platform_role(array['moderator']),
+  'Sans facteur vérifié, une session aal2 ne suffit pas'
+);
+reset role;
+select tests.logout();
+update auth.mfa_factors set status = 'verified'
+  where user_id = 'f0000000-0000-0000-0000-000000000006';
 
 -- Compte anonyme : jamais actif.
 select tests.login('a0000000-0000-0000-0000-000000000001', 'aal1', '{"is_anonymous": true}');
@@ -351,8 +386,8 @@ reset role;
 -- Administrateur de l'organisation 1 sans second facteur.
 select tests.login('d0000000-0000-0000-0000-000000000004', 'aal1');
 select is(
-  (select count(*) from public.organization_members), 1::bigint,
-  'Un org_admin en aal1 ne voit que sa propre ligne'
+  (select count(*) from public.organization_members), 0::bigint,
+  'Un org_admin en aal1 ne voit rien : son compte a un second facteur'
 );
 select ok(
   not private.has_org_role('10000000-0000-0000-0000-000000000001', array['org_admin']),
@@ -479,7 +514,9 @@ select is(
 );
 select is(
   (select count(*) from public.audit_logs
-   where action like 'platform_roles.%' and actor_id is null),
+   where action like 'platform_roles.%' and actor_id is null
+     -- Comptes de ce test uniquement : la base locale peut en contenir d'autres.
+     and subject_user_id::text ~ '^[a-f][0-9]0{6}-0000-0000-0000-00000000000[1-9]$'),
   1::bigint,
   'Seul l''amorçage du premier super_admin est sans auteur'
 );

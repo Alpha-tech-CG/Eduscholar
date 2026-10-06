@@ -56,7 +56,9 @@ export default async function SignInPage({
             ? t("signIn.emailConfirmed")
             : notice === "password-updated"
               ? t("signIn.passwordUpdated")
-              : t("signIn.accountDeleted")}
+              : notice === "code-refused"
+                ? t("signIn.codeRefused")
+                : t("signIn.accountDeleted")}
         </p>
       ) : null}
       <AuthForm

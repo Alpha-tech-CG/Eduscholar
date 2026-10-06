@@ -49,7 +49,8 @@
       "noAccount": "No account yet?",
       "emailConfirmed": "Your address is confirmed. Sign in with your password.",
       "passwordUpdated": "Your password has been changed and all your devices have been signed out. Sign in with the new password.",
-      "accountDeleted": "Your account has been deleted."
+      "accountDeleted": "Your account has been deleted.",
+      "codeRefused": "For your security, you have been signed out of all your devices: too many wrong codes, or a code that was already used. Sign in again and enter a new code; after ten wrong codes, wait fifteen minutes."
     },
     "forgotPassword": {
       "title": "Forgot your password",
@@ -89,7 +90,18 @@
       "unavailable": "The service is temporarily unavailable. Try again later.",
       "already_signed_in": "You are already signed in. Sign out before using this link.",
       "last_org_admin": "You are the only administrator of an organisation. Transfer its administration first, then try again.",
-      "invalid_code": "Incorrect or expired code. Enter the code your app is showing right now."
+      "invalid_code": "Incorrect or expired code. Enter the code your app is showing right now.",
+      "forbidden": "You are not allowed to do this.",
+      "own_submission": "You cannot handle your own submission: another moderator must do it.",
+      "not_found": "Item not found.",
+      "invalid_transition": "This action is no longer possible in the current state. Reload the page.",
+      "reason_required": "A reason is required for this decision.",
+      "already_reported": "You have already reported this resource.",
+      "not_publishable": "The record cannot be verified: the official link, or an author or institution, is missing.",
+      "duplicate": "A resource with this DOI is already in the catalogue.",
+      "second_factor_required": "Your role requires two-step verification: it cannot be turned off while you hold it.",
+      "access_status_required": "Set the access status before verifying the record.",
+      "permission_proof_required": "A permission from the rights holder must come with its proof."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -100,7 +112,14 @@
       "age_required": "This declaration is required to create an account.",
       "required": "This field is required.",
       "invalid_choice": "This choice is not valid.",
-      "institution_length": "The institution name must be between 2 and 200 characters long."
+      "institution_length": "The institution name must be between 2 and 200 characters long.",
+      "too_short": "This text is too short.",
+      "too_long": "This text is too long.",
+      "invalid_url": "Enter a full address starting with http:// or https://.",
+      "invalid_doi": "This DOI does not have the expected form, for example 10.1234/abcd.",
+      "invalid_year": "Enter a four-digit year.",
+      "invalid_tags": "Keywords: 20 at most, 40 characters each, letters, digits, spaces and hyphens.",
+      "rights_required": "This declaration is required to suggest a resource."
     },
     "secondFactor": {
       "title": "Account security",
@@ -130,8 +149,11 @@
         "session_expired": "Your session has expired. Sign in again.",
         "already_enabled": "Two-step verification is already on.",
         "rate_limited": "Too many attempts. Try again in a few minutes.",
-        "unavailable": "The service is temporarily unavailable. Try again later."
-      }
+        "unavailable": "The service is temporarily unavailable. Try again later.",
+        "invalid_password": "Incorrect password."
+      },
+      "passwordLabel": "Current password",
+      "passwordHint": "Requested to confirm it is really you."
     }
   },
   "Account": {
@@ -148,7 +170,10 @@
     "editProfile": "Edit my profile",
     "signOut": "Sign out",
     "deleteAccount": "Delete my account",
-    "security": "Account security"
+    "security": "Account security",
+    "contribute": "Suggest a resource",
+    "contributions": "My contributions",
+    "moderation": "Moderation"
   },
   "Profile": {
     "title": "My profile",
@@ -192,5 +217,189 @@
     "submit": "Permanently delete my account",
     "pending": "Deleting…",
     "cancel": "Cancel and return to my account"
+  },
+  "Catalogue": {
+    "form": {
+      "choose": "Choose…",
+      "notApplicable": "Not applicable",
+      "type": "Type of resource",
+      "title": "Title",
+      "authors": "Authors",
+      "authorsHint": "One author per line. Leave empty if only an institution is known.",
+      "institution": "Institution",
+      "institutionHint": "University, laboratory or body that publishes the resource.",
+      "abstract": "Abstract",
+      "year": "Year of publication",
+      "thesisDegree": "Degree (thesis or dissertation)",
+      "language": "Language of the document",
+      "country": "Country",
+      "program": "Programme",
+      "levels": "Relevant levels",
+      "subjects": "Subjects",
+      "tags": "Keywords",
+      "tagsHint": "Separated by commas.",
+      "provenanceHeading": "Source and rights",
+      "provenanceIntro": "A resource is only published if its origin and access conditions are known.",
+      "officialUrl": "Official link",
+      "officialUrlHint": "Page of the publisher, repository or institution. No file is copied: the record points to this link.",
+      "doi": "DOI",
+      "doiHint": "Optional. Example: 10.1234/abcd.",
+      "accessStatus": "Access status",
+      "license": "Licence",
+      "licenseHint": "Free of charge does not mean free to reuse: if you do not know the licence, leave “Unknown licence”.",
+      "permissionProof": "Permission from the rights holder",
+      "permissionProofHint": "If you are not the author: who gave you permission, and how to check it.",
+      "comment": "Comment for the moderators",
+      "rightsDeclared": "I declare that this link leads to a lawful source, and that I am the author of the resource or allowed to suggest it."
+    },
+    "accessStatus": {
+      "open_access": "Open access",
+      "free_link": "Free link",
+      "preview_only": "Preview only",
+      "institutional_access": "Institutional access",
+      "paid": "Paid",
+      "unknown": "Unknown",
+      "removed": "Removed"
+    },
+    "thesisDegree": {
+      "bachelor": "Bachelor",
+      "master": "Master",
+      "doctorate": "Doctorate"
+    },
+    "editorialStatus": {
+      "pending": "Pending",
+      "under_review": "Under review",
+      "changes_requested": "Changes requested",
+      "verified": "Verified",
+      "published": "Published",
+      "rejected": "Rejected",
+      "suspended": "Suspended",
+      "removed": "Removed"
+    },
+    "historyAction": {
+      "submitted": "Submitted",
+      "resubmitted": "Resubmitted after changes",
+      "withdrawn": "Withdrawn by the contributor",
+      "start_review": "Taken up by the moderators",
+      "request_changes": "Changes requested",
+      "verify": "Verified",
+      "publish": "Published",
+      "reject": "Rejected",
+      "suspend": "Suspended",
+      "restore": "Restored",
+      "remove": "Removed",
+      "edited_requires_review": "Record corrected, new verification required"
+    },
+    "moderationAction": {
+      "start_review": "Take up",
+      "request_changes": "Request changes",
+      "verify": "Verify",
+      "publish": "Publish",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "restore": "Restore",
+      "remove": "Remove permanently"
+    },
+    "reportReason": {
+      "copyright": "Copyright or licence infringement",
+      "privacy": "Personal data or privacy",
+      "error": "Error in the record",
+      "broken_link": "Broken link",
+      "inappropriate": "Inappropriate content",
+      "malware": "Malicious file or link",
+      "other": "Other reason"
+    },
+    "summary": {
+      "type": "Type",
+      "authors": "Authors",
+      "institution": "Institution",
+      "year": "Year",
+      "language": "Language",
+      "country": "Country",
+      "program": "Programme",
+      "levels": "Levels",
+      "subjects": "Subjects",
+      "tags": "Keywords",
+      "doi": "DOI",
+      "accessStatus": "Access status",
+      "license": "Licence",
+      "source": "Origin of the record",
+      "lastVerified": "Last verified",
+      "officialUrl": "Official link",
+      "missing": "Not provided"
+    },
+    "contribute": {
+      "title": "Suggest a resource",
+      "intro": "Point out a course, article, book, thesis, video or exercise that is useful to other students.",
+      "ruleLink": "The platform lists the resource and points to its official source: it copies no file.",
+      "ruleRights": "Only suggest resources that are lawfully accessible.",
+      "ruleReview": "Each suggestion is checked by the moderators before being published.",
+      "submit": "Send the suggestion",
+      "pending": "Sending…",
+      "myContributions": "See my contributions"
+    },
+    "contributions": {
+      "title": "My contributions",
+      "detailTitle": "My contribution",
+      "intro": "Follow the status of the resources you have suggested.",
+      "new": "Suggest a resource",
+      "empty": "You have not suggested any resource yet.",
+      "separator": " · ",
+      "statusLabel": "Status: ",
+      "history": "History",
+      "edit": "Correct the suggestion",
+      "saveChanges": "Save and send back to the moderators",
+      "pending": "One moment…",
+      "withdraw": "Withdraw the suggestion",
+      "withdrawIntro": "A withdrawn suggestion is no longer reviewed. This action is permanent.",
+      "withdrawSubmit": "Withdraw my suggestion",
+      "back": "Back to my contributions",
+      "notices": {
+        "submitted": "Your suggestion has been recorded. It will be reviewed by the moderators.",
+        "updated": "Your corrected suggestion has been sent back to the moderators.",
+        "withdrawn": "Your suggestion has been withdrawn."
+      }
+    },
+    "moderation": {
+      "title": "Moderation",
+      "detailTitle": "Record to moderate",
+      "intro": "Check the source, licence and link of each resource before publishing it.",
+      "queue": "Resources to handle ({count})",
+      "queueEmpty": "No resource is waiting.",
+      "reports": "Open reports ({count})",
+      "reportsEmpty": "No open report.",
+      "reportHandled": "The report has been handled.",
+      "openResource": "Open the record concerned",
+      "handleReport": "Handle the report",
+      "reportDecision": "Decision",
+      "reportResolved": "Justified, handled",
+      "reportDismissed": "Not justified",
+      "reportNote": "Handling note",
+      "choose": "Choose…",
+      "separator": " · ",
+      "pending": "One moment…",
+      "statusLabel": "Status: ",
+      "decisionRecorded": "The decision has been recorded.",
+      "internal": "Contributor's declaration",
+      "rightsDeclared": "Rights declared on",
+      "permissionProof": "Permission from the rights holder",
+      "contributorComment": "Comment",
+      "none": "None",
+      "decision": "Decision",
+      "action": "Action",
+      "reason": "Reason",
+      "reasonHint": "Required to request changes, reject, suspend or remove. It is shown to the contributor.",
+      "apply": "Record the decision",
+      "correct": "Correct the record",
+      "correctIntro": "Changing the link, licence or access status of a published record sends it back for verification.",
+      "officialUrl": "Official link",
+      "accessStatus": "Access status",
+      "license": "Licence",
+      "notes": "Moderation notes",
+      "notesHint": "Internal: never shown to the contributor or to the public.",
+      "saveCorrection": "Save the correction",
+      "history": "History of decisions",
+      "back": "Back to the moderation queue"
+    }
   }
 }

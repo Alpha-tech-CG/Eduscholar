@@ -52,6 +52,7 @@ const RULES = {
   "second-factor": {
     ip: { limit: 60, windowSeconds: 15 * MINUTE },
     pair: { limit: 8, windowSeconds: 15 * MINUTE },
+    account: { limit: 30, windowSeconds: 15 * MINUTE },
   },
   reauthentication: {
     ip: { limit: 20, windowSeconds: 15 * MINUTE },

@@ -1,3 +1,4 @@
+import type { ResourceFieldErrorCode } from "@/lib/catalogue/schemas";
 import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
 import type { FieldErrorCode } from "./schemas";
 
@@ -14,7 +15,19 @@ export type AuthErrorCode =
   | "same_password"
   | "session_expired"
   | "invalid_code"
+  | "second_factor_required"
   | "last_org_admin"
+  // Catalogue
+  | "forbidden"
+  | "own_submission"
+  | "not_found"
+  | "invalid_transition"
+  | "reason_required"
+  | "already_reported"
+  | "not_publishable"
+  | "access_status_required"
+  | "permission_proof_required"
+  | "duplicate"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";
@@ -24,7 +37,7 @@ export type AuthFormState =
   | {
       status: "error";
       error: AuthErrorCode;
-      fields?: Record<string, FieldErrorCode | ProfileFieldErrorCode>;
+      fields?: Record<string, FieldErrorCode | ProfileFieldErrorCode | ResourceFieldErrorCode>;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;
     }
@@ -33,7 +46,12 @@ export type AuthFormState =
 export const initialAuthState: AuthFormState = { status: "idle" };
 
 /** Messages affichés sur la page de connexion après une redirection. */
-export const SIGN_IN_NOTICES = ["email-confirmed", "password-updated", "account-deleted"] as const;
+export const SIGN_IN_NOTICES = [
+  "email-confirmed",
+  "password-updated",
+  "account-deleted",
+  "code-refused",
+] as const;
 export type SignInNotice = (typeof SIGN_IN_NOTICES)[number];
 
 export function parseSignInNotice(value: unknown): SignInNotice | null {

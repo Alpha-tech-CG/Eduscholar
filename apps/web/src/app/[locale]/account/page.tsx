@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
+import { isModerator } from "@/lib/catalogue/queries";
 import { getOwnProfile, getReferenceData, type Option } from "@/lib/profile/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,6 +31,7 @@ export default async function AccountPage({
   const t = await getTranslations("Account");
   const reference = await getReferenceData(locale);
   const { notice } = await searchParams;
+  const moderator = await isModerator();
 
   const rows: Array<[string, string | null]> = [
     [t("email"), user.email ?? null],
@@ -87,6 +89,23 @@ export default async function AccountPage({
       </div>
 
       <ul className="flex flex-col gap-2 text-sm">
+        <li>
+          <Link href="/contribute" className="underline underline-offset-4">
+            {t("contribute")}
+          </Link>
+        </li>
+        <li>
+          <Link href="/contributions" className="underline underline-offset-4">
+            {t("contributions")}
+          </Link>
+        </li>
+        {moderator ? (
+          <li>
+            <Link href="/moderation" className="underline underline-offset-4">
+              {t("moderation")}
+            </Link>
+          </li>
+        ) : null}
         <li>
           <Link href="/account/security" className="underline underline-offset-4">
             {t("security")}

@@ -317,6 +317,7 @@ select is(
     'private.withdraw_submission(p_resource_id uuid)',
     'public.moderate_resource(resource_id uuid, action text, reason text)',
     'public.moderator_update_resource(resource_id uuid, payload jsonb)',
+    'public.my_submission_ids()',
     'public.report_resource(resource_id uuid, reason text, details text)',
     'public.resolve_report(report_id uuid, status text, note text)',
     'public.submit_resource(payload jsonb)',
@@ -330,6 +331,8 @@ select is(
     'private.is_onboarded()',
     'private.is_session_aal2()',
     'private.my_org_ids(p_roles text[])',
+    'private.must_keep_second_factor()',
+    'public.must_keep_second_factor()',
     'public.account_deletion_check()',
     'public.second_factor_status()'
   ]) as x),

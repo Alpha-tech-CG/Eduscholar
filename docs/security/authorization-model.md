@@ -447,6 +447,9 @@ my_org_ids(roles[])                      organisations où l'appelant détient l
 is_account_active()                      compte non suspendu
 is_onboarded()                           profil minimal complété, déclaration d'âge comprise
 has_verified_factor()                    second facteur activé
+must_keep_second_factor()                l'appelant détient un rôle qui exige le second facteur
+my_submission_ids()                      propositions de l'appelant au catalogue
+my_report_ids()                          signalements de l'appelant
 ```
 
 Règles :
@@ -455,6 +458,9 @@ Règles :
 - Aucun paramètre d'identité : elles lisent `auth.uid()`.
 - Toutes vérifient `is_account_active()`.
 - `has_platform_role`, et `has_org_role` pour `org_admin`, exigent une session `aal2`.
+  `has_platform_role` exige en plus que le facteur ait été vérifié avant l'attribution
+  du rôle : un rôle accordé à un compte sans second facteur est sans effet, et un
+  facteur enrôlé après coup par qui tiendrait le mot de passe ne l'active pas.
 - Leur propriétaire est un rôle qui n'est pas soumis à la RLS des tables qu'elles lisent,
   pour éviter toute récursion entre politiques.
 - Droit d'exécution : retiré explicitement à `public`, `anon` et `authenticated`, puis
@@ -477,13 +483,19 @@ depuis le serveur) :
 | Créer et soumettre une version | Propriétaire |
 | Rendre une décision sur une version | `supervisor` à accès complet |
 | Résoudre un fil de commentaires | Propriétaire, `supervisor` |
-| Transitions de statut d'une soumission ou d'une ressource | Selon la matrice 5.1 |
+| Transitions de statut d'une soumission ou d'une ressource (`moderate_resource`) | Selon la matrice 5.1 ; jamais sur sa propre proposition ; vérification seulement après prise en charge |
+| `submit_resource`, `update_submission`, `withdraw_submission` | Compte actif au profil complété ; l'auteur pour les deux dernières |
+| `report_resource`, `resolve_report` | Compte actif au profil complété ; `moderator` pour la clôture, jamais sur sa propre proposition |
 | Modifier une ressource publiée | `librarian`, `org_admin`, `moderator` |
 | Enregistrer ou révoquer le consentement IA d'un projet | Propriétaire |
 | Publier un mémoire (crée une soumission) | Propriétaire |
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `account_deletion_check` : contrôle préalable à la suppression de son compte | Le titulaire, compte actif ; refuse le dernier administrateur d'une organisation |
+
+**Appelée par le service d'authentification seulement** (`supabase_auth_admin`) :
+`private.hook_mfa_verification_attempt`, qui borne les essais de code du second facteur
+et refuse le rejeu.
 
 **Exécutées avec `service_role`, côté serveur uniquement :**
 

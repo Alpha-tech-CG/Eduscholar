@@ -10,6 +10,15 @@ export const DEFAULT_AFTER_SIGN_IN = "/account";
 const AUTH_PAGES = /^\/(sign-in|sign-up|forgot-password|reset-password|auth)(\/|$)/;
 const LOCALE_PREFIX = /^\/(fr|en)(?=\/|$)/;
 
+/**
+ * Destination après la saisie du second facteur. Identique à `safeNextPath`,
+ * avec une exception : le choix d'un nouveau mot de passe, qu'un compte à deux
+ * étapes n'atteint qu'après avoir saisi son code.
+ */
+export function nextAfterVerification(value: unknown): string {
+  return value === "/reset-password" ? "/reset-password" : safeNextPath(value);
+}
+
 export function safeNextPath(
   value: unknown,
   fallback: string = DEFAULT_AFTER_SIGN_IN,

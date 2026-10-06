@@ -4,6 +4,7 @@ import { AuthForm, TextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { redirect } from "@/i18n/navigation";
 import { updatePassword } from "@/lib/auth/actions";
+import { getSecondFactorState, needsSecondFactor } from "@/lib/auth/second-factor";
 import { getCurrentUser, isRecentRecoverySession } from "@/lib/auth/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,6 +18,14 @@ export default async function ResetPasswordPage() {
   const user = await getCurrentUser();
   if (!user || !(await isRecentRecoverySession())) {
     return redirect({ href: "/forgot-password", locale: await getLocale() });
+  }
+  // Un compte à deux étapes saisit d'abord son code : le service
+  // d'authentification refuse sinon tout changement de mot de passe.
+  if (needsSecondFactor(await getSecondFactorState())) {
+    return redirect({
+      href: { pathname: "/sign-in/verify", query: { next: "/reset-password" } },
+      locale: await getLocale(),
+    });
   }
 
   const t = await getTranslations("Auth");

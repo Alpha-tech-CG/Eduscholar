@@ -508,3 +508,289 @@ describe("compte avec second facteur, par appel direct à l'API", () => {
     }
   });
 });
+
+// Catalogue (B-13), par appel direct à l'API.
+describe("catalogue, par appel direct à l'API", () => {
+  let fatou: Actor;
+  let resourceId = "";
+
+  const payload = (overrides: Record<string, unknown> = {}) => ({
+    type_code: "article",
+    title: `Ressource de test ${run}`,
+    authors: ["Fatou Sow"],
+    language_code: "fr",
+    program_code: "computer_science",
+    official_url: "https://exemple.invalid/ressource",
+    access_status: "open_access",
+    license_code: "cc-by-4.0",
+    rights_declared: true,
+    ...overrides,
+  });
+
+  beforeAll(async () => {
+    fatou = await createActor("fatou");
+    // Profil complété, comme le ferait le formulaire.
+    const completed = await fatou.client
+      .from("profiles")
+      .update({
+        country_code: "SN",
+        level_code: "bachelor_3",
+        program_code: "computer_science",
+        age_confirmed_at: new Date().toISOString(),
+      })
+      .eq("user_id", fatou.id)
+      .select("user_id");
+    expect(completed.data).toHaveLength(1);
+  });
+
+  afterAll(async () => {
+    if (fatou) await admin.auth.admin.deleteUser(fatou.id);
+  });
+
+  it("un visiteur ne lit ni ne propose rien", async () => {
+    expect((await anonymous.from("resources").select("id").limit(1)).error).not.toBeNull();
+    expect((await anonymous.rpc("submit_resource" as never, { payload: payload() } as never)).error).not.toBeNull();
+  });
+
+  it("aucune écriture directe dans les tables du catalogue", async () => {
+    const insert = await rest("resources", fatou.token, {
+      method: "POST",
+      body: JSON.stringify({
+        type_code: "article",
+        title: "Insertion directe",
+        language_code: "fr",
+        program_code: "computer_science",
+        source_kind: "connector",
+        source_name: "openalex",
+        editorial_status: "published",
+      }),
+    });
+    expect(insert.status).toBeGreaterThanOrEqual(400);
+
+    for (const table of ["resource_internal", "resource_status_history", "resource_reports"]) {
+      const response = await rest(table, fatou.token, { method: "POST", body: "{}" });
+      expect(response.status, table).toBeGreaterThanOrEqual(400);
+    }
+  });
+
+  it("un compte qui n'a pas complété son profil ne propose rien", async () => {
+    const { error } = await alice.client.rpc("submit_resource" as never, { payload: payload() } as never);
+    expect(error?.message).toBe("forbidden");
+  });
+
+  it("une proposition est créée en attente, quels que soient les champs envoyés", async () => {
+    const { data, error } = await fatou.client.rpc("submit_resource" as never, {
+      payload: payload({
+        editorial_status: "published",
+        visibility: "organization",
+        source_kind: "connector",
+        source_name: "openalex",
+        submitted_by: alice.id,
+        published_at: "2020-01-01T00:00:00Z",
+      }),
+    } as never);
+    expect(error).toBeNull();
+    resourceId = data as unknown as string;
+
+    const row = await fatou.client
+      .from("resources")
+      .select("editorial_status, visibility, source_kind, source_name, published_at")
+      .eq("id", resourceId);
+    expect(row.data).toEqual([
+      {
+        editorial_status: "pending",
+        visibility: "public",
+        source_kind: "contribution",
+        source_name: "contribution",
+        published_at: null,
+      },
+    ]);
+  });
+
+  it("l'identité du contributeur et les notes internes ne sont pas lisibles", async () => {
+    const identity = await rest(`resources?select=submitted_by&id=eq.${resourceId}`, fatou.token);
+    expect(identity.status).toBeGreaterThanOrEqual(400);
+
+    const notes = await fatou.client.from("resource_internal").select("resource_id");
+    expect(notes.data).toEqual([]);
+  });
+
+  it("un autre utilisateur ne voit pas la proposition en attente et ne peut pas la modifier", async () => {
+    const read = await bob.client.from("resources").select("id").eq("id", resourceId);
+    expect(read.data).toEqual([]);
+
+    const update = await bob.client.rpc("update_submission" as never, {
+      resource_id: resourceId,
+      payload: payload({ title: "Détournée" }),
+    } as never);
+    // Refus dans tous les cas : ce compte n'a pas complété son profil, et la
+    // proposition n'est de toute façon pas la sienne.
+    expect(["forbidden", "not_found"]).toContain(update.error?.message);
+
+    const patch = await rest(`resources?id=eq.${resourceId}`, bob.token, {
+      method: "PATCH",
+      body: JSON.stringify({ editorial_status: "published" }),
+    });
+    expect(patch.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("sans le rôle de modérateur, aucune décision n'est possible, même sur sa propre proposition", async () => {
+    for (const action of ["start_review", "verify", "publish", "remove"]) {
+      const { error } = await fatou.client.rpc("moderate_resource" as never, {
+        resource_id: resourceId,
+        action,
+      } as never);
+      expect(error?.message, action).toBe("forbidden");
+    }
+    const edit = await fatou.client.rpc("moderator_update_resource" as never, {
+      resource_id: resourceId,
+      payload: { license_code: "cc0-1.0" },
+    } as never);
+    expect(edit.error?.message).toBe("forbidden");
+
+    const status = await fatou.client.from("resources").select("editorial_status").eq("id", resourceId);
+    expect(status.data).toEqual([{ editorial_status: "pending" }]);
+  });
+
+  it("un titre contenant du HTML est une simple donnée : accepté tel quel, jamais interprété", async () => {
+    const title = `<script>alert(1)</script> ${run}`;
+    const { data, error } = await fatou.client.rpc("submit_resource" as never, {
+      payload: payload({ title }),
+    } as never);
+    expect(error).toBeNull();
+    const row = await fatou.client.from("resources").select("title").eq("id", data as unknown as string);
+    expect(row.data).toEqual([{ title }]);
+  });
+
+  it("la base refuse une adresse dangereuse et une licence inconnue", async () => {
+    for (const overrides of [
+      { official_url: "javascript:alert(1)" },
+      { official_url: "data:text/html,<script>alert(1)</script>" },
+      { official_url: "https://vrai.example@hostile.example/" },
+      { license_code: "gratuit" },
+      { title: "Titre \u202Edéguisé" },
+    ]) {
+      const { error } = await fatou.client.rpc("submit_resource" as never, {
+        payload: payload(overrides),
+      } as never);
+      // Refus par une contrainte de la base, pas par une erreur quelconque.
+      expect(error?.code, JSON.stringify(overrides)).toBe("23514");
+    }
+  });
+});
+
+// Second facteur : ce que le service d'authentification refuse lui-même, et le
+// hook qui borne les essais (constats de la revue de sécurité, reproduits sur
+// l'instance locale avant correction : 40 codes faux acceptés d'affilée).
+describe("second facteur, service d'authentification en appel direct", () => {
+  const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+  function totp(secret: string): string {
+    let bits = "";
+    for (const char of secret.replace(/=+$/, "").toUpperCase()) {
+      bits += ALPHABET.indexOf(char).toString(2).padStart(5, "0");
+    }
+    const key = Buffer.from((bits.match(/.{8}/g) ?? []).map((byte) => Number.parseInt(byte, 2)));
+    const counter = Buffer.alloc(8);
+    counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30_000)));
+    const digest = createHmac("sha1", key).update(counter).digest();
+    const offset = (digest[digest.length - 1] ?? 0) & 0x0f;
+    return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000).padStart(6, "0");
+  }
+
+  async function withSecondFactor(label: string) {
+    const actor = await createActor(label);
+    const enrollment = await actor.client.auth.mfa.enroll({ factorType: "totp" });
+    if (enrollment.error || enrollment.data.type !== "totp") throw new Error("activation impossible");
+    const secret = enrollment.data.totp.secret;
+    const factorId = enrollment.data.id;
+    const code = totp(secret);
+    const verified = await actor.client.auth.mfa.challengeAndVerify({ factorId, code });
+    if (verified.error) throw new Error("vérification impossible");
+
+    const passwordOnly = createClient(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const session = await passwordOnly.auth.signInWithPassword({ email: actor.email, password });
+    if (session.error) throw new Error("connexion impossible");
+    return { actor, factorId, secret, code, passwordOnly };
+  }
+
+  it("un code déjà utilisé est refusé", async () => {
+    const { actor, factorId, code, passwordOnly } = await withSecondFactor("rejeu");
+    try {
+      const replay = await passwordOnly.auth.mfa.challengeAndVerify({ factorId, code });
+      expect(replay.error).not.toBeNull();
+    } finally {
+      await admin.auth.admin.deleteUser(actor.id);
+    }
+  });
+
+  it("après dix codes faux, le facteur est bloqué, même pour un code juste", async () => {
+    const { actor, factorId, secret, passwordOnly } = await withSecondFactor("essais");
+    try {
+      let processed = 0;
+      let refusal: string | undefined;
+      for (let attempt = 0; attempt < 14; attempt += 1) {
+        const result = await passwordOnly.auth.mfa.challengeAndVerify({
+          factorId,
+          code: String(100000 + attempt),
+        });
+        if (result.error?.code === "mfa_verification_failed") {
+          processed += 1;
+        } else {
+          refusal = result.error?.code;
+          break;
+        }
+      }
+      expect(processed).toBe(10);
+      expect(refusal).toBe("mfa_verification_rejected");
+
+      // Le refus ferme toutes les sessions du compte, y compris celle qui avait
+      // présenté le second facteur : elle ne se renouvelle plus. Son jeton
+      // d'accès déjà émis reste valable jusqu'à son expiration (dix minutes).
+      const renewed = await actor.client.auth.refreshSession();
+      expect(renewed.error).not.toBeNull();
+
+      // Une nouvelle session reste bloquée pendant la fenêtre, même avec le bon code.
+      const again = createClient(url, publishableKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      await again.auth.signInWithPassword({ email: actor.email, password });
+      const blocked = await again.auth.mfa.challengeAndVerify({ factorId, code: totp(secret) });
+      expect(blocked.error?.code).toBe("mfa_verification_rejected");
+    } finally {
+      await admin.auth.admin.deleteUser(actor.id);
+    }
+  });
+
+  it("une session ouverte par le seul mot de passe ne modifie ni les facteurs, ni le mot de passe, ni l'adresse", async () => {
+    const { actor, factorId, passwordOnly } = await withSecondFactor("aal1");
+    try {
+      const results = await Promise.all([
+        passwordOnly.auth.mfa.enroll({ factorType: "totp", friendlyName: "second" }),
+        passwordOnly.auth.mfa.unenroll({ factorId }),
+        passwordOnly.auth.updateUser({ password: `Autre-${randomUUID()}` }),
+        passwordOnly.auth.updateUser({ email: `autre-${run}@test.invalid` }),
+      ]);
+      for (const result of results) {
+        expect(result.error?.code).toBe("insufficient_aal");
+      }
+    } finally {
+      await admin.auth.admin.deleteUser(actor.id);
+    }
+  });
+
+  it("le facteur d'un autre compte ne se vérifie pas", async () => {
+    const { actor, factorId, secret } = await withSecondFactor("autrui");
+    try {
+      const result = await alice.client.auth.mfa.challengeAndVerify({
+        factorId,
+        code: totp(secret),
+      });
+      expect(result.error).not.toBeNull();
+    } finally {
+      await admin.auth.admin.deleteUser(actor.id);
+    }
+  });
+});

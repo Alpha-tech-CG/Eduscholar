@@ -47,6 +47,11 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006000700_academic_profile.sql` | Champs académiques du profil, déclaration d'âge, complétion |
 | `20261006000900_second_factor.sql` | Second facteur imposé en base à tout compte qui l'a activé |
 | `20261006000800_profile_hardening.sql` | Corrections de la revue de sécurité : complétion vérifiable en base, audit et contrôle de la suppression de compte, référentiels fermés aux visiteurs |
+| `20261006001000_catalogue.sql` | Catalogue : licences, types, ressources, données internes, historique des statuts, signalements |
+| `20261006001100_catalogue_functions.sql` | Fonctions de soumission, de modération et de signalement |
+| `20261006001200_catalogue_policies.sql` | Politiques de lecture du catalogue |
+| `20261006001300_my_submissions.sql` | Lecture par un contributeur de ses propres propositions |
+| `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
 
@@ -215,6 +220,21 @@ une nouvelle migration ; ne jamais retoucher une migration appliquée.
 
 L'API renvoie 100 lignes au plus par réponse : la liste des pays se lit en trois pages.
 
+### Catalogue
+
+`licenses`, `resource_types`, `resources`, `resource_internal`, `resource_status_history`,
+`resource_reports` : voir [catalogue.md](catalogue.md) pour le cycle de vie, les
+fonctions et les règles de lecture.
+
+### `private.second_factor_attempts`
+
+Une ligne par facteur : début de fenêtre, nombre de codes erronés, dernier pas de trente
+secondes accepté. Aucun accès utilisateur. Elle est tenue par
+`private.hook_mfa_verification_attempt`, que le service d'authentification appelle à
+chaque essai de code : dix codes erronés en quinze minutes bloquent le facteur, et un
+même pas de trente secondes ne sert qu'une fois. La fonction n'est exécutable que par
+`supabase_auth_admin`.
+
 ### `private.rate_limit_buckets`
 
 Compteurs de tentatives par fenêtre fixe. Aucun accès utilisateur.
@@ -240,7 +260,10 @@ autorisée. Elle est `security invoker` et n'est exécutable que par `service_ro
 | `is_onboarded()` | Vrai si l'appelant a complété son profil minimal, déclaration d'âge comprise |
 | `account_deletion_check()` | Contrôle préalable à la suppression de son compte : `ok`, `forbidden` (compte suspendu) ou `last_org_admin` ; journalise la demande. Exposée par une enveloppe `security invoker` du même nom dans `public`. |
 | `is_session_aal2()` | Vrai si la session a validé un second facteur |
-| `has_platform_role(roles[])` | Compte actif, second facteur, rôle détenu |
+| `has_platform_role(roles[])` | Compte actif, session au second facteur vérifié, rôle détenu, et facteur vérifié **antérieur** à l'attribution du rôle : un rôle accordé à un compte sans second facteur reste sans effet |
+| `must_keep_second_factor()` | Vrai si l'appelant détient un rôle qui exige le second facteur ; l'application refuse alors de le désactiver. Enveloppe du même nom dans `public`. |
+| `my_submission_ids()`, `my_report_ids()` | Propositions et signalements de l'appelant, pour les politiques ; vides si le compte n'est pas actif |
+| `hook_mfa_verification_attempt(event)` | Borne les essais de code et refuse le rejeu ; appelée par le service d'authentification seulement |
 | `has_org_role(organization_id, roles[])` | Compte actif, organisation non suspendue, rôle détenu ; second facteur exigé pour `org_admin` |
 | `my_org_ids(roles[])` | Organisations où l'appelant détient l'un des rôles ; utilisée par les politiques pour être évaluée une fois par requête |
 | `require_actor_column(colonne)` | Exige l'acteur lors d'une opération serveur |
@@ -320,8 +343,9 @@ staging ou de production, y appliquer :
 ## Non couvert par B-09
 
 - Fonction de renommage d'une organisation et fonction de dissolution.
-- Refus d'attribuer un rôle privilégié à un compte sans second facteur vérifié ;
-  authentification récente exigée pour les opérations d'administration.
+- Authentification récente exigée pour les opérations d'administration. Un rôle
+  privilégié accordé à un compte sans second facteur vérifié est désormais sans effet
+  (migration `001400`).
 - Partitionnement et conservation du journal d'audit.
 - Contrôle automatique de `supabase/config.toml` et de la configuration des projets hébergés.
 

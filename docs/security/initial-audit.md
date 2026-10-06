@@ -159,6 +159,18 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   vérifiable en base, suppression de compte journalisée et refusée à un compte suspendu,
   détection du dernier administrateur faite en base et testée, référentiels fermés aux
   visiteurs anonymes, bornes réelles des champs. Reste en dette : D-15, D-16.
+- 6 octobre 2026 — Second facteur, catalogue et modération (B-13, B-14) relus par
+  l'agent sécurité : 1 constat élevé, 7 moyens, 4 faibles. L'élevé a été reproduit sur
+  l'instance locale puis corrigé : quarante codes erronés acceptés d'affilée sans
+  blocage, et un même code accepté deux fois. Un hook en base borne désormais les essais
+  à dix par quart d'heure et par facteur et refuse le rejeu. Corrigés aussi : activation
+  du second facteur sans mot de passe, rôle privilégié effectif avec un facteur enrôlé
+  après coup, désactivation du facteur par un compte privilégié, réinitialisation du mot
+  de passe impossible pour un compte à deux étapes, vérification d'une fiche encore
+  modifiable par son auteur, DOI réservable par une simple proposition, caractères de
+  format dans les titres, modérateur lisant les données internes et les signalements de
+  sa propre proposition. Reste en dette : D-18, D-19. Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 

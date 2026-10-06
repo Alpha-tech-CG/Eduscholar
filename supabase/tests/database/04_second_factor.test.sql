@@ -78,12 +78,48 @@ reset role;
 -- Le facteur d'un autre ne se lit pas.
 select tests.login('c0000000-0000-0000-0000-0000000000f3', 'aal1');
 select throws_ok('select * from auth.mfa_factors', '42501', null, 'Un utilisateur ne lit pas la table des facteurs');
+select throws_ok(
+  $$ select private.hook_mfa_verification_attempt('{}'::jsonb) $$,
+  '42501', null, 'Un utilisateur n''appelle pas le hook de vérification'
+);
+select throws_ok(
+  'select * from private.second_factor_attempts', '42501', null,
+  'Un utilisateur ne lit pas les compteurs d''essais'
+);
+select ok(not public.must_keep_second_factor(), 'Un compte sans rôle peut désactiver son second facteur');
 reset role;
 
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
 select throws_ok('select * from public.second_factor_status()', '42501', null, 'Un visiteur n''interroge pas l''état du second facteur');
 reset role;
+
+-- ---------------------------------------------------------------------------
+-- Hook de vérification : essais bornés par facteur, rejeu refusé
+-- ---------------------------------------------------------------------------
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'decision',
+  'continue', 'Un code juste est accepté'
+);
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'message',
+  'code_already_used', 'Le même pas de trente secondes ne sert qu''une fois'
+);
+select is(
+  (select count(*) from generate_series(1, 10) as n
+   where private.hook_mfa_verification_attempt('{"factor_id": "fb000000-0000-0000-0000-0000000000f2", "valid": false}') ->> 'decision' = 'continue'),
+  10::bigint, 'Dix codes faux sont traités'
+);
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fb000000-0000-0000-0000-0000000000f2", "valid": true}') ->> 'message',
+  'too_many_attempts', 'Au-delà, même un code juste est refusé'
+);
+update private.second_factor_attempts set window_start = now() - interval '16 minutes'
+  where factor_id = 'fb000000-0000-0000-0000-0000000000f2';
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fb000000-0000-0000-0000-0000000000f2", "valid": true}') ->> 'decision',
+  'continue', 'Le blocage se lève à la fin de la fenêtre'
+);
 
 select * from finish();
 rollback;

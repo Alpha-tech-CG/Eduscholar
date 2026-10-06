@@ -24,7 +24,9 @@ export const getSecondFactorState = cache(async (): Promise<SecondFactorState> =
   const supabase = await createSessionClient();
   const { data, error } = await supabase.rpc("second_factor_status");
   const row = Array.isArray(data) ? data[0] : null;
-  if (error || !row) return { enabled: false, sessionVerified: false };
+  // En cas de panne, on suppose un code attendu : le garde de l'application ne
+  // doit pas s'ouvrir quand la base ne répond pas.
+  if (error || !row) return { enabled: true, sessionVerified: false };
 
   return {
     enabled: row.has_verified_factor === true,

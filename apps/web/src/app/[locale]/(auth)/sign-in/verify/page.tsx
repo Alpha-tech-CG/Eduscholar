@@ -4,7 +4,7 @@ import { AuthForm, TextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { redirect } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/actions";
-import { safeNextPath } from "@/lib/auth/redirect";
+import { nextAfterVerification } from "@/lib/auth/redirect";
 import { getSecondFactorState, needsSecondFactor } from "@/lib/auth/second-factor";
 import { verifySecondFactor } from "@/lib/auth/second-factor-actions";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -18,7 +18,7 @@ export default async function VerifySecondFactorPage({
   searchParams,
 }: PageProps<"/[locale]/sign-in/verify">) {
   const { next } = await searchParams;
-  const nextPath = safeNextPath(Array.isArray(next) ? next[0] : next);
+  const nextPath = nextAfterVerification(Array.isArray(next) ? next[0] : next);
   const locale = await getLocale();
 
   const user = await getCurrentUser();

@@ -136,3 +136,37 @@ export function resetRateLimits(): void {
     { stdio: "ignore" },
   );
 }
+
+/** Exécute une instruction SQL sur l'instance locale, comme le ferait un administrateur de la base. */
+export function sql(statement: string): void {
+  execFileSync(
+    "docker",
+    ["exec", "supabase_db_eduscholar", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-qc", statement],
+    { stdio: "ignore" },
+  );
+}
+
+const UUID = /^[0-9a-f-]{36}$/;
+
+/** Complète le profil minimal d'un compte de test, sans passer par le formulaire. */
+export function completeProfileDirectly(userId: string): void {
+  if (!UUID.test(userId)) throw new Error("Identifiant invalide");
+  sql(
+    `update public.profiles set country_code = 'SN', level_code = 'bachelor_3', program_code = 'computer_science', age_confirmed_at = now() where user_id = '${userId}'`,
+  );
+}
+
+/** Clé de second facteur des modérateurs de test (base32). */
+export const TEST_FACTOR_SECRET = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"; // valeur-fictive
+
+/**
+ * Donne à un compte de test le rôle de modérateur et un second facteur vérifié.
+ * En production, ces deux opérations sont des actes d'administration (dette D-01).
+ */
+export function makeModerator(userId: string): void {
+  if (!UUID.test(userId)) throw new Error("Identifiant invalide");
+  sql(
+    `insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret) values (gen_random_uuid(), '${userId}', 'test', 'totp', 'verified', now(), now(), '${TEST_FACTOR_SECRET}')`,
+  );
+  sql(`insert into public.platform_roles (user_id, role) values ('${userId}', 'moderator')`);
+}

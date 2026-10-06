@@ -27,8 +27,8 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 |---|---|---|---|
 | B-11 | Profil académique (pays, niveau, filière, langue, confidentialité par défaut) | B-10 | fait — profil exigé à la première connexion, déclaration d'âge datée par la base, suppression de compte |
 | B-12 | Référentiels : pays, langues, niveaux, filières, matières | B-06, B-09 | fait — 249 pays ISO, langues, niveaux, filière informatique, 6 spécialités, 29 matières |
-| B-13 | Schéma du catalogue : ressources, sources, licences, tags, statuts d'accès et éditoriaux | B-09 | à faire |
-| B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | à faire |
+| B-13 | Schéma du catalogue : ressources, sources, licences, tags, statuts d'accès et éditoriaux | B-09 | fait — licences, types, fiches, données internes, historique, signalements ; les tags viendront avec la recherche (B-16) |
+| B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | fait — proposition, suivi par le contributeur, file de modération, décisions motivées et journalisées, séparation des tâches ; l'attribution des rôles reste manuelle (D-01) |
 | B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | à faire |
 | B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | à faire |
 | B-17 | Favoris et collections privées | B-13 | à faire |
@@ -40,7 +40,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | ID | Sujet | Échéance |
 |---|---|---|
 | D-01 | Fonctions d'attribution de rôle, de suspension et de gestion des organisations, exécutées sous la session de l'administrateur plutôt que par `service_role` ; retirer ensuite à `service_role` l'écriture sur `platform_roles` | Avec l'administration (B-14) |
-| D-02 | Refuser un rôle privilégié à un compte sans second facteur vérifié ; authentification récente pour les opérations d'administration. L'activation et la vérification du second facteur sont faites ; reste ce contrôle à l'attribution du rôle. | Avec D-01 |
+| D-02 | Authentification récente pour les opérations d'administration. Fait : un rôle privilégié n'a d'effet que si un second facteur a été vérifié avant son attribution, et son titulaire ne peut pas le désactiver. Reste : refuser l'attribution elle-même, dans la fonction de D-01. | Avec D-01 |
 | D-03 | Journal d'audit : partitionnement par mois, conservation, export hors base | Avant la production |
 | D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
 | D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
@@ -55,6 +55,8 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | fait en B-11 ; le transfert d'administration reste à construire (D-04) |
 | D-15 | Requêtes imbriquées coûteuses par l'API (un utilisateur connecté peut encore en lancer sur les référentiels, jusqu'au délai de 8 secondes) : limitation de débit devant l'API, mesure de charge | Avant l'ouverture publique, avec D-09 |
 | D-17 | Second facteur : codes de secours, procédure d'assistance en cas de perte de l'application d'authentification | Avant l'ouverture publique |
+| D-18 | Courriel de notification à l'activation et à la désactivation du second facteur ; fermeture des autres sessions à l'activation | Avant l'ouverture publique |
+| D-19 | Révocation immédiate : un jeton d'accès déjà émis reste valable jusqu'à dix minutes après la fermeture des sessions (refus de code, changement de mot de passe). Vérifier la session en base pour les opérations sensibles, ou réduire la durée du jeton. | Avant l'ouverture publique |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)
@@ -92,7 +94,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | Créer un compte et choisir sa filière | B-10, B-11 | non couvert |
 | Rechercher avec au moins trois filtres | B-16 | non couvert |
 | Origine et statut d'accès affichés | B-13, B-16 | non couvert |
-| Vérifier, publier, retirer une ressource | B-14 | non couvert |
+| Vérifier, publier, retirer une ressource | B-14 | couvert |
 | Collection privée | B-17 | non couvert |
 | Projet de recherche privé | Phase 3 | non couvert |
 | Sources et fiches de lecture | Phase 3 | non couvert |

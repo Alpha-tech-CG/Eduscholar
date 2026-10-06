@@ -378,6 +378,12 @@ isOneToOne: false
 "moderator_update_resource":
 { Args: { "payload": Json,"resource_id": string }; Returns: string
                            },
+"must_keep_second_factor":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"my_submission_ids":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
                            },

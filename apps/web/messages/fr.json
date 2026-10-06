@@ -49,7 +49,8 @@
       "noAccount": "Pas encore de compte ?",
       "emailConfirmed": "Votre adresse est confirmée. Connectez-vous avec votre mot de passe.",
       "passwordUpdated": "Votre mot de passe a été modifié et tous vos appareils ont été déconnectés. Connectez-vous avec le nouveau mot de passe.",
-      "accountDeleted": "Votre compte a été supprimé."
+      "accountDeleted": "Votre compte a été supprimé.",
+      "codeRefused": "Par sécurité, vous avez été déconnecté de tous vos appareils : trop de codes erronés, ou code déjà utilisé. Reconnectez-vous et saisissez un nouveau code ; après dix codes erronés, patientez quinze minutes."
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",
@@ -89,7 +90,18 @@
       "unavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
       "already_signed_in": "Vous êtes déjà connecté. Déconnectez-vous avant d'utiliser ce lien.",
       "last_org_admin": "Vous êtes le seul administrateur d'une organisation. Transférez d'abord son administration, puis recommencez.",
-      "invalid_code": "Code incorrect ou expiré. Saisissez le code affiché en ce moment par votre application."
+      "invalid_code": "Code incorrect ou expiré. Saisissez le code affiché en ce moment par votre application.",
+      "forbidden": "Vous n'avez pas le droit de faire cette action.",
+      "own_submission": "Vous ne pouvez pas traiter votre propre soumission : un autre modérateur doit s'en charger.",
+      "not_found": "Élément introuvable.",
+      "invalid_transition": "Cette action n'est plus possible dans l'état actuel. Rechargez la page.",
+      "reason_required": "Un motif est nécessaire pour cette décision.",
+      "already_reported": "Vous avez déjà signalé cette ressource.",
+      "not_publishable": "La fiche ne peut pas être vérifiée : il manque le lien officiel, ou un auteur ou une institution.",
+      "duplicate": "Une ressource portant ce DOI figure déjà au catalogue.",
+      "second_factor_required": "Votre rôle exige la validation en deux étapes : elle ne peut pas être désactivée tant que vous le détenez.",
+      "access_status_required": "Précisez le statut d'accès avant de vérifier la fiche.",
+      "permission_proof_required": "Une autorisation de l'ayant droit doit être accompagnée de sa preuve."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -100,7 +112,14 @@
       "age_required": "Cette déclaration est nécessaire pour créer un compte.",
       "required": "Ce champ est obligatoire.",
       "invalid_choice": "Ce choix n'est pas valable.",
-      "institution_length": "Le nom de l'établissement doit compter entre 2 et 200 caractères."
+      "institution_length": "Le nom de l'établissement doit compter entre 2 et 200 caractères.",
+      "too_short": "Ce texte est trop court.",
+      "too_long": "Ce texte est trop long.",
+      "invalid_url": "Indiquez une adresse complète commençant par http:// ou https://.",
+      "invalid_doi": "Ce DOI n'a pas la forme attendue, par exemple 10.1234/abcd.",
+      "invalid_year": "Indiquez une année sur quatre chiffres.",
+      "invalid_tags": "Mots-clés : 20 au plus, 40 caractères chacun, lettres, chiffres, espaces et tirets.",
+      "rights_required": "Cette déclaration est nécessaire pour proposer une ressource."
     },
     "secondFactor": {
       "title": "Sécurité du compte",
@@ -130,8 +149,11 @@
         "session_expired": "Votre session a expiré. Reconnectez-vous.",
         "already_enabled": "La validation en deux étapes est déjà activée.",
         "rate_limited": "Trop de tentatives. Réessayez dans quelques minutes.",
-        "unavailable": "Le service est momentanément indisponible. Réessayez plus tard."
-      }
+        "unavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
+        "invalid_password": "Mot de passe incorrect."
+      },
+      "passwordLabel": "Mot de passe actuel",
+      "passwordHint": "Demandé pour confirmer que c'est bien vous."
     }
   },
   "Account": {
@@ -148,7 +170,10 @@
     "editProfile": "Modifier mon profil",
     "signOut": "Se déconnecter",
     "deleteAccount": "Supprimer mon compte",
-    "security": "Sécurité du compte"
+    "security": "Sécurité du compte",
+    "contribute": "Proposer une ressource",
+    "contributions": "Mes contributions",
+    "moderation": "Modération"
   },
   "Profile": {
     "title": "Mon profil",
@@ -192,5 +217,189 @@
     "submit": "Supprimer définitivement mon compte",
     "pending": "Suppression…",
     "cancel": "Annuler et revenir à mon compte"
+  },
+  "Catalogue": {
+    "form": {
+      "choose": "Choisir…",
+      "notApplicable": "Sans objet",
+      "type": "Type de ressource",
+      "title": "Titre",
+      "authors": "Auteurs",
+      "authorsHint": "Un auteur par ligne. Laissez vide si seule une institution est connue.",
+      "institution": "Institution",
+      "institutionHint": "Université, laboratoire ou organisme qui publie la ressource.",
+      "abstract": "Résumé",
+      "year": "Année de publication",
+      "thesisDegree": "Diplôme préparé (thèse ou mémoire)",
+      "language": "Langue du document",
+      "country": "Pays",
+      "program": "Filière",
+      "levels": "Niveaux concernés",
+      "subjects": "Matières",
+      "tags": "Mots-clés",
+      "tagsHint": "Séparés par des virgules.",
+      "provenanceHeading": "Provenance et droits",
+      "provenanceIntro": "Une ressource n'est publiée que si son origine et ses conditions d'accès sont connues.",
+      "officialUrl": "Lien officiel",
+      "officialUrlHint": "Page de l'éditeur, du dépôt ou de l'établissement. Aucun fichier n'est copié : la fiche renvoie vers ce lien.",
+      "doi": "DOI",
+      "doiHint": "Facultatif. Exemple : 10.1234/abcd.",
+      "accessStatus": "Statut d'accès",
+      "license": "Licence",
+      "licenseHint": "Gratuit ne veut pas dire libre : si vous ne connaissez pas la licence, laissez « Licence inconnue ».",
+      "permissionProof": "Autorisation de l'ayant droit",
+      "permissionProofHint": "Si vous n'êtes pas l'auteur : qui vous a autorisé, et comment le vérifier.",
+      "comment": "Commentaire pour la modération",
+      "rightsDeclared": "Je déclare que ce lien mène à une source légale, et que je suis l'auteur de la ressource ou autorisé à la proposer."
+    },
+    "accessStatus": {
+      "open_access": "Accès ouvert",
+      "free_link": "Lien gratuit",
+      "preview_only": "Aperçu seulement",
+      "institutional_access": "Accès institutionnel",
+      "paid": "Payant",
+      "unknown": "Inconnu",
+      "removed": "Retiré"
+    },
+    "thesisDegree": {
+      "bachelor": "Licence",
+      "master": "Master",
+      "doctorate": "Doctorat"
+    },
+    "editorialStatus": {
+      "pending": "En attente",
+      "under_review": "En cours d'examen",
+      "changes_requested": "Correction demandée",
+      "verified": "Vérifiée",
+      "published": "Publiée",
+      "rejected": "Refusée",
+      "suspended": "Suspendue",
+      "removed": "Retirée"
+    },
+    "historyAction": {
+      "submitted": "Soumission",
+      "resubmitted": "Nouvelle soumission après correction",
+      "withdrawn": "Retrait par le contributeur",
+      "start_review": "Prise en charge par la modération",
+      "request_changes": "Correction demandée",
+      "verify": "Vérification",
+      "publish": "Publication",
+      "reject": "Refus",
+      "suspend": "Suspension",
+      "restore": "Rétablissement",
+      "remove": "Retrait",
+      "edited_requires_review": "Fiche corrigée, nouvelle vérification nécessaire"
+    },
+    "moderationAction": {
+      "start_review": "Prendre en charge",
+      "request_changes": "Demander une correction",
+      "verify": "Vérifier",
+      "publish": "Publier",
+      "reject": "Refuser",
+      "suspend": "Suspendre",
+      "restore": "Rétablir",
+      "remove": "Retirer définitivement"
+    },
+    "reportReason": {
+      "copyright": "Atteinte au droit d'auteur ou à une licence",
+      "privacy": "Données personnelles ou vie privée",
+      "error": "Erreur dans la fiche",
+      "broken_link": "Lien cassé",
+      "inappropriate": "Contenu inapproprié",
+      "malware": "Fichier ou lien malveillant",
+      "other": "Autre motif"
+    },
+    "summary": {
+      "type": "Type",
+      "authors": "Auteurs",
+      "institution": "Institution",
+      "year": "Année",
+      "language": "Langue",
+      "country": "Pays",
+      "program": "Filière",
+      "levels": "Niveaux",
+      "subjects": "Matières",
+      "tags": "Mots-clés",
+      "doi": "DOI",
+      "accessStatus": "Statut d'accès",
+      "license": "Licence",
+      "source": "Origine de la fiche",
+      "lastVerified": "Dernière vérification",
+      "officialUrl": "Lien officiel",
+      "missing": "Non renseigné"
+    },
+    "contribute": {
+      "title": "Proposer une ressource",
+      "intro": "Signalez un cours, un article, un livre, une thèse, une vidéo ou un exercice utile à d'autres étudiants.",
+      "ruleLink": "La plateforme référence la ressource et renvoie vers sa source officielle : elle ne copie aucun fichier.",
+      "ruleRights": "Ne proposez que des ressources légalement accessibles.",
+      "ruleReview": "Chaque proposition est vérifiée par la modération avant d'être publiée.",
+      "submit": "Envoyer la proposition",
+      "pending": "Envoi en cours…",
+      "myContributions": "Voir mes contributions"
+    },
+    "contributions": {
+      "title": "Mes contributions",
+      "detailTitle": "Ma contribution",
+      "intro": "Suivez l'état des ressources que vous avez proposées.",
+      "new": "Proposer une ressource",
+      "empty": "Vous n'avez encore proposé aucune ressource.",
+      "separator": " · ",
+      "statusLabel": "État : ",
+      "history": "Historique",
+      "edit": "Corriger la proposition",
+      "saveChanges": "Enregistrer et renvoyer à la modération",
+      "pending": "Un instant…",
+      "withdraw": "Retirer la proposition",
+      "withdrawIntro": "Une proposition retirée n'est plus examinée. Cette action est définitive.",
+      "withdrawSubmit": "Retirer ma proposition",
+      "back": "Retour à mes contributions",
+      "notices": {
+        "submitted": "Votre proposition est enregistrée. Elle sera examinée par la modération.",
+        "updated": "Votre proposition corrigée est renvoyée à la modération.",
+        "withdrawn": "Votre proposition est retirée."
+      }
+    },
+    "moderation": {
+      "title": "Modération",
+      "detailTitle": "Fiche à modérer",
+      "intro": "Vérifiez la provenance, la licence et le lien de chaque ressource avant de la publier.",
+      "queue": "Ressources à traiter ({count})",
+      "queueEmpty": "Aucune ressource en attente.",
+      "reports": "Signalements ouverts ({count})",
+      "reportsEmpty": "Aucun signalement ouvert.",
+      "reportHandled": "Le signalement est traité.",
+      "openResource": "Ouvrir la fiche concernée",
+      "handleReport": "Traiter le signalement",
+      "reportDecision": "Décision",
+      "reportResolved": "Fondé, traité",
+      "reportDismissed": "Non fondé",
+      "reportNote": "Note de traitement",
+      "choose": "Choisir…",
+      "separator": " · ",
+      "pending": "Un instant…",
+      "statusLabel": "État : ",
+      "decisionRecorded": "La décision est enregistrée.",
+      "internal": "Déclaration du contributeur",
+      "rightsDeclared": "Droits déclarés le",
+      "permissionProof": "Autorisation de l'ayant droit",
+      "contributorComment": "Commentaire",
+      "none": "Aucun",
+      "decision": "Décision",
+      "action": "Action",
+      "reason": "Motif",
+      "reasonHint": "Obligatoire pour demander une correction, refuser, suspendre ou retirer. Il est communiqué au contributeur.",
+      "apply": "Enregistrer la décision",
+      "correct": "Corriger la fiche",
+      "correctIntro": "Modifier le lien, la licence ou le statut d'accès d'une fiche publiée la renvoie en attente de vérification.",
+      "officialUrl": "Lien officiel",
+      "accessStatus": "Statut d'accès",
+      "license": "Licence",
+      "notes": "Notes de modération",
+      "notesHint": "Internes : jamais montrées au contributeur ni au public.",
+      "saveCorrection": "Enregistrer la correction",
+      "history": "Historique des décisions",
+      "back": "Retour à la file de modération"
+    }
   }
 }

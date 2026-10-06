@@ -115,6 +115,12 @@ Détail dans `docs/security/initial-audit.md`.
   78 de bout en bout.
 - Référentiels (B-12) et profil académique (B-11) : pays, niveaux, filière informatique ;
   profil exigé à la première connexion ; suppression de compte par son titulaire.
+- Validation en deux étapes : activation avec mot de passe redemandé, code exigé à la
+  connexion, essais bornés et rejeu refusé en base, imposée aux rôles privilégiés.
+- Catalogue (B-13) et modération (B-14) : proposition d'une ressource, suivi par le
+  contributeur, file de modération, décisions motivées et journalisées, signalements.
+  Voir `docs/architecture/catalogue.md`. Aucune fiche n'est encore visible du public :
+  la recherche et la fiche publique sont l'objet de B-16.
 - Toujours aucune fonctionnalité de recherche, de bibliothèque ou de projet.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 

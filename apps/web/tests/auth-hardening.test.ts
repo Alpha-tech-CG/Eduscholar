@@ -6,7 +6,11 @@ import {
   UNTRUSTED_SOURCE,
 } from "@/lib/auth/client-address";
 import { isRecoveryMethodList, RECOVERY_WINDOW_SECONDS } from "@/lib/auth/recovery";
-import { DEFAULT_AFTER_SIGN_IN, safeNextPath } from "@/lib/auth/redirect";
+import {
+  DEFAULT_AFTER_SIGN_IN,
+  nextAfterVerification,
+  safeNextPath,
+} from "@/lib/auth/redirect";
 import { parseSignInNotice } from "@/lib/auth/state";
 import { isSessionCookie, SESSION_COOKIE_NAME, sessionCookieOptions } from "@/lib/supabase/cookies";
 
@@ -92,6 +96,22 @@ describe("session de réinitialisation", () => {
     },
   );
 
+  it("reste valable après la saisie du second facteur", () => {
+    const methods = [
+      { method: "otp", timestamp: seconds - 120 },
+      { method: "totp", timestamp: seconds - 10 },
+    ];
+    expect(isRecoveryMethodList(methods, now)).toBe(true);
+  });
+
+  it("n'est jamais accordée à une session ouverte par mot de passe, même avec un code", () => {
+    const methods = [
+      { method: "password", timestamp: seconds - 120 },
+      { method: "totp", timestamp: seconds - 10 },
+    ];
+    expect(isRecoveryMethodList(methods, now)).toBe(false);
+  });
+
   it("refuse un horodatage dans le futur", () => {
     expect(isRecoveryMethodList([{ method: "otp", timestamp: seconds + 3600 }], now)).toBe(false);
   });
@@ -141,5 +161,16 @@ describe("cookie de session", () => {
     const options = sessionCookieOptions({ domain: ".exemple.org", maxAge: 60 });
     expect(options).not.toHaveProperty("domain");
     expect(options.path).toBe("/");
+  });
+});
+
+describe("destination après la saisie du second facteur", () => {
+  it("admet le choix d'un nouveau mot de passe, et rien d'autre de particulier", () => {
+    expect(nextAfterVerification("/reset-password")).toBe("/reset-password");
+    expect(nextAfterVerification("/account/security")).toBe("/account/security");
+    expect(nextAfterVerification("/reset-password?x=1")).toBe(DEFAULT_AFTER_SIGN_IN);
+    expect(nextAfterVerification("/fr/reset-password")).toBe(DEFAULT_AFTER_SIGN_IN);
+    expect(nextAfterVerification("https://evil.example/")).toBe(DEFAULT_AFTER_SIGN_IN);
+    expect(nextAfterVerification("/sign-in")).toBe(DEFAULT_AFTER_SIGN_IN);
   });
 });

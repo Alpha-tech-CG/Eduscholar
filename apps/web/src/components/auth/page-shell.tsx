@@ -7,17 +7,31 @@ type AuthPageShellProps = {
   intro?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Page plus large, pour les fiches et les listes. */
+  wide?: boolean;
 };
 
 /**
  * Cadre commun des pages d'authentification. Seuls les messages du formulaire
  * sont transmis aux composants client.
  */
-export async function AuthPageShell({ title, intro, children, footer }: AuthPageShellProps) {
+export async function AuthPageShell({
+  title,
+  intro,
+  children,
+  footer,
+  wide = false,
+}: AuthPageShellProps) {
   const messages = await getMessages();
 
   return (
-    <section className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 py-10">
+    <section
+      className={
+        wide
+          ? "mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 py-10"
+          : "mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 py-10"
+      }
+    >
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {intro ? <p className="opacity-80">{intro}</p> : null}

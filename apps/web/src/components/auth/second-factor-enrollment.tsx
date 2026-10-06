@@ -27,6 +27,20 @@ export function SecondFactorEnrollment() {
             {t(`enrollErrors.${state.error}`)}
           </p>
         ) : null}
+        <div className="flex flex-col gap-1">
+          <label htmlFor="enroll-password" className="font-medium">
+            {t("passwordLabel")}
+          </label>
+          <input
+            id="enroll-password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className="rounded border border-foreground/30 bg-background px-3 py-2"
+          />
+          <p className="text-sm opacity-70">{t("passwordHint")}</p>
+        </div>
         <button
           type="submit"
           disabled={pending}
@@ -65,7 +79,6 @@ export function SecondFactorEnrollment() {
         submitLabel={t("confirm")}
         pendingLabel={t("pending")}
       >
-        <input type="hidden" name="factorId" value={state.factorId} />
         <TextField
           name="code"
           type="code"

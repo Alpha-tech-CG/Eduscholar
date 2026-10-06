@@ -189,6 +189,8 @@ export function SelectField({
   const t = useTranslations("Auth");
   const { state } = useContext(FormStateContext);
   const error = state.status === "error" ? state.fields?.[name] : undefined;
+  // Après une erreur, la valeur saisie est reprise plutôt que la valeur d'origine.
+  const submitted = state.status === "error" ? state.values?.[name] : undefined;
 
   return (
     <div className="flex flex-col gap-1">
@@ -199,7 +201,8 @@ export function SelectField({
         id={name}
         name={name}
         required={required}
-        defaultValue={defaultValue ?? ""}
+        key={submitted ?? defaultValue ?? ""}
+        defaultValue={submitted ?? defaultValue ?? ""}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
         className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
@@ -226,6 +229,11 @@ type OptionalTextFieldProps = {
   hint?: string;
   defaultValue?: string;
   maxLength: number;
+  required?: boolean;
+  /** "url" et "numeric" adaptent le clavier sur mobile. */
+  kind?: "text" | "url" | "numeric";
+  /** Plusieurs lignes. */
+  rows?: number;
 };
 
 export function OptionalTextField({
@@ -234,10 +242,17 @@ export function OptionalTextField({
   hint,
   defaultValue,
   maxLength,
+  required = false,
+  kind = "text",
+  rows,
 }: OptionalTextFieldProps) {
   const t = useTranslations("Auth");
   const { state } = useContext(FormStateContext);
   const error = state.status === "error" ? state.fields?.[name] : undefined;
+  const submitted = state.status === "error" ? state.values?.[name] : undefined;
+  const value = submitted ?? defaultValue;
+  const className =
+    "rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700";
   const describedBy = [hint ? `${name}-hint` : null, error ? `${name}-error` : null]
     .filter(Boolean)
     .join(" ");
@@ -247,17 +262,33 @@ export function OptionalTextField({
       <label htmlFor={name} className="font-medium">
         {label}
       </label>
-      <input
-        id={name}
-        name={name}
-        type="text"
-        maxLength={maxLength}
-        defaultValue={defaultValue}
-        autoComplete="off"
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy || undefined}
-        className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
-      />
+      {rows ? (
+        <textarea
+          id={name}
+          name={name}
+          rows={rows}
+          maxLength={maxLength}
+          required={required}
+          defaultValue={value}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          className={className}
+        />
+      ) : (
+        <input
+          id={name}
+          name={name}
+          type={kind === "url" ? "url" : "text"}
+          inputMode={kind === "numeric" ? "numeric" : undefined}
+          maxLength={maxLength}
+          required={required}
+          defaultValue={value}
+          autoComplete="off"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          className={className}
+        />
+      )}
       {hint ? (
         <p id={`${name}-hint`} className="text-sm opacity-70">
           {hint}

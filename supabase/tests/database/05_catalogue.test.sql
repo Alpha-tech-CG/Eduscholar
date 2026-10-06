@@ -62,6 +62,10 @@ update public.profiles
     'c0000000-0000-0000-0000-00000000ca03', 'd0000000-0000-0000-0000-00000000ca04'
   );
 
+insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret) values
+  ('fa000000-0000-0000-0000-00000000ca03', 'c0000000-0000-0000-0000-00000000ca03', 'test', 'totp', 'verified', now(), now(), 'secret-de-test'),
+  ('fa000000-0000-0000-0000-00000000ca04', 'd0000000-0000-0000-0000-00000000ca04', 'test', 'totp', 'verified', now(), now(), 'secret-de-test');
+
 insert into public.platform_roles (user_id, role) values
   ('c0000000-0000-0000-0000-00000000ca03', 'moderator'),
   ('d0000000-0000-0000-0000-00000000ca04', 'moderator');
@@ -146,16 +150,20 @@ select throws_ok($$ select public.submit_resource(tests.payload('{"subject_codes
 select throws_ok($$ select public.submit_resource(tests.payload('{"level_codes": ["upper_secondary"]}')) $$, '23514', 'invalid_level', 'Un niveau désactivé est refusé');
 select throws_ok($$ select public.submit_resource(tests.payload('{"tags": ["<script>"]}')) $$, '23514', null, 'Un mot-clé avec des caractères interdits est refusé');
 select throws_ok($$ select public.submit_resource(tests.payload('{"doi": "pas-un-doi"}')) $$, '23514', null, 'Un DOI mal formé est refusé');
-select throws_ok($$ select public.submit_resource(tests.payload('{"doi": "10.1234/test.abc"}')) $$, '23505', null, 'Un DOI déjà présent est refusé : pas de doublon');
+insert into tests.ids select 'dup', public.submit_resource(tests.payload('{"title": "Même DOI qu''une proposition en attente", "doi": "10.1234/test.abc"}'));
+select isnt(
+  (select id from tests.ids where label = 'dup'), null,
+  'Une proposition en attente ne bloque pas celle d''un même DOI : rien ne se sonde ni ne se réserve'
+);
 select throws_ok($$ select public.submit_resource(tests.payload('{"access_status": "gratuit"}')) $$, '23514', null, 'Un statut d''accès hors liste est refusé');
 select throws_ok($$ select public.submit_resource(tests.payload('{"thesis_degree": "master"}')) $$, '23514', null, 'Un niveau de diplôme n''a de sens que pour une thèse');
 
 -- La contributrice lit ses soumissions, sans voir les notes internes.
-select is((select count(*) from public.resources), 2::bigint, 'A lit ses deux soumissions en attente');
+select is((select count(*) from public.resources where id in (select id from tests.ids)), 3::bigint, 'A lit ses trois soumissions en attente');
 select throws_ok($$ select submitted_by from public.resources $$, '42501', null, 'L''identité du contributeur n''est pas une colonne lisible');
 select is_empty($$ select 1 from public.resource_internal $$, 'A ne lit pas les notes internes');
 select is(
-  (select count(*) from public.resource_status_history), 2::bigint,
+  (select count(*) from public.resource_status_history where resource_id in (select id from tests.ids)), 3::bigint,
   'A lit l''historique de ses soumissions'
 );
 select throws_ok($$ select actor_id from public.resource_status_history $$, '42501', null, 'L''auteur d''une décision n''est pas lisible');
@@ -174,7 +182,7 @@ reset role;
 
 -- B ne voit ni ne touche les soumissions de A.
 select tests.login('b0000000-0000-0000-0000-00000000ca02');
-select is_empty($$ select 1 from public.resources $$, 'B ne voit pas les soumissions en attente de A');
+select is_empty($$ select 1 from public.resources where id in (select id from tests.ids) $$, 'B ne voit pas les soumissions en attente de A');
 select throws_ok(
   $$ select public.update_submission((select id from tests.ids where label = 'a1'), tests.payload()) $$,
   'P0001', 'not_found', 'B ne modifie pas la soumission de A : même réponse que si elle n''existait pas'
@@ -191,7 +199,7 @@ reset role;
 -- ---------------------------------------------------------------------------
 -- Sans second facteur, le rôle ne vaut rien.
 select tests.login('c0000000-0000-0000-0000-00000000ca03', 'aal1');
-select is_empty($$ select 1 from public.resources $$, 'Une modératrice en aal1 ne voit pas la file d''attente');
+select is_empty($$ select 1 from public.resources where id in (select id from tests.ids) $$, 'Une modératrice en aal1 ne voit pas la file d''attente');
 select throws_ok(
   $$ select public.moderate_resource((select id from tests.ids where label = 'a1'), 'start_review') $$,
   '42501', 'forbidden', 'Une modératrice en aal1 ne modère pas'
@@ -199,8 +207,8 @@ select throws_ok(
 reset role;
 
 select tests.login('c0000000-0000-0000-0000-00000000ca03', 'aal2');
-select is((select count(*) from public.resources), 2::bigint, 'La modératrice voit la file d''attente');
-select is((select count(*) from public.resource_internal), 2::bigint, 'Elle lit les notes internes');
+select is((select count(*) from public.resources where id in (select id from tests.ids)), 3::bigint, 'La modératrice voit la file d''attente');
+select is((select count(*) from public.resource_internal where resource_id in (select id from tests.ids)), 3::bigint, 'Elle lit les notes internes');
 
 select throws_ok(
   $$ select public.moderate_resource((select id from tests.ids where label = 'a1'), 'publish') $$,
@@ -219,6 +227,11 @@ select throws_ok(
   'P0001', 'not_found', 'Une ressource inexistante'
 );
 
+select throws_ok(
+  $$ select public.moderate_resource((select id from tests.ids where label = 'a1'), 'verify') $$,
+  'P0001', 'invalid_transition',
+  'Une fiche ne se vérifie pas tant qu''elle peut encore être modifiée par son contributeur'
+);
 select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'start_review'), 'under_review', 'Prise en charge');
 select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'verify'), 'verified', 'Vérification');
 select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'publish'), 'published', 'Publication');
@@ -238,6 +251,10 @@ select throws_ok(
 select throws_ok(
   $$ select public.moderator_update_resource((select id from tests.ids where label = 'm1'), '{"license_code": "cc0-1.0"}') $$,
   '42501', 'own_submission', 'Elle ne corrige pas non plus sa propre soumission'
+);
+select is_empty(
+  $$ select 1 from public.resource_internal where resource_id = (select id from tests.ids where label = 'm1') $$,
+  'Elle ne lit pas les notes internes de sa propre soumission'
 );
 reset role;
 
@@ -291,7 +308,7 @@ select is(
 -- B, simple utilisateur : la ressource publiée, et elle seule.
 select tests.login('b0000000-0000-0000-0000-00000000ca02');
 select results_eq(
-  $$ select title from public.resources $$,
+  $$ select title from public.resources where id in (select id from tests.ids) $$,
   $$ values ('Introduction aux arbres équilibrés, version corrigée') $$,
   'Un utilisateur ne voit que les ressources publiées'
 );
@@ -314,7 +331,7 @@ select throws_ok(
   $$ select public.report_resource((select id from tests.ids where label = 'a2'), 'error') $$,
   'P0001', 'not_found', 'Une ressource non publiée ne se signale pas : elle n''est pas censée être connue'
 );
-select is((select count(*) from public.resource_reports), 1::bigint, 'B lit son propre signalement');
+select is((select count(*) from public.resource_reports where resource_id in (select id from tests.ids)), 1::bigint, 'B lit son propre signalement');
 select throws_ok($$ select reporter_id from public.resource_reports $$, '42501', null, 'L''identité du signaleur n''est pas lisible');
 select throws_ok(
   $$ select public.resolve_report((select id from tests.ids where label = 'r1'), 'dismissed') $$,
@@ -327,9 +344,16 @@ select tests.login('a0000000-0000-0000-0000-00000000ca01');
 select is_empty($$ select 1 from public.resource_reports $$, 'La contributrice ne lit pas les signalements des autres');
 reset role;
 
+-- Le journal, lisible par la modération, ne porte pas l'identité du signaleur.
+select is(
+  (select actor_id from public.audit_logs
+   where action = 'report.created' and target_id = (select id::text from tests.ids where label = 'r1')),
+  null::uuid, 'Le signalement est journalisé sans son auteur'
+);
+
 -- La modératrice le traite, puis suspend la ressource.
 select tests.login('c0000000-0000-0000-0000-00000000ca03', 'aal2');
-select is((select count(*) from public.resource_reports where status = 'open'), 1::bigint, 'La modératrice voit le signalement ouvert');
+select is((select count(*) from public.resource_reports where status = 'open' and resource_id in (select id from tests.ids)), 1::bigint, 'La modératrice voit le signalement ouvert');
 select throws_ok(
   $$ select public.moderate_resource((select id from tests.ids where label = 'a1'), 'suspend') $$,
   '22023', 'reason_required', 'Une suspension se motive'
@@ -350,7 +374,7 @@ reset role;
 
 -- Une ressource suspendue disparaît aussitôt pour les utilisateurs.
 select tests.login('b0000000-0000-0000-0000-00000000ca02');
-select is_empty($$ select 1 from public.resources $$, 'Une ressource suspendue n''est plus visible');
+select is_empty($$ select 1 from public.resources where id in (select id from tests.ids) $$, 'Une ressource suspendue n''est plus visible');
 select is(
   (select status from public.resource_reports), 'resolved',
   'Le signaleur voit que son signalement a été traité'
@@ -368,6 +392,7 @@ select is(
   public.moderator_update_resource((select id from tests.ids where label = 'a1'), '{"license_code": "all-rights-reserved"}'),
   'pending', 'Changer la licence d''une ressource publiée la repasse en attente'
 );
+select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'start_review'), 'under_review', 'Nouvelle prise en charge');
 select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'verify'), 'verified', 'Nouvelle vérification');
 select is(public.moderate_resource((select id from tests.ids where label = 'a1'), 'publish'), 'published', 'Nouvelle publication');
 select is(
@@ -429,9 +454,87 @@ select throws_ok(
              'https://exemple.invalid/w1', 'connector', 'openalex', 'W1') $$,
   '23505', null, 'Une même entrée d''une même source n''est importée qu''une fois'
 );
+select throws_ok(
+  $$ update public.resources set submitted_by = null
+     where id = (select id from tests.ids where label = 'a2') $$,
+  '42501', 'status_change_requires_moderation', 'Un connecteur n''efface pas le contributeur d''une fiche'
+);
+select throws_ok(
+  $$ update public.resources set visibility = 'organization' where source_identifier = 'W1' $$,
+  '42501', 'status_change_requires_moderation', 'Un connecteur ne change pas la visibilité'
+);
+select throws_ok(
+  $$ insert into public.resources (type_code, title, authors, language_code, program_code, official_url,
+                                    source_kind, source_name, source_identifier, submitted_by)
+     values ('article', 'Import avec contributeur', array['Auteur Test'], 'en', 'computer_science',
+             'https://exemple.invalid/w3', 'connector', 'openalex', 'W3',
+             'a0000000-0000-0000-0000-00000000ca01') $$,
+  '42501', 'import_must_be_pending', 'Un connecteur n''attribue pas une fiche à un contributeur'
+);
 select throws_ok($$ delete from public.resources $$, '42501', null, 'Un connecteur ne supprime aucune fiche');
 reset role;
 select set_config('request.jwt.claims', '', true);
+
+-- ---------------------------------------------------------------------------
+-- Règles de vérification : DOI en double, statut d'accès, autorisation
+-- ---------------------------------------------------------------------------
+select tests.login('a0000000-0000-0000-0000-00000000ca01');
+insert into tests.ids select 'x1', public.submit_resource(tests.payload('{"title": "Premier exemplaire", "doi": "10.5555/double"}'));
+insert into tests.ids select 'x2', public.submit_resource(tests.payload('{"title": "Second exemplaire", "doi": "10.5555/double"}'));
+insert into tests.ids select 'x3', public.submit_resource(tests.payload('{"title": "Accès non précisé", "access_status": "unknown"}'));
+insert into tests.ids select 'x4', public.submit_resource(tests.payload('{"title": "Autorisation sans preuve", "license_code": "author-permission"}'));
+select throws_ok(
+  $$ select public.submit_resource(tests.payload('{"official_url": "https://vrai.example@hostile.example/"}')) $$,
+  '23514', null, 'Une adresse avec identifiants est refusée'
+);
+select throws_ok(
+  $$ select public.submit_resource(tests.payload(jsonb_build_object('title', 'Titre ' || U&'\202E' || 'déguisé'))) $$,
+  '23514', null, 'Un caractère de format invisible dans le titre est refusé'
+);
+reset role;
+
+select tests.login('d0000000-0000-0000-0000-00000000ca04', 'aal2');
+select is(public.moderate_resource((select id from tests.ids where label = 'x1'), 'start_review'), 'under_review', 'x1 pris en charge');
+select is(public.moderate_resource((select id from tests.ids where label = 'x1'), 'verify'), 'verified', 'x1 vérifié');
+select is(public.moderate_resource((select id from tests.ids where label = 'x2'), 'start_review'), 'under_review', 'x2 pris en charge');
+select throws_ok(
+  $$ select public.moderate_resource((select id from tests.ids where label = 'x2'), 'verify') $$,
+  '23505', 'duplicate_doi', 'Deux fiches de même DOI ne sont pas vérifiées toutes les deux'
+);
+select is(public.moderate_resource((select id from tests.ids where label = 'x3'), 'start_review'), 'under_review', 'x3 pris en charge');
+select throws_ok(
+  $$ select public.moderate_resource((select id from tests.ids where label = 'x3'), 'verify') $$,
+  '23514', 'access_status_required', 'Rien ne se vérifie avec un statut d''accès inconnu'
+);
+select is(public.moderate_resource((select id from tests.ids where label = 'x4'), 'start_review'), 'under_review', 'x4 pris en charge');
+select throws_ok(
+  $$ select public.moderate_resource((select id from tests.ids where label = 'x4'), 'verify') $$,
+  '23514', 'permission_proof_required', 'Une autorisation d''ayant droit se prouve'
+);
+reset role;
+
+-- Un modérateur ne classe pas un signalement visant sa propre proposition.
+select tests.login('c0000000-0000-0000-0000-00000000ca03', 'aal2');
+insert into tests.ids select 'm2', public.submit_resource(tests.payload('{"title": "Proposition signalée de la modératrice"}'));
+reset role;
+select tests.login('d0000000-0000-0000-0000-00000000ca04', 'aal2');
+select is(public.moderate_resource((select id from tests.ids where label = 'm2'), 'start_review'), 'under_review', 'm2 pris en charge par un collègue');
+select is(public.moderate_resource((select id from tests.ids where label = 'm2'), 'verify'), 'verified', 'm2 vérifié');
+select is(public.moderate_resource((select id from tests.ids where label = 'm2'), 'publish'), 'published', 'm2 publié');
+reset role;
+select tests.login('a0000000-0000-0000-0000-00000000ca01');
+insert into tests.ids select 'r2', public.report_resource((select id from tests.ids where label = 'm2'), 'error', 'Erreur dans la fiche.');
+reset role;
+select tests.login('c0000000-0000-0000-0000-00000000ca03', 'aal2');
+select is_empty(
+  $$ select 1 from public.resource_reports where id = (select id from tests.ids where label = 'r2') $$,
+  'La modératrice ne lit pas le signalement visant sa propre proposition'
+);
+select throws_ok(
+  $$ select public.resolve_report((select id from tests.ids where label = 'r2'), 'dismissed') $$,
+  '42501', 'own_submission', 'Elle ne le classe pas non plus'
+);
+reset role;
 
 -- ---------------------------------------------------------------------------
 -- Limite de débit des soumissions
