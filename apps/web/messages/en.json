@@ -48,7 +48,8 @@
       "forgot": "Forgot your password?",
       "noAccount": "No account yet?",
       "emailConfirmed": "Your address is confirmed. Sign in with your password.",
-      "passwordUpdated": "Your password has been changed and all your devices have been signed out. Sign in with the new password."
+      "passwordUpdated": "Your password has been changed and all your devices have been signed out. Sign in with the new password.",
+      "accountDeleted": "Your account has been deleted."
     },
     "forgotPassword": {
       "title": "Forgot your password",
@@ -86,7 +87,8 @@
       "same_password": "The new password must be different from the old one.",
       "session_expired": "Your session has expired. Start the procedure again.",
       "unavailable": "The service is temporarily unavailable. Try again later.",
-      "already_signed_in": "You are already signed in. Sign out before using this link."
+      "already_signed_in": "You are already signed in. Sign out before using this link.",
+      "last_org_admin": "You are the only administrator of an organisation. Transfer its administration first, then try again."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -94,13 +96,68 @@
       "password_too_long": "The password cannot exceed 72 characters.",
       "password_needs_letter_and_digit": "The password must contain letters and digits.",
       "password_mismatch": "The two passwords do not match.",
-      "age_required": "This declaration is required to create an account."
+      "age_required": "This declaration is required to create an account.",
+      "required": "This field is required.",
+      "invalid_choice": "This choice is not valid.",
+      "institution_length": "The institution name must be between 2 and 200 characters long."
     }
   },
   "Account": {
     "title": "My account",
     "email": "Email address",
+    "country": "Country",
+    "level": "Level of study",
+    "program": "Programme",
+    "specialty": "Specialty",
+    "institution": "Institution",
+    "notProvided": "Not provided",
     "privacy": "Your profile is visible only to you.",
+    "profileSaved": "Your profile has been saved.",
+    "editProfile": "Edit my profile",
+    "signOut": "Sign out",
+    "deleteAccount": "Delete my account"
+  },
+  "Profile": {
+    "title": "My profile",
+    "intro": "This information is used to tailor the search. It is visible only to you.",
+    "welcomeTitle": "Welcome to EduScholar",
+    "welcomeIntro": "Before you start, tell us your country, level and programme. This information is visible only to you.",
+    "account": "Account",
+    "country": "Country",
+    "level": "Level of study",
+    "program": "Programme",
+    "specialty": "Specialty (optional)",
+    "subjects": "Subjects studied (optional)",
+    "institution": "Institution (optional)",
+    "institutionHint": "Never shown to other people.",
+    "goals": "Your goals (optional)",
+    "goalOptions": {
+      "courses": "Follow courses",
+      "revision": "Revise",
+      "thesis": "Prepare a dissertation or thesis",
+      "research": "Do research",
+      "project": "Carry out a project"
+    },
+    "preferredLocale": "Preferred language",
+    "ageConfirmed": "I declare that I am old enough in my country to use this service.",
+    "choose": "Choose…",
+    "none": "None",
+    "submit": "Save my profile",
+    "pending": "Saving…",
+    "back": "Back to my account",
     "signOut": "Sign out"
+  },
+  "DeleteAccount": {
+    "title": "Delete my account",
+    "intro": "This action is permanent. Confirm with your password.",
+    "account": "Account",
+    "consequenceData": "Your profile and your private data will be erased.",
+    "consequenceIrreversible": "No restoration will be possible.",
+    "consequenceAudit": "The security log keeps traces that no longer identify you directly.",
+    "password": "Password",
+    "confirm": "I understand that the deletion is permanent.",
+    "submit": "Permanently delete my account",
+    "pending": "Deleting…",
+    "cancel": "Cancel and return to my account"
   }
 }

@@ -46,6 +46,12 @@ const RULES = {
   "password-update": {
     ip: { limit: 20, windowSeconds: HOUR },
   },
+  // Mot de passe redemandé pour une action sensible. Compteur distinct de la
+  // connexion : des essais ratés ici ne consomment pas la limite du titulaire.
+  reauthentication: {
+    ip: { limit: 20, windowSeconds: 15 * MINUTE },
+    pair: { limit: 5, windowSeconds: 15 * MINUTE },
+  },
 } satisfies Record<string, Rules>;
 
 export type RateLimitedAction = keyof typeof RULES;

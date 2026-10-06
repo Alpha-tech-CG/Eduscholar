@@ -54,7 +54,9 @@ export default async function SignInPage({
         <p role="status" className="rounded border border-foreground/20 p-3">
           {notice === "email-confirmed"
             ? t("signIn.emailConfirmed")
-            : t("signIn.passwordUpdated")}
+            : notice === "password-updated"
+              ? t("signIn.passwordUpdated")
+              : t("signIn.accountDeleted")}
         </p>
       ) : null}
       <AuthForm

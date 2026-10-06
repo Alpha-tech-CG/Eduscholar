@@ -23,13 +23,21 @@ type AuthFormProps = {
   submitLabel: string;
   pendingLabel: string;
   children: ReactNode;
+  /** Bouton d'une action irréversible. */
+  destructive?: boolean;
 };
 
 /**
  * Formulaire d'authentification. Fonctionne sans JavaScript ; avec, il affiche
  * l'état d'envoi et les erreurs renvoyées par le serveur.
  */
-export function AuthForm({ action, submitLabel, pendingLabel, children }: AuthFormProps) {
+export function AuthForm({
+  action,
+  submitLabel,
+  pendingLabel,
+  children,
+  destructive = false,
+}: AuthFormProps) {
   const t = useTranslations("Auth");
   const [state, formAction, pending] = useActionState(action, initialAuthState);
   const feedback = useRef<HTMLDivElement>(null);
@@ -66,7 +74,11 @@ export function AuthForm({ action, submitLabel, pendingLabel, children }: AuthFo
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-foreground px-4 py-3 font-medium text-background disabled:opacity-60"
+          className={
+            destructive
+              ? "rounded bg-red-800 px-4 py-3 font-medium text-white disabled:opacity-60"
+              : "rounded bg-foreground px-4 py-3 font-medium text-background disabled:opacity-60"
+          }
         >
           {pending ? pendingLabel : submitLabel}
         </button>
@@ -149,5 +161,139 @@ export function CheckboxField({ name, label }: CheckboxFieldProps) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+type Choice = { value: string; label: string };
+
+type SelectFieldProps = {
+  name: string;
+  label: string;
+  options: Choice[];
+  defaultValue?: string;
+  placeholder: string;
+  required?: boolean;
+};
+
+export function SelectField({
+  name,
+  label,
+  options,
+  defaultValue,
+  placeholder,
+  required = false,
+}: SelectFieldProps) {
+  const t = useTranslations("Auth");
+  const { state } = useContext(FormStateContext);
+  const error = state.status === "error" ? state.fields?.[name] : undefined;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={name} className="font-medium">
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        required={required}
+        defaultValue={defaultValue ?? ""}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${name}-error` : undefined}
+        className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {error ? (
+        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+          {t(`fieldErrors.${error}`)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+type OptionalTextFieldProps = {
+  name: string;
+  label: string;
+  hint?: string;
+  defaultValue?: string;
+  maxLength: number;
+};
+
+export function OptionalTextField({
+  name,
+  label,
+  hint,
+  defaultValue,
+  maxLength,
+}: OptionalTextFieldProps) {
+  const t = useTranslations("Auth");
+  const { state } = useContext(FormStateContext);
+  const error = state.status === "error" ? state.fields?.[name] : undefined;
+  const describedBy = [hint ? `${name}-hint` : null, error ? `${name}-error` : null]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={name} className="font-medium">
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type="text"
+        maxLength={maxLength}
+        defaultValue={defaultValue}
+        autoComplete="off"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy || undefined}
+        className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
+      />
+      {hint ? (
+        <p id={`${name}-hint`} className="text-sm opacity-70">
+          {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+          {t(`fieldErrors.${error}`)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+type CheckboxGroupProps = {
+  name: string;
+  legend: string;
+  options: Choice[];
+  defaultValues: string[];
+};
+
+export function CheckboxGroup({ name, legend, options, defaultValues }: CheckboxGroupProps) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="font-medium">{legend}</legend>
+      <div className="grid max-h-64 gap-x-4 gap-y-1 overflow-y-auto rounded border border-foreground/20 p-3 sm:grid-cols-2">
+        {options.map((option) => (
+          <label key={option.value} className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              name={name}
+              value={option.value}
+              defaultChecked={defaultValues.includes(option.value)}
+              className="mt-1 size-4"
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

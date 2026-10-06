@@ -154,6 +154,11 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   de session, changement de mot de passe par une session ordinaire, verrouillage ciblé,
   adresse du client falsifiable. Le reste est en dette D-09 à D-14. Ces corrections n'ont
   pas fait l'objet d'une seconde revue.
+- 6 octobre 2026 — Référentiels et profil (B-12, B-11) relus par l'agent sécurité : aucun
+  constat critique ou élevé, 5 moyens et 5 faibles. Corrigés : complétion du profil
+  vérifiable en base, suppression de compte journalisée et refusée à un compte suspendu,
+  détection du dernier administrateur faite en base et testée, référentiels fermés aux
+  visiteurs anonymes, bornes réelles des champs. Reste en dette : D-15, D-16.
 
 ## Suivi
 

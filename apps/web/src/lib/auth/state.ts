@@ -1,3 +1,4 @@
+import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
 import type { FieldErrorCode } from "./schemas";
 
 // État renvoyé par les actions d'authentification. Uniquement des codes : les
@@ -12,6 +13,7 @@ export type AuthErrorCode =
   | "weak_password"
   | "same_password"
   | "session_expired"
+  | "last_org_admin"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";
@@ -21,7 +23,7 @@ export type AuthFormState =
   | {
       status: "error";
       error: AuthErrorCode;
-      fields?: Record<string, FieldErrorCode>;
+      fields?: Record<string, FieldErrorCode | ProfileFieldErrorCode>;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;
     }
@@ -30,7 +32,7 @@ export type AuthFormState =
 export const initialAuthState: AuthFormState = { status: "idle" };
 
 /** Messages affichés sur la page de connexion après une redirection. */
-export const SIGN_IN_NOTICES = ["email-confirmed", "password-updated"] as const;
+export const SIGN_IN_NOTICES = ["email-confirmed", "password-updated", "account-deleted"] as const;
 export type SignInNotice = (typeof SIGN_IN_NOTICES)[number];
 
 export function parseSignInNotice(value: unknown): SignInNotice | null {

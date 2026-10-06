@@ -113,7 +113,9 @@ Détail dans `docs/security/initial-audit.md`.
   en base. Voir `docs/architecture/authentication.md`.
 - Tests : 19 de scripts, 82 unitaires, 153 de base, 27 par appel direct à l'API,
   78 de bout en bout.
-- Toujours aucune fonctionnalité métier (recherche, bibliothèque, projets).
+- Référentiels (B-12) et profil académique (B-11) : pays, niveaux, filière informatique ;
+  profil exigé à la première connexion ; suppression de compte par son titulaire.
+- Toujours aucune fonctionnalité de recherche, de bibliothèque ou de projet.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

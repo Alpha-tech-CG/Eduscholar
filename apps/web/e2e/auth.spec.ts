@@ -236,7 +236,8 @@ test.describe("connexion", () => {
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/en\/account/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("My account");
+    await expect(page.getByTestId("account-email")).toHaveText(email);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Welcome to EduScholar");
   });
 
   test("le texte d'un message ne vient jamais de l'adresse", async ({ page }) => {

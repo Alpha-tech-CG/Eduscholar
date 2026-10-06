@@ -65,7 +65,7 @@ select is_empty(
   'Toute politique authenticated vérifie que le compte est actif'
 );
 
--- anon : aucun droit, y compris par colonne, sur aucune relation.
+-- anon : aucune écriture, sur aucune relation, y compris par colonne.
 select is_empty(
   $$
     select c.oid::regclass::text
@@ -73,10 +73,25 @@ select is_empty(
     join pg_namespace n on n.oid = c.relnamespace
     where n.nspname in ('public', 'private')
       and c.relkind in ('r', 'p', 'v', 'm', 'f')
-      and (has_table_privilege('anon', c.oid, 'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-        or has_any_column_privilege('anon', c.oid, 'SELECT,INSERT,UPDATE,REFERENCES'))
+      and (has_table_privilege('anon', c.oid, 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+        or has_any_column_privilege('anon', c.oid, 'INSERT,UPDATE,REFERENCES'))
   $$,
-  'anon n''a aucun droit sur aucune relation'
+  'anon n''a aucun droit d''écriture sur aucune relation'
+);
+
+-- anon : aucune lecture non plus. La liste blanche est vide : aucune donnée
+-- n'est servie directement à un visiteur par l'API.
+select is_empty(
+  $$
+    select c.oid::regclass::text
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname in ('public', 'private')
+      and c.relkind in ('r', 'p', 'v', 'm', 'f')
+      and has_any_column_privilege('anon', c.oid, 'SELECT')
+      and (n.nspname || '.' || c.relname) not in (select unnest(array[]::text[]))
+  $$,
+  'anon ne lit aucune relation hors liste blanche'
 );
 
 -- authenticated : aucune écriture de table entière, aucun INSERT ni DELETE.
@@ -208,14 +223,21 @@ select is(
      where schemaname in ('public', 'private')
    ) q),
   concat_ws(E'\n',
+    'public.academic_domains | academic_domains_select_authenticated | SELECT | {authenticated}',
+    'public.academic_programs | academic_programs_select_authenticated | SELECT | {authenticated}',
     'public.audit_logs | audit_logs_select | SELECT | {authenticated}',
+    'public.countries | countries_select_authenticated | SELECT | {authenticated}',
+    'public.education_levels | education_levels_select_authenticated | SELECT | {authenticated}',
+    'public.languages | languages_select_authenticated | SELECT | {authenticated}',
     'public.organization_members | organization_members_select | SELECT | {authenticated}',
     'public.organizations | organizations_select | SELECT | {authenticated}',
     'public.platform_roles | platform_roles_select_own | SELECT | {authenticated}',
     'public.profile_public | profile_public_select | SELECT | {authenticated}',
     'public.profile_public | profile_public_update_own | UPDATE | {authenticated}',
     'public.profiles | profiles_select_own | SELECT | {authenticated}',
-    'public.profiles | profiles_update_own | UPDATE | {authenticated}'
+    'public.profiles | profiles_update_own | UPDATE | {authenticated}',
+    'public.program_specialties | program_specialties_select_authenticated | SELECT | {authenticated}',
+    'public.subjects | subjects_select_authenticated | SELECT | {authenticated}'
   ),
   'La liste des politiques est celle attendue'
 );
@@ -235,7 +257,15 @@ select is(
   concat_ws(E'\n',
     'public.profile_public.display_name',
     'public.profile_public.is_public',
-    'public.profiles.preferred_locale'
+    'public.profiles.age_confirmed_at',
+    'public.profiles.country_code',
+    'public.profiles.goals',
+    'public.profiles.institution_name',
+    'public.profiles.level_code',
+    'public.profiles.preferred_locale',
+    'public.profiles.program_code',
+    'public.profiles.specialty_code',
+    'public.profiles.subject_codes'
   ),
   'Les colonnes modifiables par authenticated sont celles attendues'
 );
@@ -267,11 +297,15 @@ select is(
        and has_function_privilege('authenticated', p.oid, 'execute')
    ) q),
   concat_ws(E'\n',
+    'private.account_deletion_check()',
+    'private.has_distinct_values(p_values text[])',
     'private.has_org_role(p_organization_id uuid, p_roles text[])',
     'private.has_platform_role(p_roles text[])',
     'private.is_account_active()',
+    'private.is_onboarded()',
     'private.is_session_aal2()',
-    'private.my_org_ids(p_roles text[])'
+    'private.my_org_ids(p_roles text[])',
+    'public.account_deletion_check()'
   ),
   'Les fonctions exécutables par authenticated sont celles attendues'
 );

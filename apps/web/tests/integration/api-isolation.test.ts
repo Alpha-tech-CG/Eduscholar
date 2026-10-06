@@ -337,3 +337,111 @@ describe("jeton des liens reçus par courriel", () => {
     }
   });
 });
+
+// Profil académique et référentiels, par appel direct (B-11, B-12).
+describe("profil académique, par appel direct à l'API", () => {
+  let dana: Actor;
+
+  beforeAll(async () => {
+    dana = await createActor("dana");
+  });
+
+  afterAll(async () => {
+    if (dana) await admin.auth.admin.deleteUser(dana.id);
+  });
+
+  const patchProfile = (body: Record<string, unknown>) =>
+    rest(`profiles?user_id=eq.${dana.id}`, dana.token, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers: { Prefer: "return=representation" },
+    });
+
+  it("un visiteur ne lit aucun référentiel", async () => {
+    for (const table of ["countries", "subjects", "education_levels"]) {
+      const { data, error } = await anonymous.from(table).select("code").limit(1);
+      expect(error, table).not.toBeNull();
+      expect(data, table).toBeNull();
+    }
+  });
+
+  it("un utilisateur lit les référentiels, sans le niveau désactivé", async () => {
+    const levels = await dana.client.from("education_levels").select("code");
+    expect(levels.error).toBeNull();
+    const codes = (levels.data ?? []).map((row) => row.code);
+    expect(codes).toContain("bachelor_3");
+    expect(codes).not.toContain("upper_secondary");
+  });
+
+  it("tant que le profil n'est pas complété, rien ne se publie", async () => {
+    const response = await rest(`profile_public?user_id=eq.${dana.id}`, dana.token, {
+      method: "PATCH",
+      body: JSON.stringify({ display_name: "Sans déclaration", is_public: true }),
+      headers: { Prefer: "return=representation" },
+    });
+    expect(response.status).toBeLessThan(400);
+    expect(await response.json()).toEqual([]);
+
+    const check = await dana.client.from("profile_public").select("is_public");
+    expect(check.data).toEqual([{ is_public: false }]);
+  });
+
+  it.each([
+    ["un niveau désactivé", { level_code: "upper_secondary" }],
+    ["un pays inconnu", { country_code: "ZZ" }],
+    ["une matière sans filière", { subject_codes: ["algorithms"] }],
+    ["un objectif hors liste", { goals: ["devenir_admin"] }],
+    ["un établissement démesuré", { institution_name: `ab${" ".repeat(5000)}` }],
+  ])("la base refuse %s", async (_label, body) => {
+    const response = await patchProfile(body);
+    expect(response.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it("la date de complétion et la colonne de propriété ne sont pas modifiables", async () => {
+    for (const body of [
+      { onboarded_at: "2020-01-01T00:00:00Z" },
+      { user_id: alice.id },
+      { created_at: "2020-01-01T00:00:00Z" },
+    ]) {
+      const response = await patchProfile(body);
+      expect(response.status, JSON.stringify(body)).toBeGreaterThanOrEqual(400);
+    }
+  });
+
+  it("le profil se complète, et la déclaration d'âge est datée par la base", async () => {
+    const response = await patchProfile({
+      country_code: "SN",
+      level_code: "bachelor_3",
+      program_code: "computer_science",
+      age_confirmed_at: "2001-01-01T00:00:00Z",
+    });
+    expect(response.status).toBeLessThan(400);
+    const [row] = (await response.json()) as Array<{
+      age_confirmed_at: string;
+      onboarded_at: string | null;
+    }>;
+    expect(row?.onboarded_at).not.toBeNull();
+    expect(new Date(row?.age_confirmed_at ?? 0).getFullYear()).toBeGreaterThanOrEqual(2026);
+
+    // La déclaration ne se retire pas.
+    await patchProfile({ age_confirmed_at: null });
+    const check = await dana.client.from("profiles").select("age_confirmed_at");
+    expect(check.data?.[0]?.age_confirmed_at).not.toBeNull();
+  });
+
+  it("un autre utilisateur ne lit pas ce profil, même par imbrication", async () => {
+    const direct = await alice.client.from("profiles").select("country_code").eq("user_id", dana.id);
+    expect(direct.data).toEqual([]);
+
+    const nested = await rest("countries?select=code,profiles(user_id,institution_name)&code=eq.SN", alice.token);
+    if (nested.status < 400) {
+      const rows = (await nested.json()) as Array<{ profiles: unknown[] }>;
+      for (const row of rows) expect(row.profiles).toEqual([]);
+    }
+  });
+
+  it("le contrôle de suppression n'est pas appelable par un visiteur", async () => {
+    const { error } = await anonymous.rpc("account_deletion_check" as never);
+    expect(error).not.toBeNull();
+  });
+});

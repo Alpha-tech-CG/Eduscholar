@@ -25,8 +25,8 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 
 | ID | Tâche | Dépend de | Statut |
 |---|---|---|---|
-| B-11 | Profil académique (pays, niveau, filière, langue, confidentialité par défaut) | B-10 | à faire |
-| B-12 | Référentiels : pays, langues, niveaux, filières, matières | B-06, B-09 | à faire |
+| B-11 | Profil académique (pays, niveau, filière, langue, confidentialité par défaut) | B-10 | fait — profil exigé à la première connexion, déclaration d'âge datée par la base, suppression de compte |
+| B-12 | Référentiels : pays, langues, niveaux, filières, matières | B-06, B-09 | fait — 249 pays ISO, langues, niveaux, filière informatique, 6 spécialités, 29 matières |
 | B-13 | Schéma du catalogue : ressources, sources, licences, tags, statuts d'accès et éditoriaux | B-09 | à faire |
 | B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | à faire |
 | B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | à faire |
@@ -49,10 +49,12 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-08 | Mesure du plan d'exécution des politiques sur un journal d'audit volumineux | Avec D-03 |
 | D-09 | Authentification : CAPTCHA, contrôle des mots de passe compromis, alerte de nouvelle connexion, journalisation des événements de sécurité (échecs, limites atteintes). Sans CAPTCHA, un appel direct à l'API d'authentification n'est limité que par adresse IP. | Avant l'ouverture publique |
 | D-10 | Exiger le mot de passe actuel pour un changement fait par appel direct à l'API d'authentification avec une session ordinaire (réglage du service à vérifier sur le projet hébergé) | À la création du projet de staging |
-| D-11 | Enregistrer la déclaration d'âge en base et l'exiger à la première connexion, quel que soit le chemin d'inscription | Avec le profil académique (B-11) |
+| D-11 | Enregistrer la déclaration d'âge en base et l'exiger à la première connexion, quel que soit le chemin d'inscription | fait en B-11 |
 | D-12 | Purger les comptes jamais confirmés | Avant l'ouverture publique |
 | D-13 | Neutraliser ou personnaliser les modèles de courriel non utilisés (lien magique, changement d'adresse, invitation), dont les liens agissent par simple chargement | Avant l'ouverture publique |
-| D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | Avec le profil académique (B-11) |
+| D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | fait en B-11 ; le transfert d'administration reste à construire (D-04) |
+| D-15 | Requêtes imbriquées coûteuses par l'API (un utilisateur connecté peut encore en lancer sur les référentiels, jusqu'au délai de 8 secondes) : limitation de débit devant l'API, mesure de charge | Avant l'ouverture publique, avec D-09 |
+| D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)
 

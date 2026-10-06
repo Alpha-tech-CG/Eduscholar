@@ -105,6 +105,12 @@ insert into private.account_status (user_id, status, reason, changed_by) values
 update public.profile_public set display_name = 'Étudiante B', is_public = true
   where user_id = 'b0000000-0000-0000-0000-000000000002';
 
+-- A et B ont complété leur profil : sans cela, rien ne se publie.
+update public.profiles
+  set country_code = 'SN', level_code = 'bachelor_3', program_code = 'computer_science',
+      age_confirmed_at = now()
+  where user_id in ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000002');
+
 -- Un événement de sécurité par étudiant, pour tester la lecture du journal.
 select private.write_audit('security', 'test.connexion', 'a0000000-0000-0000-0000-000000000001');
 select private.write_audit('security', 'test.connexion', 'b0000000-0000-0000-0000-000000000002');
@@ -179,6 +185,10 @@ select is(
 select lives_ok(
   $$ update public.profile_public set display_name = 'Étudiant A' where user_id = 'a0000000-0000-0000-0000-000000000001' $$,
   'A modifie son nom d''affichage'
+);
+select is(
+  (select display_name from public.profile_public where user_id = 'a0000000-0000-0000-0000-000000000001'),
+  'Étudiant A', 'Le nom d''affichage de A a bien été modifié'
 );
 select throws_ok(
   $$ update public.profile_public set display_name = repeat('x', 81) where user_id = 'a0000000-0000-0000-0000-000000000001' $$,

@@ -42,6 +42,10 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006000200_foundation_hardening.sql` | Corrections de la revue de sécurité : lecture par colonne, acteur de l'audit, politiques évaluées par requête |
 | `20261006000300_revoke_residual_privileges.sql` | Retrait de `TRUNCATE`, `REFERENCES` et `TRIGGER` aux rôles de l'API |
 | `20261006000400_rate_limits.sql` | Compteurs de limitation de débit de l'authentification |
+| `20261006000500_reference_tables.sql` | Référentiels : pays, langues, niveaux, domaines, filières, spécialités, matières |
+| `20261006000600_reference_data.sql` | Données des référentiels, générées par `scripts/generate-reference-data.mjs` |
+| `20261006000700_academic_profile.sql` | Champs académiques du profil, déclaration d'âge, complétion |
+| `20261006000800_profile_hardening.sql` | Corrections de la revue de sécurité : complétion vérifiable en base, audit et contrôle de la suppression de compte, référentiels fermés aux visiteurs |
 
 ## Tables
 
@@ -57,6 +61,26 @@ Profil privé. Une ligne par compte, créée par déclencheur à l'inscription.
 
 Accès : le titulaire lit sa ligne et modifie `preferred_locale`. Aucune insertion ni
 suppression directe.
+
+Champs académiques (B-11), tous privés :
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `country_code` | text | Référence `countries` ; entrée active |
+| `level_code` | text | Référence `education_levels` ; entrée active (le lycée est désactivé) |
+| `program_code` | text | Référence `academic_programs` ; entrée active |
+| `specialty_code` | text | Spécialité de la filière choisie |
+| `subject_codes` | text[] | 40 au plus, sans doublon, matières de la filière choisie |
+| `institution_name` | text | 2 à 200 caractères ; saisie libre, jamais affichée à un tiers |
+| `goals` | text[] | Parmi `courses`, `revision`, `thesis`, `research`, `project` |
+| `age_confirmed_at` | timestamptz | Datée par la base ; ne se retire pas, ne se redate pas |
+| `onboarded_at` | timestamptz | Calculée par la base quand pays, niveau, filière et déclaration d'âge sont présents ; non modifiable par le client |
+
+Un profil complété ne peut plus être vidé de son minimum. La suppression d'un compte
+écrit une ligne `account.deleted` dans le journal.
+
+Le titulaire modifie ces champs directement, sous RLS. Chaque valeur est contrôlée par
+la base : un appel direct à l'API ne peut pas enregistrer ce que le formulaire refuserait.
 
 ### `public.profile_public`
 
@@ -171,6 +195,25 @@ d'UUID ne renvoyant plus à aucune donnée : c'est la pseudonymisation retenue.
 Reste à faire avant la production : partitionnement par mois, durée de conservation et
 export hors base (modèle de menaces M-38).
 
+### Référentiels
+
+`countries`, `languages`, `education_levels`, `academic_domains`, `academic_programs`,
+`program_specialties`, `subjects`.
+
+- Clé : un code stable (`code`, ou `program_code` + `code`), non modifiable.
+- `labels` : jsonb, avec au moins un libellé `fr` et un libellé `en` non vides.
+- `is_active` : une entrée ne se supprime pas, elle se désactive.
+- `position` : ordre d'affichage, là où il a un sens.
+
+Lisibles par tout utilisateur connecté, limitées aux entrées actives. Un visiteur
+anonyme ne les lit pas par l'API : c'était la seule surface de requête ouverte sans
+compte, et aucune page publique n'en a encore besoin. Quand la recherche publique
+arrivera (B-16), le serveur les servira lui-même, depuis un cache. Aucune écriture par l'API : les données arrivent par migration. Pour corriger
+une donnée, modifier `scripts/generate-reference-data.mjs` ou la taxonomie, puis écrire
+une nouvelle migration ; ne jamais retoucher une migration appliquée.
+
+L'API renvoie 100 lignes au plus par réponse : la liste des pays se lit en trois pages.
+
 ### `private.rate_limit_buckets`
 
 Compteurs de tentatives par fenêtre fixe. Aucun accès utilisateur.
@@ -192,6 +235,8 @@ autorisée. Elle est `security invoker` et n'est exécutable que par `service_ro
 | Fonction | Rôle |
 |---|---|
 | `is_account_active()` | Vrai si l'appelant est connecté, non anonyme et non suspendu |
+| `is_onboarded()` | Vrai si l'appelant a complété son profil minimal, déclaration d'âge comprise |
+| `account_deletion_check()` | Contrôle préalable à la suppression de son compte : `ok`, `forbidden` (compte suspendu) ou `last_org_admin` ; journalise la demande. Exposée par une enveloppe `security invoker` du même nom dans `public`. |
 | `is_session_aal2()` | Vrai si la session a validé un second facteur |
 | `has_platform_role(roles[])` | Compte actif, second facteur, rôle détenu |
 | `has_org_role(organization_id, roles[])` | Compte actif, organisation non suspendue, rôle détenu ; second facteur exigé pour `org_admin` |
@@ -217,7 +262,9 @@ récursion entre politiques alors que la RLS est forcée sur toutes les tables.
    la liste blanche du test de configuration.
 4. Colonnes de propriété protégées par `prevent_key_change`.
 5. Écritures sensibles par fonction nommée ; l'audit s'écrit en base.
-6. Chaque politique inclut `private.is_account_active()`.
+6. Chaque politique inclut `private.is_account_active()`. Toute politique d'écriture
+   inclut aussi `private.is_onboarded()`, sauf sur `profiles` : un compte qui n'a pas
+   complété son profil ni déclaré son âge n'écrit rien d'autre.
 7. Tests pgTAP livrés avec la migration, pour les quatre opérations et le rôle `anon`.
 8. Aucune migration destructive sans approbation ; l'en-tête de la migration décrit comment l'annuler.
 

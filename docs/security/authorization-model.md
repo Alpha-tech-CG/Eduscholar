@@ -445,6 +445,7 @@ has_org_role(organization_id, roles[])   rôle dans une organisation non suspend
 has_platform_role(roles[])               rôle de plateforme
 my_org_ids(roles[])                      organisations où l'appelant détient l'un des rôles
 is_account_active()                      compte non suspendu
+is_onboarded()                           profil minimal complété, déclaration d'âge comprise
 ```
 
 Règles :
@@ -481,6 +482,7 @@ depuis le serveur) :
 | Publier un mémoire (crée une soumission) | Propriétaire |
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
+| `account_deletion_check` : contrôle préalable à la suppression de son compte | Le titulaire, compte actif ; refuse le dernier administrateur d'une organisation |
 
 **Exécutées avec `service_role`, côté serveur uniquement :**
 
@@ -490,7 +492,7 @@ depuis le serveur) :
 | Attribution et retrait de rôles de plateforme | Rôle de l'appelant, `aal2`, session récente |
 | Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
 | Suspension et rétablissement de compte | Matrice 5.6 |
-| Suppression de compte à la demande du titulaire | Ré-authentification du titulaire |
+| Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur | Tâche système ; résultat au statut `pending` au plus |
 | Création de notifications | Tâche système |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |

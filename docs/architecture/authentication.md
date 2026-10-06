@@ -81,6 +81,7 @@ instances du serveur. Les clés sont des empreintes : ni adresse IP ni adresse
 | Demande de réinitialisation | 20 / h | — | 3 / h |
 | Confirmation d'un lien | 30 / 15 min | — | — |
 | Nouveau mot de passe | 20 / h | — | — |
+| Mot de passe redemandé (suppression de compte) | 20 / 15 min | 5 / 15 min | — |
 
 - Le refus courant porte sur le couple client + compte : il ne gêne pas le titulaire qui
   se connecte d'ailleurs.
@@ -99,6 +100,22 @@ par préfixe /64.
 
 `safeNextPath` n'accepte qu'un chemin interne ; toute autre valeur mène au compte. Le
 texte des messages affichés après redirection vient d'une liste fermée, jamais de l'adresse.
+
+### Profil exigé à la première connexion
+
+Tant que le profil minimal (pays, niveau, filière) et la déclaration d'âge ne sont pas
+enregistrés, la page du compte renvoie au formulaire de profil. La règle vaut aussi par
+appel direct à l'API : la base ne laisse rien publier à un compte qui ne l'a pas fait
+(`private.is_onboarded()`), quel que soit le chemin par lequel il a été créé.
+
+### Suppression de son compte
+
+Le mot de passe est redemandé, avec un compteur de tentatives distinct de celui de la
+connexion. La base est ensuite interrogée sous la session de l'utilisateur : un compte
+suspendu ne peut pas effacer sa suspension en se supprimant, et le dernier administrateur
+d'une organisation doit d'abord transmettre l'administration. La demande et la
+suppression sont journalisées. Le cookie de session est effacé même si le service
+d'authentification ne répond pas.
 
 ## Modules
 

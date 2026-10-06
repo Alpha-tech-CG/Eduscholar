@@ -5,7 +5,39 @@ export type Database = {
   
   "public": {
           Tables: {
-            "audit_logs": {
+            "academic_domains": {
+                  Row: {
+                    "code": string,"is_active": boolean,"labels": NonNullable<Json>
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"labels": NonNullable<Json>
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"academic_programs": {
+                  Row: {
+                    "code": string,"domain_code": string,"is_active": boolean,"labels": NonNullable<Json>
+                  }
+                  Insert: {
+                    "code": string,"domain_code": string,"is_active"?: boolean,"labels": NonNullable<Json>
+                  }
+                  Update: {
+                    "code"?: string,"domain_code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "academic_programs_domain_code_fkey"
+      columns: ["domain_code"]
+isOneToOne: false
+      referencedRelation: "academic_domains"
+      referencedColumns: ["code"]
+    }
+                  ]
+                },"audit_logs": {
                   Row: {
                     "action": string,"actor_id": string | null,"category": string,"id": number,"metadata": NonNullable<Json>,"occurred_at": string,"organization_id": string | null,"subject_user_id": string | null,"target_id": string | null,"target_type": string | null
                   }
@@ -14,6 +46,45 @@ export type Database = {
                   }
                   Update: {
                     "action"?: string,"actor_id"?: string | null,"category"?: string,"id"?: never,"metadata"?: NonNullable<Json>,"occurred_at"?: string,"organization_id"?: string | null,"subject_user_id"?: string | null,"target_id"?: string | null,"target_type"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"countries": {
+                  Row: {
+                    "code": string,"is_active": boolean,"labels": NonNullable<Json>
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"labels": NonNullable<Json>
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"education_levels": {
+                  Row: {
+                    "code": string,"is_active": boolean,"isced_level": number | null,"labels": NonNullable<Json>,"position": number
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"isced_level"?: number | null,"labels": NonNullable<Json>,"position"?: number
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"isced_level"?: number | null,"labels"?: NonNullable<Json>,"position"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"languages": {
+                  Row: {
+                    "code": string,"is_active": boolean,"is_interface": boolean,"labels": NonNullable<Json>
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"is_interface"?: boolean,"labels": NonNullable<Json>
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"is_interface"?: boolean,"labels"?: NonNullable<Json>
                   }
                   Relationships: [
                     
@@ -84,16 +155,78 @@ isOneToOne: true
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"preferred_locale": string,"updated_at": string,"user_id": string
+                    "age_confirmed_at": string | null,"country_code": string | null,"created_at": string,"goals": (string)[],"institution_name": string | null,"level_code": string | null,"onboarded_at": string | null,"preferred_locale": string,"program_code": string | null,"specialty_code": string | null,"subject_codes": (string)[],"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"preferred_locale"?: string,"updated_at"?: string,"user_id": string
+                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"preferred_locale"?: string,"updated_at"?: string,"user_id"?: string
+                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "profiles_country_code_fkey"
+      columns: ["country_code"]
+isOneToOne: false
+      referencedRelation: "countries"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "profiles_level_code_fkey"
+      columns: ["level_code"]
+isOneToOne: false
+      referencedRelation: "education_levels"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "profiles_program_code_fkey"
+      columns: ["program_code"]
+isOneToOne: false
+      referencedRelation: "academic_programs"
+      referencedColumns: ["code"]
+    },{
+      foreignKeyName: "profiles_specialty_fkey"
+      columns: ["program_code","specialty_code"]
+isOneToOne: false
+      referencedRelation: "program_specialties"
+      referencedColumns: ["program_code","code"]
+    }
+                  ]
+                },"program_specialties": {
+                  Row: {
+                    "code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number,"program_code": string
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"labels": NonNullable<Json>,"position"?: number,"program_code": string
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>,"position"?: number,"program_code"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "program_specialties_program_code_fkey"
+      columns: ["program_code"]
+isOneToOne: false
+      referencedRelation: "academic_programs"
+      referencedColumns: ["code"]
+    }
+                  ]
+                },"subjects": {
+                  Row: {
+                    "code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number,"program_code": string
+                  }
+                  Insert: {
+                    "code": string,"is_active"?: boolean,"labels": NonNullable<Json>,"position"?: number,"program_code": string
+                  }
+                  Update: {
+                    "code"?: string,"is_active"?: boolean,"labels"?: NonNullable<Json>,"position"?: number,"program_code"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "subjects_program_code_fkey"
+      columns: ["program_code"]
+isOneToOne: false
+      referencedRelation: "academic_programs"
+      referencedColumns: ["code"]
+    }
                   ]
                 }
           }
@@ -101,7 +234,10 @@ isOneToOne: true
             [_ in never]: never
           }
           Functions: {
-            "consume_rate_limit":
+            "account_deletion_check":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            }
           }

@@ -48,7 +48,8 @@
       "forgot": "Mot de passe oublié ?",
       "noAccount": "Pas encore de compte ?",
       "emailConfirmed": "Votre adresse est confirmée. Connectez-vous avec votre mot de passe.",
-      "passwordUpdated": "Votre mot de passe a été modifié et tous vos appareils ont été déconnectés. Connectez-vous avec le nouveau mot de passe."
+      "passwordUpdated": "Votre mot de passe a été modifié et tous vos appareils ont été déconnectés. Connectez-vous avec le nouveau mot de passe.",
+      "accountDeleted": "Votre compte a été supprimé."
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",
@@ -86,7 +87,8 @@
       "same_password": "Le nouveau mot de passe doit être différent de l'ancien.",
       "session_expired": "Votre session a expiré. Recommencez la procédure.",
       "unavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
-      "already_signed_in": "Vous êtes déjà connecté. Déconnectez-vous avant d'utiliser ce lien."
+      "already_signed_in": "Vous êtes déjà connecté. Déconnectez-vous avant d'utiliser ce lien.",
+      "last_org_admin": "Vous êtes le seul administrateur d'une organisation. Transférez d'abord son administration, puis recommencez."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -94,13 +96,68 @@
       "password_too_long": "Le mot de passe ne peut pas dépasser 72 caractères.",
       "password_needs_letter_and_digit": "Le mot de passe doit contenir des lettres et des chiffres.",
       "password_mismatch": "Les deux mots de passe ne sont pas identiques.",
-      "age_required": "Cette déclaration est nécessaire pour créer un compte."
+      "age_required": "Cette déclaration est nécessaire pour créer un compte.",
+      "required": "Ce champ est obligatoire.",
+      "invalid_choice": "Ce choix n'est pas valable.",
+      "institution_length": "Le nom de l'établissement doit compter entre 2 et 200 caractères."
     }
   },
   "Account": {
     "title": "Mon compte",
     "email": "Adresse électronique",
+    "country": "Pays",
+    "level": "Niveau d'études",
+    "program": "Filière",
+    "specialty": "Spécialité",
+    "institution": "Établissement",
+    "notProvided": "Non renseigné",
     "privacy": "Votre profil n'est visible que de vous.",
+    "profileSaved": "Votre profil est enregistré.",
+    "editProfile": "Modifier mon profil",
+    "signOut": "Se déconnecter",
+    "deleteAccount": "Supprimer mon compte"
+  },
+  "Profile": {
+    "title": "Mon profil",
+    "intro": "Ces informations servent à adapter la recherche. Elles ne sont visibles que de vous.",
+    "welcomeTitle": "Bienvenue sur EduScholar",
+    "welcomeIntro": "Avant de commencer, indiquez votre pays, votre niveau et votre filière. Ces informations ne sont visibles que de vous.",
+    "account": "Compte",
+    "country": "Pays",
+    "level": "Niveau d'études",
+    "program": "Filière",
+    "specialty": "Spécialité (facultatif)",
+    "subjects": "Matières suivies (facultatif)",
+    "institution": "Établissement (facultatif)",
+    "institutionHint": "Jamais affiché à d'autres personnes.",
+    "goals": "Vos objectifs (facultatif)",
+    "goalOptions": {
+      "courses": "Suivre des cours",
+      "revision": "Réviser",
+      "thesis": "Préparer un mémoire ou une thèse",
+      "research": "Faire de la recherche",
+      "project": "Mener un projet"
+    },
+    "preferredLocale": "Langue préférée",
+    "ageConfirmed": "Je déclare avoir l'âge requis dans mon pays pour utiliser ce service.",
+    "choose": "Choisir…",
+    "none": "Aucune",
+    "submit": "Enregistrer mon profil",
+    "pending": "Enregistrement…",
+    "back": "Retour à mon compte",
     "signOut": "Se déconnecter"
+  },
+  "DeleteAccount": {
+    "title": "Supprimer mon compte",
+    "intro": "Cette action est définitive. Confirmez avec votre mot de passe.",
+    "account": "Compte",
+    "consequenceData": "Votre profil et vos données privées seront effacés.",
+    "consequenceIrreversible": "Aucune restauration ne sera possible.",
+    "consequenceAudit": "Le journal de sécurité conserve des traces qui ne permettent plus de vous identifier directement.",
+    "password": "Mot de passe",
+    "confirm": "Je comprends que la suppression est définitive.",
+    "submit": "Supprimer définitivement mon compte",
+    "pending": "Suppression…",
+    "cancel": "Annuler et revenir à mon compte"
   }
 }

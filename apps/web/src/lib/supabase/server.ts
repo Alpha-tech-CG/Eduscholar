@@ -54,3 +54,25 @@ export function createServiceClient(): SupabaseClient<Database> {
     },
   });
 }
+
+/**
+ * Vérifie un mot de passe sans toucher à la session en cours : le client
+ * utilisé ne lit ni n'écrit aucun cookie.
+ */
+export async function verifyPassword(email: string, password: string): Promise<boolean> {
+  const env = serverEnv();
+  const client = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error || !data.session) return false;
+
+  // La session ouverte pour la vérification est refermée aussitôt.
+  await client.auth.signOut({ scope: "local" });
+  return true;
+}
