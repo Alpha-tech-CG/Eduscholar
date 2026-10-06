@@ -42,6 +42,12 @@ Usage prévu pour le MVP :
 - **OpenAlex** pour alimenter le catalogue pilote en informatique et connaître le statut d'accès ;
 - **DOAJ** pour confirmer qu'une revue est en accès ouvert et sous quelle licence.
 
+Connecteurs écrits :
+
+| Source | Date | Usage | Vérification |
+|---|---|---|---|
+| Crossref | 6 octobre 2026 | Résolution d'un DOI à la demande d'un modérateur ; une requête par import ; adresse de contact transmise si `CROSSREF_MAILTO` est définie | Page « Tips for using the Crossref REST API » relue ce jour : usage responsable, mise en cache, arrêt sur réponse `429`, fichiers publics pour les gros volumes. Le connecteur ne fait aucun moissonnage et ne relance pas après un refus. |
+
 ## Liste B — sources sous condition
 
 | Source | Intérêt | Condition avant intégration |
@@ -86,6 +92,6 @@ Ces sources sont pertinentes pour le cahier, mais leurs conditions actuelles n'o
 ## Sources des vérifications
 
 - OpenAlex : https://developers.openalex.org/api-reference/authentication et https://blog.openalex.org/?p=3953
-- Crossref : https://crossref.org/blog/announcing-changes-to-rest-api-rate-limits/
+- Crossref : https://crossref.org/blog/announcing-changes-to-rest-api-rate-limits/ et https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
 - DOAJ : https://www.doaj.org/terms/
 - CORE : https://core.ac.uk/terms et https://core.ac.uk/services/api

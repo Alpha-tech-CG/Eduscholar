@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
+const crossrefStubPort = 3199;
 
 // Les tests de bout en bout tournent contre le build de production, pour
 // vérifier les en-têtes réellement servis, et contre l'instance Supabase locale.
@@ -20,16 +21,28 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
-  webServer: {
-    command: `npm run start -- --port ${port}`,
-    url: `${baseURL}/fr`,
-    reuseExistingServer: !process.env.CI,
-    // En-tête de confiance du serveur de test : il tient lieu d'adresse du
-    // client, comme le ferait le proxy de l'hébergeur.
-    env: {
-      ...(process.env as Record<string, string>),
-      TRUSTED_CLIENT_IP_HEADER: "x-e2e-client-ip",
+  webServer: [
+    // Faux serveur Crossref : aucun test n'interroge la vraie source.
+    {
+      command: "node e2e/support/crossref-stub.mjs",
+      url: `http://127.0.0.1:${crossrefStubPort}/health`,
+      reuseExistingServer: !process.env.CI,
+      env: { CROSSREF_STUB_PORT: String(crossrefStubPort) },
+      timeout: 20_000,
     },
-    timeout: 60_000,
-  },
+    {
+      command: `npm run start -- --port ${port}`,
+      url: `${baseURL}/fr`,
+      reuseExistingServer: !process.env.CI,
+      // En-tête de confiance du serveur de test : il tient lieu d'adresse du
+      // client, comme le ferait le proxy de l'hébergeur.
+      env: {
+        ...(process.env as Record<string, string>),
+        TRUSTED_CLIENT_IP_HEADER: "x-e2e-client-ip",
+        CROSSREF_API_URL: `http://127.0.0.1:${crossrefStubPort}`,
+        CROSSREF_TEST_STUB: "1",
+      },
+      timeout: 60_000,
+    },
+  ],
 });

@@ -101,7 +101,11 @@
       "duplicate": "Une ressource portant ce DOI figure déjà au catalogue.",
       "second_factor_required": "Votre rôle exige la validation en deux étapes : elle ne peut pas être désactivée tant que vous le détenez.",
       "access_status_required": "Précisez le statut d'accès avant de vérifier la fiche.",
-      "permission_proof_required": "Une autorisation de l'ayant droit doit être accompagnée de sa preuve."
+      "permission_proof_required": "Une autorisation de l'ayant droit doit être accompagnée de sa preuve.",
+      "doi_not_found": "Crossref ne connaît pas ce DOI. Vérifiez la saisie.",
+      "unsupported_type": "Ce type de document n'est pas encore pris en charge par le catalogue (articles, livres et thèses seulement).",
+      "language_required": "La source n'indique pas la langue du document : choisissez-la.",
+      "source_unavailable": "La source n'a pas répondu, ou sa réponse est inexploitable. Rien n'a été importé ; réessayez plus tard."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -288,7 +292,8 @@
       "suspend": "Suspension",
       "restore": "Rétablissement",
       "remove": "Retrait",
-      "edited_requires_review": "Fiche corrigée, nouvelle vérification nécessaire"
+      "edited_requires_review": "Fiche corrigée, nouvelle vérification nécessaire",
+      "imported": "Import depuis une source"
     },
     "moderationAction": {
       "start_review": "Prendre en charge",
@@ -399,7 +404,27 @@
       "notesHint": "Internes : jamais montrées au contributeur ni au public.",
       "saveCorrection": "Enregistrer la correction",
       "history": "Historique des décisions",
-      "back": "Retour à la file de modération"
+      "back": "Retour à la file de modération",
+      "importLink": "Importer une ressource par son DOI",
+      "imported": "La fiche est importée. Vérifiez-la avant de la publier.",
+      "alreadyImported": "Cette ressource figure déjà au catalogue : voici sa fiche."
+    },
+    "import": {
+      "title": "Importer par DOI",
+      "intro": "Saisissez un DOI : les métadonnées sont lues auprès de Crossref, puis la fiche entre dans la file de modération.",
+      "ruleMetadata": "Seules les métadonnées et le lien officiel sont repris. Aucun fichier, aucun résumé.",
+      "rulePending": "La fiche arrive « en attente » : rien n'est publié sans vérification.",
+      "ruleUnknown": "Le statut d'accès reste « inconnu » jusqu'à votre vérification ; la licence n'est reprise que si la source la déclare.",
+      "doi": "DOI",
+      "doiHint": "Par exemple 10.1234/abcd, ou le lien https://doi.org/…",
+      "program": "Filière",
+      "language": "Langue du document",
+      "languageFromSource": "Celle indiquée par la source",
+      "languageHint": "Utilisée seulement si la source n'indique pas la langue.",
+      "choose": "Choisir…",
+      "submit": "Importer",
+      "pending": "Interrogation de la source…",
+      "back": "Retour à la modération"
     }
   }
 }

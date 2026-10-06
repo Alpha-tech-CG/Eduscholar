@@ -36,6 +36,10 @@ const AVAILABLE: Record<string, ModerationAction[]> = {
 };
 
 const NOTICES: ReadonlySet<string> = new Set([...MODERATION_ACTIONS, "edited"]);
+const IMPORT_NOTICES: Record<string, "imported" | "alreadyImported"> = {
+  imported: "imported",
+  "already-imported": "alreadyImported",
+};
 
 export default async function ModerationResourcePage({
   params,
@@ -64,6 +68,10 @@ export default async function ModerationResourcePage({
 
   const actions = AVAILABLE[resource.editorialStatus] ?? [];
   const noticeKey = typeof notice === "string" && NOTICES.has(notice) ? notice : null;
+  const importNotice =
+    typeof notice === "string" && Object.hasOwn(IMPORT_NOTICES, notice)
+      ? IMPORT_NOTICES[notice]
+      : undefined;
   const editable = !["rejected", "removed"].includes(resource.editorialStatus);
 
   return (
@@ -81,6 +89,11 @@ export default async function ModerationResourcePage({
       {noticeKey ? (
         <p role="status" className="rounded border border-foreground/20 p-3">
           {t("decisionRecorded")}
+        </p>
+      ) : null}
+      {importNotice ? (
+        <p role="status" className="rounded border border-foreground/20 p-3">
+          {t(importNotice)}
         </p>
       ) : null}
 

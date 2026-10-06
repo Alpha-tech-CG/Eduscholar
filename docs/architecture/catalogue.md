@@ -90,6 +90,7 @@ par des fonctions d'appui (`private.my_submission_ids`, `private.my_report_ids`)
 | `moderator_update_resource(id, payload)` | Modérateur | Corrige une fiche ; notes internes |
 | `report_resource(id, motif, détails)` | Compte actif au profil complété | Signale une fiche publiée |
 | `resolve_report(id, statut, note)` | Modérateur | Traite un signalement |
+| `import_connector_resource(acteur, fiche)` | Rôle serveur seulement, au nom d'un modérateur | Crée une fiche « en attente » venue d'une source autorisée |
 
 Limites imposées en base : dix propositions et vingt signalements par jour et par compte,
 un seul signalement ouvert par personne et par fiche.
@@ -103,7 +104,45 @@ que l'application traduit. « Introuvable » et « pas à vous » donnent la mê
 Le rôle serveur peut créer et mettre à jour des fiches, jamais les supprimer. Un
 déclencheur lui interdit tout statut autre que « en attente » à la création, et tout
 changement de statut ensuite. L'unicité `(source, identifiant dans la source)` rend
-l'import rejouable ; l'unicité du DOI parmi les fiches vivantes évite les doublons.
+l'import rejouable ; l'unicité du DOI parmi les fiches validées évite les doublons.
+
+### Import par DOI (Crossref)
+
+Un modérateur saisit un DOI sur `/moderation/import`, choisit la filière et, au besoin,
+la langue. Le déroulement :
+
+1. le serveur vérifie, sous la session de l'appelant, le rôle et le second facteur ;
+2. il interroge `https://api.crossref.org/works/{doi}` : hôte fixe, DOI validé et
+   encodé, aucune redirection suivie, 8 secondes et 1 Mo au plus ;
+3. il normalise la réponse (`lib/connectors/crossref-normalize.ts`) ;
+4. il appelle `import_connector_resource(acteur, fiche)` avec le rôle serveur. La
+   fonction revérifie que l'acteur est un `moderator` non suspendu dont le second facteur
+   précède le rôle, crée la fiche « en attente », écrit l'historique et le journal d'audit.
+
+Le navigateur ne fournit jamais les métadonnées : la provenance enregistrée
+(`crossref`, DOI, date de récupération) est donc vraie. La fonction n'est exécutable que
+par le rôle serveur.
+
+| Champ | Règle |
+|---|---|
+| Titre, auteurs, année | Repris tels quels ; balises et caractères invisibles retirés |
+| Type | `journal-article`, `proceedings-article` → article ; livres → livre ; `dissertation` → thèse ; tout autre type est refusé |
+| Langue | Celle de la source si le référentiel la connaît, sinon celle choisie par le modérateur |
+| Licence | Reprise seulement si la source déclare, pour la version publiée (`vor`) et sans embargo en cours, une unique licence Creative Commons 4.0 ou CC0 ; sinon « inconnue » |
+| Statut d'accès | Toujours « inconnu » : le modérateur le renseigne avant de vérifier |
+| Lien officiel | `https://doi.org/{doi}` |
+| Résumé | Jamais repris : il peut être protégé |
+
+Un DOI déjà importé, ou déjà porté par une fiche validée, renvoie à la fiche existante,
+sans nouvelle requête à la source. Une fiche refusée ou retirée n'empêche pas un nouvel
+import.
+
+**Second regard** : le modérateur qui a importé une fiche peut la prendre en charge, la
+corriger ou la refuser, mais ni la vérifier ni la publier. Un autre modérateur le fait.
+Limites : 60 essais par quart d'heure et par modérateur côté application, 200 imports
+par jour et par modérateur en base. Une réponse `429` ou une panne de la source
+n'entraîne aucune nouvelle tentative automatique ; le respect de l'en-tête `Retry-After`
+reste à faire (dette D-20).
 
 ## Écrans
 
@@ -112,6 +151,7 @@ l'import rejouable ; l'unicité du DOI parmi les fiches vivantes évite les doub
 | `/contribute` | Proposer une ressource |
 | `/contributions`, `/contributions/[id]` | Suivre, corriger ou retirer ses propositions |
 | `/moderation`, `/moderation/[id]` | File d'attente, signalements, décision et correction |
+| `/moderation/import` | Importer une fiche par son DOI (modérateurs) |
 
 Les pages de modération répondent « introuvable » à qui n'est pas modérateur. Ce n'est
 qu'un aiguillage : chaque lecture passe par la RLS, chaque décision par la base.

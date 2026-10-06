@@ -662,6 +662,36 @@ describe("catalogue, par appel direct à l'API", () => {
     expect(row.data).toEqual([{ title }]);
   });
 
+  it("l'import par connecteur n'est appelable que par le serveur", async () => {
+    const work = {
+      source_name: "crossref",
+      source_identifier: `10.5555/integration.${run}`,
+      type_code: "article",
+      title: "Import tenté par appel direct",
+      authors: ["Auteur Test"],
+      language_code: "fr",
+      program_code: "computer_science",
+      doi: `10.5555/integration.${run}`,
+      official_url: `https://doi.org/10.5555/integration.${run}`,
+    };
+    for (const client of [anonymous, alice.client, fatou.client]) {
+      const { error } = await client.rpc("import_connector_resource", {
+        actor_id: fatou.id,
+        payload: work,
+      });
+      expect(error).not.toBeNull();
+    }
+    // Même le serveur n'importe pas au nom d'un compte sans rôle de modération.
+    const asServer = await admin.rpc("import_connector_resource", {
+      actor_id: alice.id,
+      payload: work,
+    });
+    expect(asServer.error?.message).toBe("forbidden");
+
+    const rows = await admin.from("resources").select("id").eq("source_identifier", work.source_identifier);
+    expect(rows.data).toEqual([]);
+  });
+
   it("la base refuse une adresse dangereuse et une licence inconnue", async () => {
     for (const overrides of [
       { official_url: "javascript:alert(1)" },

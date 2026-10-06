@@ -25,6 +25,8 @@
 | `SUPABASE_PUBLISHABLE_KEY` | non, mais serveur seulement | Clé publique, utilisée avec la session de l'utilisateur |
 | `SUPABASE_SECRET_KEY` | **oui** | Clé `service_role` ; usages listés dans `authorization-model.md` §7.5 |
 | `APP_URL` | non | Adresse publique de l'application |
+| `CROSSREF_MAILTO` | non | Facultative. Adresse de contact transmise à Crossref avec chaque requête (accès « poli », débit plus favorable). Une adresse de l'équipe, jamais celle d'un utilisateur. |
+| `CROSSREF_API_URL` | non | À ne pas définir. Vaut `https://api.crossref.org` ; seule autre valeur admise : un serveur de test sur `http://127.0.0.1`, et seulement si `CROSSREF_TEST_STUB=1` hors Vercel (tests de bout en bout). |
 | `TRUSTED_CLIENT_IP_HEADER` | non | Hors Vercel : nom de l'en-tête, écrasé par le proxy frontal, qui porte l'adresse du client. Absent : la limitation de débit par client devient commune à tous les visiteurs. |
 
 Sur Vercel, `VERCEL` est défini par la plateforme et l'adresse du client est lue dans

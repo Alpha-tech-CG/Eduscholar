@@ -29,7 +29,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-12 | Référentiels : pays, langues, niveaux, filières, matières | B-06, B-09 | fait — 249 pays ISO, langues, niveaux, filière informatique, 6 spécialités, 29 matières |
 | B-13 | Schéma du catalogue : ressources, sources, licences, tags, statuts d'accès et éditoriaux | B-09 | fait — licences, types, fiches, données internes, historique, signalements ; les tags viendront avec la recherche (B-16) |
 | B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | fait — proposition, suivi par le contributeur, file de modération, décisions motivées et journalisées, séparation des tâches ; l'attribution des rôles reste manuelle (D-01) |
-| B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | à faire |
+| B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | fait — import par DOI via Crossref, réservé aux modérateurs ; OpenAlex (clé et budget à décider) et l'import en lot restent à faire |
 | B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | à faire |
 | B-17 | Favoris et collections privées | B-13 | à faire |
 
@@ -57,6 +57,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-17 | Second facteur : codes de secours, procédure d'assistance en cas de perte de l'application d'authentification | Avant l'ouverture publique |
 | D-18 | Courriel de notification à l'activation et à la désactivation du second facteur ; fermeture des autres sessions à l'activation | Avant l'ouverture publique |
 | D-19 | Révocation immédiate : un jeton d'accès déjà émis reste valable jusqu'à dix minutes après la fermeture des sessions (refus de code, changement de mot de passe). Vérifier la session en base pour les opérations sensibles, ou réduire la durée du jeton. | Avant l'ouverture publique |
+| D-20 | Connecteurs : pause après une réponse `429` en respectant `Retry-After` ; plafond journalier de requêtes par source ; signaler sur la fiche les champs modifiés après import | Avant l'import en lot ou OpenAlex |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)

@@ -171,6 +171,14 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   format dans les titres, modérateur lisant les données internes et les signalements de
   sa propre proposition. Reste en dette : D-18, D-19. Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 6 octobre 2026 — Import par DOI (B-15) relu par l'agent sécurité : aucun constat
+  critique ou élevé, 1 moyen et 10 faibles. Corrigés : un modérateur pouvait importer,
+  vérifier et publier seul une fiche (un autre modérateur est désormais requis), limite
+  journalière contournable par des appels simultanés, source sollicitée pour un DOI déjà
+  importé, fiche refusée bloquant tout réimport, licence sous embargo ou de version non
+  précisée reprise à tort, lien officiel non encodé, adresse de test de la source
+  acceptée sans drapeau explicite. Reste en dette : D-20. Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 

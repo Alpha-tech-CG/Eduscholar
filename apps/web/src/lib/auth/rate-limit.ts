@@ -54,6 +54,11 @@ const RULES = {
     pair: { limit: 8, windowSeconds: 15 * MINUTE },
     account: { limit: 30, windowSeconds: 15 * MINUTE },
   },
+  // Import par DOI (modération) : une requête vers la source par essai.
+  "doi-import": {
+    ip: { limit: 120, windowSeconds: 15 * MINUTE },
+    account: { limit: 60, windowSeconds: 15 * MINUTE },
+  },
   reauthentication: {
     ip: { limit: 20, windowSeconds: 15 * MINUTE },
     pair: { limit: 5, windowSeconds: 15 * MINUTE },

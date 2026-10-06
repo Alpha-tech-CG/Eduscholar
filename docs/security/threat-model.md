@@ -121,7 +121,7 @@ en place. La colonne « Tâche » renvoie au backlog.
 | ID | Menace | Grav. | Mesures exigées | Test | Tâche |
 |---|---|---|---|---|---|
 | M-25 | Publication d'un document sans droit, ou d'une licence fausse | H | Contrainte en base : pas de `published` sans provenance, licence et statut d'accès ; preuve d'autorisation conservée ; modération humaine ; procédure de retrait rapide | Publication incomplète refusée | B-13, B-14, B-05 |
-| M-26 | Ingestion contraire aux conditions d'une source | H | Liste fermée de sources autorisées ; champs autorisés seulement ; quotas respectés ; pas de contournement de paywall | Revue de chaque connecteur | B-06, B-15 |
+| M-26 | Ingestion contraire aux conditions d'une source | H | Liste fermée de sources autorisées, tenue en base ; champs autorisés seulement (pas de résumé, pas de fichier) ; quotas respectés ; pas de contournement de paywall ; métadonnées lues par le serveur, jamais fournies par le navigateur | Revue de chaque connecteur ; source hors liste refusée | B-06, B-15 |
 | M-27 | Empoisonnement du catalogue : soumissions en masse, faux signalements, métadonnées trompeuses | M | Limitation de débit en base ; rien n'est publié automatiquement ; DOI unique parmi les fiches validées ; caractères de format refusés ; séparation des tâches de modération, étendue aux données internes et aux signalements | Soumission en rafale limitée ; propre proposition non traitable | B-14 |
 | M-28 | Contenu privé dans la recherche publique | C | La recherche ne lit que `published` public ; aucune table privée dans une vue ou un index de recherche ; effet immédiat d'un retrait | Recherche d'un terme présent seulement dans un projet privé | B-16 |
 

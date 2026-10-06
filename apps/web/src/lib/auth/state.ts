@@ -28,6 +28,11 @@ export type AuthErrorCode =
   | "access_status_required"
   | "permission_proof_required"
   | "duplicate"
+  // Import par connecteur
+  | "doi_not_found"
+  | "unsupported_type"
+  | "language_required"
+  | "source_unavailable"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";

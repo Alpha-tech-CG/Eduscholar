@@ -121,6 +121,8 @@ Détail dans `docs/security/initial-audit.md`.
   contributeur, file de modération, décisions motivées et journalisées, signalements.
   Voir `docs/architecture/catalogue.md`. Aucune fiche n'est encore visible du public :
   la recherche et la fiche publique sont l'objet de B-16.
+- Import par DOI (B-15) : un modérateur importe une fiche depuis Crossref ; elle entre
+  en file de modération avec sa provenance.
 - Toujours aucune fonctionnalité de recherche, de bibliothèque ou de projet.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 

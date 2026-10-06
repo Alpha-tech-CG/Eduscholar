@@ -34,6 +34,12 @@ export default async function ModerationPage({
         </p>
       ) : null}
 
+      <p>
+        <Link href="/moderation/import" className="underline underline-offset-4">
+          {t("importLink")}
+        </Link>
+      </p>
+
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("queue", { count: queue.length })}</h2>
         {queue.length === 0 ? (

@@ -372,6 +372,9 @@ isOneToOne: false
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"import_connector_resource":
+{ Args: { "actor_id": string,"payload": Json }; Returns: Json
+                           },
 "moderate_resource":
 { Args: { "action": string,"reason"?: string,"resource_id": string }; Returns: string
                            },

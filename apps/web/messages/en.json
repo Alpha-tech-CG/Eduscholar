@@ -101,7 +101,11 @@
       "duplicate": "A resource with this DOI is already in the catalogue.",
       "second_factor_required": "Your role requires two-step verification: it cannot be turned off while you hold it.",
       "access_status_required": "Set the access status before verifying the record.",
-      "permission_proof_required": "A permission from the rights holder must come with its proof."
+      "permission_proof_required": "A permission from the rights holder must come with its proof.",
+      "doi_not_found": "Crossref does not know this DOI. Check what you entered.",
+      "unsupported_type": "This kind of document is not supported by the catalogue yet (articles, books and theses only).",
+      "language_required": "The source does not state the language of the document: please choose it.",
+      "source_unavailable": "The source did not answer, or its answer could not be used. Nothing was imported; try again later."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -288,7 +292,8 @@
       "suspend": "Suspended",
       "restore": "Restored",
       "remove": "Removed",
-      "edited_requires_review": "Record corrected, new verification required"
+      "edited_requires_review": "Record corrected, new verification required",
+      "imported": "Import from a source"
     },
     "moderationAction": {
       "start_review": "Take up",
@@ -399,7 +404,27 @@
       "notesHint": "Internal: never shown to the contributor or to the public.",
       "saveCorrection": "Save the correction",
       "history": "History of decisions",
-      "back": "Back to the moderation queue"
+      "back": "Back to the moderation queue",
+      "importLink": "Import a resource by its DOI",
+      "imported": "The record has been imported. Check it before publishing.",
+      "alreadyImported": "This resource is already in the catalogue: here is its record."
+    },
+    "import": {
+      "title": "Import by DOI",
+      "intro": "Enter a DOI: the metadata is read from Crossref, then the record joins the moderation queue.",
+      "ruleMetadata": "Only metadata and the official link are kept. No file, no abstract.",
+      "rulePending": "The record arrives as “pending”: nothing is published without review.",
+      "ruleUnknown": "The access status stays “unknown” until you check it; the licence is kept only if the source declares it.",
+      "doi": "DOI",
+      "doiHint": "For example 10.1234/abcd, or the link https://doi.org/…",
+      "program": "Programme",
+      "language": "Language of the document",
+      "languageFromSource": "As stated by the source",
+      "languageHint": "Used only if the source does not state the language.",
+      "choose": "Choose…",
+      "submit": "Import",
+      "pending": "Querying the source…",
+      "back": "Back to moderation"
     }
   }
 }

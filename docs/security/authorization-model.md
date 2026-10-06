@@ -506,7 +506,7 @@ et refuse le rejeu.
 | Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
 | Suspension et rétablissement de compte | Matrice 5.6 |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
-| Import par connecteur | Tâche système ; résultat au statut `pending` au plus |
+| Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
 | Création de notifications | Tâche système |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
