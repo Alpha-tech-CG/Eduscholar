@@ -187,6 +187,14 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   échec présentée comme « aucun résultat ». Les tests ont aussi révélé un défaut de la
   file de modération, corrigé : au-delà de cent fiches, les plus récentes n'étaient
   plus affichées. Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 6 octobre 2026 — Favoris et collections (B-17) relus par l'agent sécurité : aucun
+  constat critique ou élevé, 2 moyens et 6 faibles. Cloisonnement et absence d'oracle
+  d'existence jugés sains. Corrigés : modèle d'autorisation non mis à jour, description
+  acceptant des caractères invisibles, course au renommage, noms identiques sous deux
+  formes Unicode, listes au-delà de cent éléments inaccessibles, échec de lecture
+  présenté comme « plus disponible ». Le contrôle de configuration ferme désormais aussi
+  ce que le rôle serveur lit et exécute. Reste en dette : D-22. Ces corrections n'ont
+  pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

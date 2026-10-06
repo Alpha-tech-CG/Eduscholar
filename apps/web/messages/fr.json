@@ -105,7 +105,9 @@
       "doi_not_found": "Crossref ne connaît pas ce DOI. Vérifiez la saisie.",
       "unsupported_type": "Ce type de document n'est pas encore pris en charge par le catalogue (articles, livres et thèses seulement).",
       "language_required": "La source n'indique pas la langue du document : choisissez-la.",
-      "source_unavailable": "La source n'a pas répondu, ou sa réponse est inexploitable. Rien n'a été importé ; réessayez plus tard."
+      "source_unavailable": "La source n'a pas répondu, ou sa réponse est inexploitable. Rien n'a été importé ; réessayez plus tard.",
+      "limit_reached": "Vous avez atteint le nombre maximal autorisé. Retirez des éléments avant d'en ajouter.",
+      "duplicate_name": "Vous avez déjà une collection de ce nom."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -178,7 +180,8 @@
     "contribute": "Proposer une ressource",
     "contributions": "Mes contributions",
     "moderation": "Modération",
-    "search": "Rechercher une ressource"
+    "search": "Rechercher une ressource",
+    "library": "Ma bibliothèque"
   },
   "Profile": {
     "title": "Mon profil",
@@ -471,5 +474,55 @@
       "choose": "Choisir…",
       "pending": "Un instant…"
     }
+  },
+  "Library": {
+    "title": "Ma bibliothèque",
+    "collectionTitle": "Collection",
+    "intro": "Vos favoris et vos collections sont privés : vous seul les voyez.",
+    "toSearch": "Rechercher une ressource",
+    "backToLibrary": "Retour à ma bibliothèque",
+    "favorites": "Favoris ({count})",
+    "favoritesEmpty": "Aucun favori. Ouvrez une ressource et ajoutez-la à vos favoris.",
+    "collections": "Collections ({count})",
+    "collectionsEmpty": "Aucune collection pour l'instant.",
+    "itemCount": "{count, plural, =0 {Vide} one {# ressource} other {# ressources}}",
+    "items": "Ressources ({count})",
+    "itemsEmpty": "Cette collection est vide. Ouvrez une ressource pour l'y ranger.",
+    "newCollection": "Nouvelle collection",
+    "name": "Nom",
+    "description": "Description",
+    "create": "Créer la collection",
+    "edit": "Renommer la collection",
+    "save": "Enregistrer",
+    "deleteHeading": "Supprimer la collection",
+    "deleteIntro": "La collection est supprimée définitivement. Les ressources restent au catalogue.",
+    "delete": "Supprimer cette collection",
+    "removeFavorite": "Retirer des favoris",
+    "addFavorite": "Ajouter aux favoris",
+    "removeItem": "Retirer de la collection",
+    "addToCollection": "Ranger dans la collection",
+    "collection": "Collection",
+    "choose": "Choisir…",
+    "saveHeading": "Garder cette ressource",
+    "isFavorite": "Cette ressource est dans vos favoris.",
+    "notFavorite": "Cette ressource n'est pas dans vos favoris.",
+    "inCollections": "Rangée dans : ",
+    "listSeparator": ", ",
+    "manage": "Gérer ma bibliothèque",
+    "unavailable": "Cette ressource n'est plus disponible au catalogue.",
+    "separator": " · ",
+    "pending": "Un instant…",
+    "favoriteAdded": "La ressource est ajoutée à vos favoris.",
+    "favoriteRemoved": "La ressource est retirée de vos favoris.",
+    "itemAdded": "La ressource est rangée dans la collection.",
+    "itemRemoved": "La ressource est retirée de la collection.",
+    "collectionCreated": "La collection est créée.",
+    "collectionUpdated": "La collection est enregistrée.",
+    "collectionDeleted": "La collection est supprimée.",
+    "loadFailed": "Vos ressources n'ont pas pu être chargées. Réessayez dans un instant ; rien n'a été modifié.",
+    "pagination": "Pages",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "page": "Page {page} sur {pages}"
   }
 }

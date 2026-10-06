@@ -18,8 +18,16 @@ export default defineConfig({
   // Une trace contient les cookies de session : jamais en CI.
   use: { baseURL, trace: process.env.CI ? "off" : "retain-on-failure" },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Une adresse de client par projet : les limites de débit par adresse sont
+    // ainsi comptées séparément, comme pour deux visiteurs distincts.
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], extraHTTPHeaders: { "x-e2e-client-ip": "198.51.100.1" } },
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 7"], extraHTTPHeaders: { "x-e2e-client-ip": "198.51.100.2" } },
+    },
   ],
   webServer: [
     // Faux serveur Crossref : aucun test n'interroge la vraie source.

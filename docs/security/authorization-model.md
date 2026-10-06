@@ -373,8 +373,10 @@ publique, sans passer par l'application. Trois décisions en découlent.
    `insert`, `update` et `delete` directs sont retirés au rôle `authenticated` partout où
    une règle métier, un nettoyage ou une ligne d'audit est requis. L'écriture passe par
    une fonction (section 7.5) qui valide, applique la règle et écrit l'audit dans la même
-   transaction. Les écritures simples et sans enjeu (favoris, notes personnelles) restent
-   en RLS directe.
+   transaction. Les favoris et les collections passent eux aussi par des fonctions,
+   bien que sans enjeu métier : une écriture directe, par sa clé étrangère, aurait révélé
+   l'existence d'une fiche non publiée. Seules les écritures sans référence à une autre
+   table (notes personnelles) pourront rester en RLS directe.
 
 Conséquence : un appel direct à PostgREST avec un jeton valide n'obtient rien de plus que
 ce que l'application permet.
@@ -450,6 +452,7 @@ has_verified_factor()                    second facteur activé
 must_keep_second_factor()                l'appelant détient un rôle qui exige le second facteur
 my_submission_ids()                      propositions de l'appelant au catalogue
 my_report_ids()                          signalements de l'appelant
+my_collection_ids()                      collections de l'appelant
 ```
 
 Règles :
@@ -472,6 +475,10 @@ Règles :
 Inventaire fermé. Chaque fonction contrôle elle-même l'appelant, applique la règle et
 écrit l'audit. Tout ajout modifie ce document et passe en revue de sécurité.
 
+Exception à l'audit : les fonctions de la bibliothèque personnelle n'écrivent rien au
+journal. Celui-ci est lisible par l'administration, et les favoris d'une personne ne la
+regardent pas.
+
 **Exécutées sous la session de l'utilisateur** (`security definer`, appelées par RPC
 depuis le serveur) :
 
@@ -491,6 +498,7 @@ depuis le serveur) :
 | Publier un mémoire (crée une soumission) | Propriétaire |
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
+| `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
 | `account_deletion_check` : contrôle préalable à la suppression de son compte | Le titulaire, compte actif ; refuse le dernier administrateur d'une organisation |
 
 **Appelée par le service d'authentification seulement** (`supabase_auth_admin`) :

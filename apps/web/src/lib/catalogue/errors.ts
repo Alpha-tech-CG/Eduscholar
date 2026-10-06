@@ -25,6 +25,9 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
     case "access_status_required":
     case "permission_proof_required":
       return message;
+    case "limit_reached":
+    case "duplicate_name":
+      return message;
     case "source_not_allowed":
       return "forbidden";
     case "duplicate_doi":

@@ -224,6 +224,9 @@ select is(
    ) q),
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'public.academic_domains | academic_domains_select_authenticated | SELECT | {authenticated}',
+    'public.collection_items | collection_items_select | SELECT | {authenticated}',
+    'public.collections | collections_select | SELECT | {authenticated}',
+    'public.resource_favorites | resource_favorites_select | SELECT | {authenticated}',
     'public.academic_programs | academic_programs_select_authenticated | SELECT | {authenticated}',
     'public.audit_logs | audit_logs_select | SELECT | {authenticated}',
     'public.licenses | licenses_select_authenticated | SELECT | {authenticated}',
@@ -304,6 +307,17 @@ select is(
    ) q),
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.account_deletion_check()',
+    'private.create_collection(p_name text, p_description text)',
+    'private.delete_collection(p_collection_id uuid)',
+    'private.my_collection_ids()',
+    'private.set_collection_item(p_collection_id uuid, p_resource_id uuid, p_present boolean)',
+    'private.set_favorite(p_resource_id uuid, p_favorite boolean)',
+    'private.update_collection(p_collection_id uuid, p_name text, p_description text)',
+    'public.create_collection(name text, description text)',
+    'public.delete_collection(collection_id uuid)',
+    'public.set_collection_item(collection_id uuid, resource_id uuid, present boolean)',
+    'public.set_favorite(resource_id uuid, favorite boolean)',
+    'public.update_collection(collection_id uuid, name text, description text)',
     'private.are_valid_tags(p_values text[])',
     'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
     'private.moderate_resource(p_resource_id uuid, p_action text, p_reason text)',
@@ -337,6 +351,60 @@ select is(
     'public.second_factor_status()'
   ]) as x),
   'Les fonctions exécutables par authenticated sont celles attendues'
+);
+
+-- Ce que le rôle serveur lit et exécute : listes fermées, comme pour ses écritures.
+select is(
+  (select string_agg(ligne, E'\n' order by ligne collate "C")
+   from (
+     select format('%s.%s', n.nspname, c.relname) as ligne
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname in ('public', 'private')
+       and c.relkind in ('r', 'p', 'v')
+       and has_table_privilege('service_role', c.oid, 'SELECT')
+   ) q),
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
+    'private.rate_limit_buckets',
+    'public.academic_domains',
+    'public.academic_programs',
+    'public.audit_logs',
+    'public.countries',
+    'public.education_levels',
+    'public.languages',
+    'public.licenses',
+    'public.organization_members',
+    'public.organizations',
+    'public.platform_roles',
+    'public.profile_public',
+    'public.profiles',
+    'public.program_specialties',
+    'public.resource_status_history',
+    'public.resource_types',
+    'public.resources',
+    'public.subjects'
+  ]) as x),
+  'service_role ne lit que les tables attendues : ni bibliothèques, ni signalements, ni notes internes'
+);
+select is(
+  (select string_agg(ligne, E'\n' order by ligne collate "C")
+   from (
+     select format('%s.%s(%s)', n.nspname, p.proname,
+                   pg_get_function_identity_arguments(p.oid)) as ligne
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public', 'private')
+       and has_function_privilege('service_role', p.oid, 'execute')
+   ) q),
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
+    'private.are_valid_tags(p_values text[])',
+    'private.has_required_labels(p_labels jsonb)',
+    'private.import_connector_resource(p_actor uuid, p jsonb)',
+    'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
+    'public.consume_rate_limit(p_key text, p_limit integer, p_window_seconds integer)',
+    'public.import_connector_resource(actor_id uuid, payload jsonb)'
+  ]) as x),
+  'Les fonctions exécutables par service_role sont celles attendues'
 );
 
 -- Aucun déclencheur n'est resté désactivé après une migration.

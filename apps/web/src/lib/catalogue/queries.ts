@@ -148,6 +148,28 @@ export async function getResourceHistory(resourceId: string): Promise<HistoryEnt
   }));
 }
 
+/**
+ * Fiches publiées parmi une liste d'identifiants, dans l'ordre de la liste.
+ * `null` si la lecture a échoué : l'appelant ne doit pas en conclure que les
+ * fiches ne sont plus disponibles.
+ */
+export async function getPublishedResources(ids: string[]): Promise<Resource[] | null> {
+  const wanted = ids.filter((id) => UUID.test(id)).slice(0, 100);
+  if (wanted.length === 0) return [];
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase
+    .from("resources")
+    .select(RESOURCE_COLUMNS)
+    .in("id", wanted)
+    .eq("editorial_status", "published")
+    .eq("visibility", "public");
+  if (error) return null;
+
+  const byId = new Map(((data ?? []) as ResourceRow[]).map((row) => [row.id, toResource(row)]));
+  return wanted.flatMap((id) => byId.get(id) ?? []);
+}
+
 export type SearchResult = { resources: Resource[]; total: number; failed: boolean };
 
 /**

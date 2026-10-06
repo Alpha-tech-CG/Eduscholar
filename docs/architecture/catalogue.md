@@ -183,6 +183,23 @@ Limites connues :
 - Hors écritures latine, grecque et cyrillique, le retrait des signes diacritiques peut
   différer entre l'application et l'index.
 
+## Bibliothèque personnelle
+
+Favoris (`resource_favorites`) et collections (`collections`, `collection_items`) sont
+privés : lisibles de leur seul titulaire, ni de la modération, ni de l'administration, ni
+du rôle serveur. Rien n'en est écrit au journal d'audit.
+
+- **Lecture** par RLS ; **écriture** par fonctions seulement (`set_favorite`,
+  `create_collection`, `update_collection`, `delete_collection`, `set_collection_item`).
+- Seule une fiche publiée et publique se garde. Une fiche cachée et une fiche inexistante
+  donnent la même réponse, tout comme la collection d'autrui et une collection inexistante.
+- Une fiche suspendue ou retirée reste rangée mais n'est plus lisible : l'écran indique
+  « plus disponible », sans son titre, et elle peut toujours être enlevée.
+- Plafonds : 2 000 favoris, 50 collections, 500 ressources par collection.
+- Nom de collection : 120 caractères, unique par titulaire sans égard à la casse ni à la
+  forme Unicode, sans caractère invisible. Description : 1 000 caractères.
+- La suppression du compte efface favoris et collections.
+
 ## Écrans
 
 | Page | Pour qui |
@@ -192,6 +209,7 @@ Limites connues :
 | `/moderation`, `/moderation/[id]` | File d'attente (par pages de 20, les plus anciennes d'abord, filtrable par mots), signalements, décision et correction |
 | `/moderation/import` | Importer une fiche par son DOI (modérateurs) |
 | `/search` | Rechercher parmi les fiches publiées |
+| `/library`, `/library/collections/[id]` | Favoris et collections privées |
 | `/resources/[id]` | Fiche publiée et signalement |
 
 Les pages de modération répondent « introuvable » à qui n'est pas modérateur. Ce n'est

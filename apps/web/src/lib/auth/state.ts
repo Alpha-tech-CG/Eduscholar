@@ -28,6 +28,9 @@ export type AuthErrorCode =
   | "access_status_required"
   | "permission_proof_required"
   | "duplicate"
+  // Bibliothèque personnelle
+  | "limit_reached"
+  | "duplicate_name"
   // Import par connecteur
   | "doi_not_found"
   | "unsupported_type"

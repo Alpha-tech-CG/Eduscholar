@@ -31,7 +31,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | fait — proposition, suivi par le contributeur, file de modération, décisions motivées et journalisées, séparation des tâches ; l'attribution des rôles reste manuelle (D-01) |
 | B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | fait — import par DOI via Crossref, réservé aux modérateurs ; OpenAlex (clé et budget à décider) et l'import en lot restent à faire |
 | B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | fait — recherche plein texte, cinq filtres, fiche publiée, signalement ; réservée aux comptes connectés |
-| B-17 | Favoris et collections privées | B-13 | à faire |
+| B-17 | Favoris et collections privées | B-13 | fait — favoris, collections, ajout depuis la fiche, strictement privés |
 
 ## Dette de sécurité à solder avant la production
 
@@ -59,6 +59,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-19 | Révocation immédiate : un jeton d'accès déjà émis reste valable jusqu'à dix minutes après la fermeture des sessions (refus de code, changement de mot de passe). Vérifier la session en base pour les opérations sensibles, ou réduire la durée du jeton. | Avant l'ouverture publique |
 | D-20 | Connecteurs : pause après une réponse `429` en respectant `Retry-After` ; plafond journalier de requêtes par source ; signaler sur la fiche les champs modifiés après import | Avant l'import en lot ou OpenAlex |
 | D-21 | Recherche : l'index plein texte n'est pas utilisé sous RLS (47 ms pour 50 000 fiches). Avant 200 000 fiches ou au-delà de 300 ms : fonction de recherche dédiée (ADR à écrire), compteur estimé, classement par pertinence. Étendre D-15 à la table des ressources. Fixer la durée de conservation des journaux d'accès, qui contiennent les mots cherchés. | Avant l'import en lot |
+| D-22 | Bibliothèque : inclure favoris et collections dans l'export des données personnelles ; limite de débit propre si un abus est observé | Avec l'export des données (Phase 3) |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)
@@ -97,7 +98,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | Rechercher avec au moins trois filtres | B-16 | couvert |
 | Origine et statut d'accès affichés | B-13, B-16 | couvert |
 | Vérifier, publier, retirer une ressource | B-14 | couvert |
-| Collection privée | B-17 | non couvert |
+| Collection privée | B-17 | couvert |
 | Projet de recherche privé | Phase 3 | non couvert |
 | Sources et fiches de lecture | Phase 3 | non couvert |
 | Bibliographie sans source inventée | Phase 3 | non couvert |

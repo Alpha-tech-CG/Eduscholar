@@ -105,7 +105,9 @@
       "doi_not_found": "Crossref does not know this DOI. Check what you entered.",
       "unsupported_type": "This kind of document is not supported by the catalogue yet (articles, books and theses only).",
       "language_required": "The source does not state the language of the document: please choose it.",
-      "source_unavailable": "The source did not answer, or its answer could not be used. Nothing was imported; try again later."
+      "source_unavailable": "The source did not answer, or its answer could not be used. Nothing was imported; try again later.",
+      "limit_reached": "You have reached the maximum allowed. Remove some items before adding more.",
+      "duplicate_name": "You already have a collection with this name."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -178,7 +180,8 @@
     "contribute": "Suggest a resource",
     "contributions": "My contributions",
     "moderation": "Moderation",
-    "search": "Search for a resource"
+    "search": "Search for a resource",
+    "library": "My library"
   },
   "Profile": {
     "title": "My profile",
@@ -471,5 +474,55 @@
       "choose": "Choose…",
       "pending": "One moment…"
     }
+  },
+  "Library": {
+    "title": "My library",
+    "collectionTitle": "Collection",
+    "intro": "Your favourites and collections are private: only you can see them.",
+    "toSearch": "Search for a resource",
+    "backToLibrary": "Back to my library",
+    "favorites": "Favourites ({count})",
+    "favoritesEmpty": "No favourites yet. Open a resource and add it to your favourites.",
+    "collections": "Collections ({count})",
+    "collectionsEmpty": "No collections yet.",
+    "itemCount": "{count, plural, =0 {Empty} one {# resource} other {# resources}}",
+    "items": "Resources ({count})",
+    "itemsEmpty": "This collection is empty. Open a resource to add it here.",
+    "newCollection": "New collection",
+    "name": "Name",
+    "description": "Description",
+    "create": "Create collection",
+    "edit": "Rename collection",
+    "save": "Save",
+    "deleteHeading": "Delete collection",
+    "deleteIntro": "The collection is deleted permanently. The resources stay in the catalogue.",
+    "delete": "Delete this collection",
+    "removeFavorite": "Remove from favourites",
+    "addFavorite": "Add to favourites",
+    "removeItem": "Remove from collection",
+    "addToCollection": "Add to collection",
+    "collection": "Collection",
+    "choose": "Choose…",
+    "saveHeading": "Keep this resource",
+    "isFavorite": "This resource is in your favourites.",
+    "notFavorite": "This resource is not in your favourites.",
+    "inCollections": "Filed in: ",
+    "listSeparator": ", ",
+    "manage": "Manage my library",
+    "unavailable": "This resource is no longer available in the catalogue.",
+    "separator": " · ",
+    "pending": "One moment…",
+    "favoriteAdded": "The resource has been added to your favourites.",
+    "favoriteRemoved": "The resource has been removed from your favourites.",
+    "itemAdded": "The resource has been added to the collection.",
+    "itemRemoved": "The resource has been removed from the collection.",
+    "collectionCreated": "The collection has been created.",
+    "collectionUpdated": "The collection has been saved.",
+    "collectionDeleted": "The collection has been deleted.",
+    "loadFailed": "Your resources could not be loaded. Try again in a moment; nothing has been changed.",
+    "pagination": "Pages",
+    "previous": "Previous page",
+    "next": "Next page",
+    "page": "Page {page} of {pages}"
   }
 }

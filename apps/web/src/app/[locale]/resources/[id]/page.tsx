@@ -8,6 +8,8 @@ import { Link } from "@/i18n/navigation";
 import { reportResource } from "@/lib/catalogue/actions";
 import { getResource } from "@/lib/catalogue/queries";
 import { REPORT_REASONS } from "@/lib/catalogue/schemas";
+import { setCollectionItem, setFavorite } from "@/lib/library/actions";
+import { getCollectionIdsContaining, getCollections, isFavorite } from "@/lib/library/queries";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,6 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
   // droit de la lire : la page s'en charge.
   return { title: t("title"), robots: { index: false } };
 }
+
+const LIBRARY_NOTICES = {
+  "favorite-added": "favoriteAdded",
+  "favorite-removed": "favoriteRemoved",
+  "item-added": "itemAdded",
+  "item-removed": "itemRemoved",
+} as const;
 
 export default async function ResourcePage({
   params,
@@ -31,11 +40,21 @@ export default async function ResourcePage({
     notFound();
   }
 
-  const [t, tReason, { notice }] = await Promise.all([
+  const [t, tReason, tLibrary, favorite, collections, containing, { notice }] = await Promise.all([
     getTranslations("Catalogue.resource"),
     getTranslations("Catalogue.reportReason"),
+    getTranslations("Library"),
+    isFavorite(resource.id),
+    getCollections(),
+    getCollectionIdsContaining(resource.id),
     searchParams,
   ]);
+  const libraryNotice =
+    typeof notice === "string" && Object.hasOwn(LIBRARY_NOTICES, notice)
+      ? LIBRARY_NOTICES[notice as keyof typeof LIBRARY_NOTICES]
+      : null;
+  const available = collections.filter((collection) => !containing.has(collection.id));
+  const holding = collections.filter((collection) => containing.has(collection.id));
 
   return (
     <AuthPageShell
@@ -55,8 +74,68 @@ export default async function ResourcePage({
         </p>
       ) : null}
 
+      {libraryNotice ? (
+        <p role="status" className="rounded border border-foreground/20 p-3">
+          {tLibrary(libraryNotice)}
+        </p>
+      ) : null}
+
       <ResourceSummary resource={resource} />
       <p className="text-sm opacity-70">{t("externalNotice")}</p>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">{tLibrary("saveHeading")}</h2>
+        <p data-testid="favorite-state" className="text-sm opacity-80">
+          {favorite ? tLibrary("isFavorite") : tLibrary("notFavorite")}
+        </p>
+        <AuthForm
+          action={setFavorite}
+          submitLabel={favorite ? tLibrary("removeFavorite") : tLibrary("addFavorite")}
+          pendingLabel={tLibrary("pending")}
+        >
+          <input type="hidden" name="resourceId" value={resource.id} />
+          <input type="hidden" name="present" value={favorite ? "false" : "true"} />
+        </AuthForm>
+
+        {holding.length > 0 ? (
+          <p className="text-sm">
+            <span>{tLibrary("inCollections")}</span>
+            {holding.map((collection, index) => (
+              <span key={collection.id}>
+                {index > 0 ? tLibrary("listSeparator") : null}
+                <Link
+                  href={`/library/collections/${collection.id}`}
+                  className="underline underline-offset-4"
+                >
+                  {collection.name}
+                </Link>
+              </span>
+            ))}
+          </p>
+        ) : null}
+        {available.length > 0 ? (
+          <AuthForm
+            action={setCollectionItem}
+            submitLabel={tLibrary("addToCollection")}
+            pendingLabel={tLibrary("pending")}
+          >
+            <input type="hidden" name="resourceId" value={resource.id} />
+            <input type="hidden" name="present" value="true" />
+            <SelectField
+              name="collectionId"
+              label={tLibrary("collection")}
+              placeholder={tLibrary("choose")}
+              options={available.map(({ id, name }) => ({ value: id, label: name }))}
+              required
+            />
+          </AuthForm>
+        ) : null}
+        <p className="text-sm">
+          <Link href="/library" className="underline underline-offset-4">
+            {tLibrary("manage")}
+          </Link>
+        </p>
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("reportHeading")}</h2>

@@ -704,6 +704,79 @@ describe("catalogue, par appel direct à l'API", () => {
     }
   });
 
+  it("la bibliothèque d'un compte est fermée aux autres, par appel direct", async () => {
+    const { data: pendingId } = await fatou.client.rpc("submit_resource" as never, {
+      payload: payload({ title: `Bibliothèque ${run}` }),
+    } as never);
+
+    // Une fiche non publiée ne se garde pas, même par son auteur, au profil complété ; même réponse
+    // que pour une fiche inexistante.
+    for (const resource_id of [pendingId as unknown as string, randomUUID()]) {
+      const favorite = await fatou.client.rpc("set_favorite", { resource_id, favorite: true });
+      expect(favorite.error?.message).toBe("not_found");
+    }
+
+    const bobProfile = await bob.client.from("profiles").select("age_confirmed_at").maybeSingle();
+    const bobOnboarded = Boolean(bobProfile.data?.age_confirmed_at);
+
+    const created = await fatou.client.rpc("create_collection", { name: `Privée ${run}` });
+    expect(created.error).toBeNull();
+    const collectionId = created.data as string;
+
+    // Écritures directes refusées, y compris pour le titulaire.
+    const direct = await Promise.all([
+      fatou.client.from("collections").insert({ owner_id: fatou.id, name: "Directe" } as never),
+      fatou.client.from("collections").update({ name: "Directe" } as never).eq("id", collectionId),
+      fatou.client.from("collections").delete().eq("id", collectionId),
+      fatou.client
+        .from("collection_items")
+        .insert({ collection_id: collectionId, resource_id: pendingId } as never),
+      fatou.client
+        .from("resource_favorites")
+        .insert({ user_id: fatou.id, resource_id: pendingId } as never),
+    ]);
+    for (const result of direct) expect(result.error).not.toBeNull();
+
+    // Bob et un visiteur ne voient ni ne touchent la collection de Fatou.
+    // Bob reçoit la même réponse pour la collection de Fatou et pour une
+    // collection qui n'existe pas.
+    for (const target of [collectionId, randomUUID()]) {
+      const renamed = await bob.client.rpc("update_collection", {
+        collection_id: target,
+        name: "Piratée",
+      });
+      const deleted = await bob.client.rpc("delete_collection", { collection_id: target });
+      expect([renamed.error?.message, deleted.error?.message]).toEqual(
+        bobOnboarded ? ["not_found", "not_found"] : ["forbidden", "forbidden"],
+      );
+    }
+
+    for (const client of [bob.client, anonymous]) {
+      const read = await client.from("collections").select("id").eq("id", collectionId);
+      expect(read.data ?? []).toEqual([]);
+      for (const call of [
+        client.rpc("update_collection", { collection_id: collectionId, name: "Piratée" }),
+        client.rpc("delete_collection", { collection_id: collectionId }),
+        client.rpc("set_collection_item", {
+          collection_id: collectionId,
+          resource_id: randomUUID(),
+          present: false,
+        }),
+      ]) {
+        expect((await call).error).not.toBeNull();
+      }
+    }
+    const items = await bob.client.from("collection_items").select("collection_id");
+    expect(items.data ?? []).toEqual([]);
+    const favorites = await bob.client.from("resource_favorites").select("user_id");
+    expect((favorites.data ?? []).every((row) => row.user_id === bob.id)).toBe(true);
+
+    // Elle existe toujours, intacte.
+    const mine = await fatou.client.from("collections").select("name").eq("id", collectionId);
+    expect(mine.data).toEqual([{ name: `Privée ${run}` }]);
+    await fatou.client.rpc("delete_collection", { collection_id: collectionId });
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",

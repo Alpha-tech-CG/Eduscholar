@@ -50,6 +50,44 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"collection_items": {
+                  Row: {
+                    "added_at": string,"collection_id": string,"resource_id": string
+                  }
+                  Insert: {
+                    "added_at"?: string,"collection_id": string,"resource_id": string
+                  }
+                  Update: {
+                    "added_at"?: string,"collection_id"?: string,"resource_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "collection_items_collection_id_fkey"
+      columns: ["collection_id"]
+isOneToOne: false
+      referencedRelation: "collections"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "collection_items_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"collections": {
+                  Row: {
+                    "created_at": string,"description": string | null,"id": string,"name": string,"owner_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name": string,"owner_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"description"?: string | null,"id"?: string,"name"?: string,"owner_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"countries": {
                   Row: {
                     "code": string,"is_active": boolean,"labels": NonNullable<Json>
@@ -222,6 +260,25 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"resource_favorites": {
+                  Row: {
+                    "created_at": string,"resource_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"resource_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"resource_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resource_favorites_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"resource_internal": {
                   Row: {
                     "contributor_comment": string | null,"moderation_notes": string | null,"permission_proof": string | null,"resource_id": string,"rights_declared_at": string | null
@@ -372,6 +429,12 @@ isOneToOne: false
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
+"create_collection":
+{ Args: { "description"?: string,"name": string }; Returns: string
+                           },
+"delete_collection":
+{ Args: { "collection_id": string }; Returns: undefined
+                           },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
                            },
@@ -398,8 +461,17 @@ isOneToOne: false
               "has_verified_factor": boolean,"session_verified": boolean
             }[]
                            },
+"set_collection_item":
+{ Args: { "collection_id": string,"present": boolean,"resource_id": string }; Returns: undefined
+                           },
+"set_favorite":
+{ Args: { "favorite": boolean,"resource_id": string }; Returns: undefined
+                           },
 "submit_resource":
 { Args: { "payload": Json }; Returns: string
+                           },
+"update_collection":
+{ Args: { "collection_id": string,"description"?: string,"name": string }; Returns: undefined
                            },
 "update_submission":
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined
