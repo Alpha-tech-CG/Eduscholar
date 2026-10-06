@@ -1,7 +1,7 @@
 # ADR-0008 — Outillage du socle technique
 
 **Date :** 6 octobre 2026
-**Statut :** proposé — à valider par le porteur de projet
+**Statut :** accepté (validé par le porteur de projet le 6 octobre 2026)
 **Tâche :** B-08
 
 ## Contexte

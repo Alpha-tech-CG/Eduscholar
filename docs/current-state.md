@@ -105,7 +105,10 @@ Détail dans `docs/security/initial-audit.md`.
   `check:secrets`, `check:audit`, `check:bundle`.
 - 19 tests de scripts, 14 tests unitaires, 34 tests de bout en bout (bureau et mobile).
 - CSP stricte avec nonce, en-têtes de sécurité, contrôle de secrets en pre-commit.
-- Toujours aucune base de données, aucune authentification, aucune fonctionnalité métier.
+- Base de données (B-09) : instance Supabase locale, 7 tables de fondation sous RLS forcée,
+  fonctions de rôle, journal d'audit en ajout seul, 139 tests pgTAP. Voir
+  `docs/architecture/database.md`.
+- Toujours aucune authentification ni fonctionnalité métier.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

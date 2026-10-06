@@ -18,7 +18,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-06 | Taxonomie pilote (informatique) et liste des sources autorisées avec licences | orchestrateur | — | Filière, matières, niveaux, pays ISO, langues, sources et conditions d'usage documentés | fait — `taxonomy-pilot.md`, `authorized-sources.md` ; à valider par le porteur de projet |
 | B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | fait |
 | B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | fait — ADR-0008 à valider ; la CI n'a jamais tourné faute de dépôt distant |
-| B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | à faire |
+| B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | fait — trois migrations, 139 tests pgTAP ; revue de l'agent sécurité intégrée |
 | B-10 | Authentification : inscription, connexion, déconnexion, réinitialisation, sessions | backend-engineer, frontend-engineer, qa-engineer, security-reviewer | B-08, B-09 | Messages d'erreur génériques, cookies sécurisés, limitation de débit, tests verts | à faire |
 
 ## Phase 1 — MVP recherche
@@ -32,6 +32,21 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | à faire |
 | B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | à faire |
 | B-17 | Favoris et collections privées | B-13 | à faire |
+
+## Dette de sécurité à solder avant la production
+
+Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
+
+| ID | Sujet | Échéance |
+|---|---|---|
+| D-01 | Fonctions d'attribution de rôle, de suspension et de gestion des organisations, exécutées sous la session de l'administrateur plutôt que par `service_role` ; retirer ensuite à `service_role` l'écriture sur `platform_roles` | Avec l'administration (B-14) |
+| D-02 | Refuser un rôle privilégié à un compte sans second facteur vérifié ; authentification récente pour les opérations d'administration | Avec D-01 |
+| D-03 | Journal d'audit : partitionnement par mois, conservation, export hors base | Avant la production |
+| D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
+| D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
+| D-06 | Dépôt distant : épingler les actions par empreinte, `CODEOWNERS`, protection de `main` | À la création du dépôt |
+| D-07 | Copie chiffrée hors plateforme de la base et des fichiers ; exercice de restauration | Avant la production |
+| D-08 | Mesure du plan d'exécution des politiques sur un journal d'audit volumineux | Avec D-03 |
 
 ## Phases suivantes (non détaillées)
 

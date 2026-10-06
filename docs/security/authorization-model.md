@@ -218,8 +218,9 @@ Par défaut, `profile_public` est vide : ni l'établissement, ni la filière, ni
 ne sont publics (cahier §6.2). L'administration des comptes (suspension) passe par une
 fonction privilégiée qui ne renvoie que l'identifiant, l'adresse et l'état du compte.
 
-La suppression d'un compte ne supprime aucune ligne d'`audit_logs` : l'identifiant y est
-conservé sous forme pseudonymisée.
+La suppression d'un compte ne supprime aucune ligne d'`audit_logs`. Les identifiants y
+restent sous forme d'UUID qui ne renvoient plus à aucune donnée : c'est la
+pseudonymisation retenue, le journal étant en ajout seul.
 
 ### 5.3 Projets de recherche (classes G et H)
 
@@ -301,7 +302,7 @@ expires_at, status, accepted_by)`.
 | Inviter un membre | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
 | Accepter une invitation d'organisation | `F` | — | — | — | — | — |
 | Retirer un membre, changer un rôle | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
-| Modifier les paramètres de l'organisation | ✖ | ✖ | ✖ | ✖ | `org` | ✖ |
+| Modifier les paramètres de l'organisation | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
 | Quitter l'organisation | — | `F` | `F` | `F` | `F`, sauf dernier `org_admin` | — |
 | Créer, vérifier, suspendre une organisation | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, sauf s'il en est membre |
 | Désigner le premier `org_admin` | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, jamais lui-même |
@@ -323,7 +324,7 @@ permettent pas de retrouver l'activité ou le projet d'une personne.
 | Suspendre un `platform_admin` | ✖ | ✖ | ✖ | ✖ | `F` |
 | Suspendre un `super_admin` | ✖ | ✖ | ✖ | ✖ | ✖ (hors application) |
 | Écrire dans le journal d'audit | ✖ | ✖ | ✖ | ✖ | ✖ (écrit par la base) |
-| Lire le journal d'audit | ses propres événements de sécurité | événements de modération | événements d'administration de `org` | tous, sans contenu privé | tous, sans contenu privé |
+| Lire le journal d'audit | ses propres événements de sécurité ; pas les changements de rôle ou de statut le concernant, qui portent l'identifiant de l'administrateur | événements de modération | événements d'administration de `org` | tous, sans contenu privé | tous, sans contenu privé |
 | Modifier ou supprimer une ligne d'audit | ✖ | ✖ | ✖ | ✖ | ✖ |
 
 Règles associées :
@@ -442,6 +443,7 @@ can_read_section(section_id)             propriétaire, membre complet, ou secti
 has_full_project_access(project_id)      propriétaire ou membre à accès complet
 has_org_role(organization_id, roles[])   rôle dans une organisation non suspendue
 has_platform_role(roles[])               rôle de plateforme
+my_org_ids(roles[])                      organisations où l'appelant détient l'un des rôles
 is_account_active()                      compte non suspendu
 ```
 

@@ -1,0 +1,261 @@
+# Base de données
+
+**Mise à jour :** 6 octobre 2026 (B-09)
+**Références :** `docs/security/authorization-model.md`, ADR-0001, ADR-0007
+
+## Développement local
+
+Prérequis : Docker démarré.
+
+| Commande | Rôle |
+|---|---|
+| `npm run db:start` | Démarre l'instance Supabase locale et applique les migrations |
+| `npm run db:stop` | Arrête l'instance |
+| `npm run test:db` | Tests pgTAP de `supabase/tests/database/` |
+| `npm run db:lint` | Analyse statique du schéma |
+| `npx supabase migration up` | Applique les migrations non encore appliquées |
+
+Ports locaux : API 55321, base 55322, messagerie de test 55324. Ils diffèrent des ports
+par défaut de Supabase pour cohabiter avec un autre projet local.
+
+Services locaux désactivés : Realtime, Storage, Studio, fonctions Edge, analytique.
+Realtime et Storage le resteront tant que les règles de `authorization-model.md` §7.3 et
+§7.6 ne sont pas mises en œuvre.
+
+## Schémas
+
+| Schéma | Exposé par l'API | Contenu |
+|---|---|---|
+| `public` | oui | Tables applicatives, sous RLS |
+| `private` | non | Fonctions d'appui des politiques, état des comptes |
+| `auth` | non | Comptes, géré par Supabase |
+
+`supabase/config.toml` : seul `public` est exposé ; `auto_expose_new_tables = false`, donc
+une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explicite ;
+100 lignes au plus par réponse.
+
+## Migrations
+
+| Fichier | Contenu |
+|---|---|
+| `20261006000100_foundation.sql` | Fermeture par défaut, tables, fonctions d'appui, déclencheurs, RLS |
+| `20261006000200_foundation_hardening.sql` | Corrections de la revue de sécurité : lecture par colonne, acteur de l'audit, politiques évaluées par requête |
+| `20261006000300_revoke_residual_privileges.sql` | Retrait de `TRUNCATE`, `REFERENCES` et `TRIGGER` aux rôles de l'API |
+
+## Tables
+
+### `public.profiles`
+
+Profil privé. Une ligne par compte, créée par déclencheur à l'inscription.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `user_id` | uuid | Clé primaire ; référence `auth.users`, suppression en cascade ; non modifiable |
+| `preferred_locale` | text | `fr` ou `en` ; défaut `fr` |
+| `created_at`, `updated_at` | timestamptz | `updated_at` tenu par déclencheur |
+
+Accès : le titulaire lit sa ligne et modifie `preferred_locale`. Aucune insertion ni
+suppression directe.
+
+### `public.profile_public`
+
+Partie publiable du profil, séparée parce que la RLS filtre des lignes et non des colonnes.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `user_id` | uuid | Clé primaire ; référence `profiles`, cascade ; non modifiable |
+| `display_name` | text | 1 à 80 caractères, ou nul |
+| `is_public` | boolean | Défaut `false` |
+| `updated_at` | timestamptz | |
+
+Accès : le titulaire lit et modifie sa ligne ; un utilisateur connecté lit les lignes dont
+`is_public` est vrai. Aucun accès anonyme à ce stade.
+
+### `public.platform_roles`
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `user_id` | uuid | Référence `auth.users`, cascade |
+| `role` | text | `moderator`, `platform_admin` ou `super_admin` |
+| `granted_by` | uuid | Référence `auth.users`, mise à nul ; différent de `user_id` |
+| `granted_at` | timestamptz | |
+
+Clé primaire `(user_id, role)`. Accès : chacun lit ses propres rôles (`user_id`, `role`,
+`granted_at` ; `granted_by` n'est pas lisible). Écriture par `service_role` uniquement,
+avec `granted_by` obligatoire ; seule une session directe sur la base peut l'omettre,
+pour amorcer le premier `super_admin`. `role` n'est pas modifiable : un rôle se retire
+et se réattribue. Toute modification est journalisée.
+
+### `private.account_status`
+
+État des comptes. Absence de ligne : compte actif. Aucun accès utilisateur.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `user_id` | uuid | Clé primaire ; référence `auth.users`, cascade |
+| `status` | text | `active` ou `suspended` |
+| `reason` | text | |
+| `changed_by` | uuid | Différent de `user_id` |
+| `changed_at` | timestamptz | |
+
+### `public.organizations`
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `id` | uuid | Clé primaire, générée ; non modifiable |
+| `slug` | text | Unique ; minuscules, chiffres et tirets ; 2 à 80 caractères ; non modifiable |
+| `name` | text | 2 à 200 caractères |
+| `country_code` | text | Deux majuscules (ISO 3166-1), ou nul |
+| `status` | text | `pending`, `verified` ou `suspended` ; défaut `pending` |
+| `created_by`, `updated_by` | uuid | Non lisibles par un utilisateur ; obligatoires pour une opération serveur |
+| `created_at`, `updated_at` | timestamptz | |
+
+Accès : tout utilisateur connecté lit les organisations vérifiées ; un membre lit la
+sienne, sauf si elle est suspendue ; l'administration de la plateforme les lit toutes.
+Aucune écriture directe : le renommage passera par une fonction nommée, qui pourra exiger
+une nouvelle vérification.
+
+### `public.organization_members`
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `organization_id` | uuid | Référence `organizations`, suppression restreinte ; non modifiable |
+| `user_id` | uuid | Référence `auth.users`, cascade ; non modifiable |
+| `role` | text | `org_admin`, `librarian`, `teacher` ou `member` |
+| `invited_by` | uuid | Non lisible par un utilisateur |
+| `created_at` | timestamptz | |
+
+Clé primaire `(organization_id, user_id)` ; index sur `user_id`. Accès : chacun lit sa
+propre appartenance ; un `org_admin` lit la liste de son organisation. Aucune écriture
+directe. Un déclencheur interdit de retirer ou rétrograder le dernier `org_admin`.
+
+Conséquence à connaître : le compte du dernier `org_admin` d'une organisation ne peut pas
+être supprimé tant que l'administration n'a pas été transférée, et une organisation ne se
+supprime pas (elle se suspend). La fonction de suppression de compte (B-10) devra
+détecter ce cas et l'expliquer. Le verrou du déclencheur suppose le niveau d'isolation
+`READ COMMITTED`, qui ne doit pas être changé sur ce chemin.
+
+### `public.audit_logs`
+
+Journal en ajout seul. Aucune clé étrangère vers les comptes : la suppression d'un compte
+n'efface aucune ligne.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `id` | bigint | Identité |
+| `occurred_at` | timestamptz | |
+| `category` | text | `security`, `moderation`, `organization` ou `platform` |
+| `action` | text | Par exemple `platform_roles.insert` |
+| `actor_id` | uuid | Auteur : l'utilisateur de la session, sinon l'acteur déclaré par l'opération serveur ; nul pour l'amorçage |
+| `subject_user_id` | uuid | Utilisateur concerné |
+| `organization_id` | uuid | |
+| `target_type`, `target_id` | text | |
+| `metadata` | jsonb | 8 ko au plus ; jamais de contenu privé |
+
+Index : `occurred_at`, `(actor_id, occurred_at)`, `(subject_user_id, occurred_at)`,
+`(organization_id, occurred_at)`.
+
+Écriture : par déclencheur, dans la transaction de l'action. Modification, suppression et
+vidage sont refusés pour tous les rôles, `service_role` compris, qui n'a pas non plus le
+droit d'y insérer. Lecture : ses propres événements de sécurité pour un utilisateur ;
+ceux de son organisation pour un `org_admin` ; la modération pour un modérateur ; tout
+pour l'administration de la plateforme.
+
+Un utilisateur ne lit pas les changements de rôle ou de statut qui le concernent : ces
+lignes portent l'identifiant de l'administrateur qui a agi.
+
+Après la suppression d'un compte, ses identifiants restent dans le journal sous forme
+d'UUID ne renvoyant plus à aucune donnée : c'est la pseudonymisation retenue.
+
+Reste à faire avant la production : partitionnement par mois, durée de conservation et
+export hors base (modèle de menaces M-38).
+
+## Fonctions du schéma `private`
+
+| Fonction | Rôle |
+|---|---|
+| `is_account_active()` | Vrai si l'appelant est connecté, non anonyme et non suspendu |
+| `is_session_aal2()` | Vrai si la session a validé un second facteur |
+| `has_platform_role(roles[])` | Compte actif, second facteur, rôle détenu |
+| `has_org_role(organization_id, roles[])` | Compte actif, organisation non suspendue, rôle détenu ; second facteur exigé pour `org_admin` |
+| `my_org_ids(roles[])` | Organisations où l'appelant détient l'un des rôles ; utilisée par les politiques pour être évaluée une fois par requête |
+| `require_actor_column(colonne)` | Exige l'acteur lors d'une opération serveur |
+| `set_organization_actor()` | Renseigne l'acteur d'une modification d'organisation |
+| `write_audit(...)` | Écrit une ligne d'audit ; non exécutable par un utilisateur |
+| `handle_new_user()` | Crée le profil à l'inscription |
+| `prevent_key_change(colonnes...)` | Refuse la modification des colonnes de propriété |
+| `protect_last_org_admin()` | Garde au moins un `org_admin` par organisation |
+| `audit_row_change(catégorie, colonnes...)` | Journalise les changements des tables d'administration |
+
+Les fonctions `security definer` fixent un `search_path` vide et lisent l'identité par
+`auth.uid()`. Aucune ne lit les métadonnées du jeton modifiables par l'utilisateur. Elles
+appartiennent au rôle `postgres`, qui n'est pas soumis à la RLS : c'est ce qui évite la
+récursion entre politiques alors que la RLS est forcée sur toutes les tables.
+
+## Règles pour toute nouvelle migration
+
+1. RLS activée **et forcée** dans la migration qui crée la table.
+2. Une politique par opération, adressée à un rôle nommé, jamais `for all`.
+3. `GRANT` explicites, par colonne pour `update`. Aucun droit pour `anon` sans l'ajouter à
+   la liste blanche du test de configuration.
+4. Colonnes de propriété protégées par `prevent_key_change`.
+5. Écritures sensibles par fonction nommée ; l'audit s'écrit en base.
+6. Chaque politique inclut `private.is_account_active()`.
+7. Tests pgTAP livrés avec la migration, pour les quatre opérations et le rôle `anon`.
+8. Aucune migration destructive sans approbation ; l'en-tête de la migration décrit comment l'annuler.
+
+`supabase/tests/database/00_configuration.test.sql` applique deux familles de contrôles :
+
+- des règles générales, sans nommer de table : RLS activée et forcée, aucun droit pour
+  `anon` (droits par colonne et vues compris), aucune écriture de table entière pour
+  `authenticated`, vues en `security_invoker`, aucune fonction `security definer` dans le
+  schéma exposé, `search_path` vide, rien de publié sur Realtime ;
+- des listes fermées : politiques, colonnes modifiables, fonctions exécutables par
+  `authenticated`, droits d'écriture de `service_role`.
+
+Toute ouverture nouvelle oblige donc à modifier ce fichier, ce qui la fait passer en
+revue. Le fichier vérifie aussi que ses propres règles détectent un objet fautif.
+
+À chaque nouvelle table, ajouter au fichier de configuration : ses politiques, ses
+colonnes modifiables et les droits d'écriture de `service_role`.
+
+## Configuration à reproduire sur les projets hébergés
+
+`supabase/config.toml` ne configure que l'instance locale. Avant d'utiliser un projet de
+staging ou de production, y appliquer :
+
+| Réglage | Valeur |
+|---|---|
+| Schémas exposés | `public` uniquement |
+| Exposition automatique des nouvelles tables | désactivée |
+| Lignes par réponse | 100 |
+| API GraphQL | désactivée |
+| Realtime | désactivé |
+| Connexions anonymes | désactivées |
+| Confirmation de l'adresse | obligatoire |
+| Durée du jeton d'accès | 600 secondes |
+| Durée d'une session | 12 heures au plus, 1 heure d'inactivité |
+| Délai entre deux courriels d'authentification | 60 secondes |
+| Validité d'un code à usage unique | 15 minutes |
+| Rotation du jeton de rafraîchissement | activée |
+| Mot de passe | 12 caractères au moins, lettres et chiffres ; contrôle des mots de passe compromis |
+| Changement de mot de passe | ré-authentification exigée |
+| Second facteur TOTP | activé |
+| CAPTCHA de l'authentification | à activer en B-10 (non configuré en local) |
+| Limites de débit de l'authentification | activées |
+| Fournisseurs d'identité tiers et serveur OAuth | désactivés ; ne pas les activer sans revoir les fonctions de rôle, car ils contrôleraient la revendication `aal` |
+| Adresses de redirection | liste exacte, sans joker |
+| Accès réseau direct à la base | restreint |
+
+## Non couvert par B-09
+
+- Fonction de renommage d'une organisation et fonction de dissolution.
+- Refus d'attribuer un rôle privilégié à un compte sans second facteur vérifié ;
+  authentification récente exigée pour les opérations d'administration.
+- Partitionnement et conservation du journal d'audit.
+- Contrôle automatique de `supabase/config.toml` et de la configuration des projets hébergés.
+
+- Fonctions d'invitation et de gestion des membres d'une organisation.
+- Fonctions d'attribution des rôles de plateforme et de suspension de compte.
+- Tests par appel direct à l'API avec de vrais jetons : avec l'authentification (B-10).
+- Buckets et table `files` : Phase 2.

@@ -77,6 +77,7 @@ de bibliothèque numérique et d'accompagnement à la rédaction.
 - `npm run build`
 - `npm run test:e2e` (après le build)
 - `npm run check:secrets` et `npm run check:audit`
+- `npm run db:lint` et `npm run test:db` (Docker démarré, après `npm run db:start`)
 
 Dans `apps/web`, lire la documentation embarquée de Next.js
 (`node_modules/next/dist/docs/`) avant d'écrire du code : la version installée diffère

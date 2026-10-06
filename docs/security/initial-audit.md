@@ -142,6 +142,11 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   dans `docs/environment.md`. Les agents ne peuvent pas écrire `.env.example`.
 - 6 octobre 2026 — Socle technique relu par l'agent sécurité : aucun constat critique ou
   élevé, 6 moyens et 6 faibles, traités ou reportés avec échéance dans ADR-0008.
+- 6 octobre 2026 — Schéma de fondation (B-09) relu par l'agent sécurité : aucun constat
+  critique ou élevé, 8 moyens et 4 faibles. Corrigés par deux migrations de
+  durcissement ; le reste est planifié dans la dette de sécurité du backlog (D-01 à D-08).
+  Le test de configuration renforcé a révélé un écart réel, corrigé : `service_role`
+  détenait `TRUNCATE` sur toutes les tables.
 
 ## Suivi
 
