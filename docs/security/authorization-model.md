@@ -142,7 +142,7 @@ peut cumuler les deux.
 | D. Signalements et retraits | `resource_reports`, demandes de retrait | Auteur du signalement ; modération |
 | E. Profil | `profiles` (privé), `profile_public` (nom d'affichage et champs rendus publics) | `user_id` |
 | F. Bibliothèque personnelle | favoris, collections, notes, tags personnels, annotations, historique | `user_id` uniquement |
-| G. Projets | `research_projects`, `research_project_members`, `research_project_member_sections`, `project_invitations`, `thesis_sections`, `thesis_versions`, `literature_notes`, `citations`, `bibliographies`, `comments`, tâches | Appartenance au projet et portée |
+| G. Projets | `research_projects`, `project_sources`, `research_project_members`, `research_project_member_sections`, `project_invitations`, `thesis_sections`, `thesis_versions`, `literature_notes`, `citations`, `bibliographies`, `comments`, tâches | Appartenance au projet et portée |
 | H. Fichiers | Table `files` + objets Storage | Ligne `files` rattachée à un projet, une soumission, une ressource ou un utilisateur |
 | I. Organisations | `organizations`, `organization_members`, invitations d'organisation | Rôle d'organisation |
 | J. Notifications | `notifications` | Destinataire |
@@ -455,7 +455,13 @@ my_report_ids()                          signalements de l'appelant
 my_collection_ids()                      collections de l'appelant
 my_project_ids()                         projets non supprimés de l'appelant ; à utiliser dans les
                                          politiques des tables enfants d'un projet
+my_source_ids()                          sources des projets non supprimés de l'appelant, pour la
+                                         politique des fiches de lecture
 ```
+
+Fonctions internes, exécutables par aucun rôle de l'API : `require_own_project`,
+`require_own_source`, `check_source_payload`, `check_daily_source_quota`, `clean_line`,
+`nfc_text_array`, `is_saveable_resource`, `require_library_user`.
 
 Règles :
 
@@ -502,6 +508,7 @@ depuis le serveur) :
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
+| `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |
 | `create_project`, `update_project`, `delete_project` | Le propriétaire, compte actif au profil complété ; même réponse pour le projet d'autrui, un projet supprimé et un projet inexistant, avant tout examen de la requête |
 | `account_deletion_check` : contrôle préalable à la suppression de son compte | Le titulaire, compte actif ; refuse le dernier administrateur d'une organisation |
 
@@ -522,7 +529,7 @@ et refuse le rejeu.
 | Création de notifications | Tâche système |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
-| Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Tâche planifiée ; ne lit rien, ne renvoie qu'un nombre |
+| Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Tâche planifiée ; ne lit rien, ne renvoie qu'un nombre ; sources et fiches de lecture partent en cascade |
 | Limitation de débit de l'authentification (`consume_rate_limit`) | Aucun : l'appel précède l'authentification. La fonction ne lit et n'écrit que des compteurs, sous des clés qui sont des empreintes. |
 
 Règles de `service_role` :

@@ -8,6 +8,7 @@ import { requireOnboardedUser } from "@/lib/profile/guard";
 import { getReferenceData } from "@/lib/profile/queries";
 import { deleteProject } from "@/lib/projects/actions";
 import { getProject } from "@/lib/projects/queries";
+import { countSources } from "@/lib/projects/source-queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Projects");
@@ -27,11 +28,12 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const locale = await getLocale();
-  const [t, tStatus, format, reference, { notice }] = await Promise.all([
+  const [t, tStatus, format, reference, sourceCount, { notice }] = await Promise.all([
     getTranslations("Projects"),
     getTranslations("Projects.status"),
     getFormatter(),
     getReferenceData(locale),
+    countSources(project.id),
     searchParams,
   ]);
 
@@ -135,6 +137,25 @@ export default async function ProjectPage({
           {t("edit")}
         </Link>
       </p>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">{t("sources.heading")}</h2>
+        <p data-testid="source-count">{t("sources.count", { count: sourceCount })}</p>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          <li>
+            <Link href={`/projects/${project.id}/sources`} className="underline underline-offset-4">
+              {t("sources.manage")}
+            </Link>
+          </li>
+          {sourceCount > 0 ? (
+            <li>
+              <Link href={`/projects/${project.id}/matrix`} className="underline underline-offset-4">
+                {t("sources.toMatrix")}
+              </Link>
+            </li>
+          ) : null}
+        </ul>
+      </section>
 
       {filled ? null : <p className="opacity-70">{t("notFilled")}</p>}
       {texts.map(textBlock)}

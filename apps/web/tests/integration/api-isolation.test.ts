@@ -834,6 +834,89 @@ describe("catalogue, par appel direct à l'API", () => {
     expect(gone.data).toEqual([]);
   });
 
+  it("les sources et fiches de lecture d'un projet sont fermées aux autres, par appel direct", async () => {
+    const project = await fatou.client.rpc("create_project", { payload: { title: `Sources ${run}` } });
+    expect(project.error).toBeNull();
+    const projectId = project.data as string;
+
+    const added = await fatou.client.rpc("add_project_source", {
+      project_id: projectId,
+      payload: { title: `Source privée ${run}`, source_type: "book" },
+    });
+    expect(added.error).toBeNull();
+    const sourceId = added.data as string;
+    const noted = await fatou.client.rpc("save_literature_note", {
+      source_id: sourceId,
+      payload: { problem: "Note privée" },
+    });
+    expect(noted.error).toBeNull();
+
+    // Lecture : personne d'autre, pas même le rôle serveur.
+    for (const client of [bob.client, alice.client, anonymous, admin]) {
+      const sources = await client.from("project_sources").select("id").eq("id", sourceId);
+      expect(sources.data ?? []).toEqual([]);
+      const notes = await client.from("literature_notes").select("source_id").eq("source_id", sourceId);
+      expect(notes.data ?? []).toEqual([]);
+    }
+
+    // Écritures directes refusées, y compris pour la propriétaire.
+    const direct = await Promise.all([
+      fatou.client.from("project_sources").insert({ project_id: projectId, title: "Directe" } as never),
+      fatou.client.from("project_sources").update({ title: "Directe" } as never).eq("id", sourceId),
+      fatou.client.from("project_sources").delete().eq("id", sourceId),
+      fatou.client.from("literature_notes").update({ problem: "Directe" } as never).eq("source_id", sourceId),
+      bob.client.from("literature_notes").insert({ source_id: sourceId, problem: "Intrus" } as never),
+    ]);
+    for (const result of direct) expect(result.error).not.toBeNull();
+
+    // Par les fonctions : même réponse pour la source d'autrui et une source
+    // inexistante, que la requête soit valide ou non.
+    for (const target of [sourceId, randomUUID()]) {
+      const responses = await Promise.all([
+        bob.client.rpc("update_project_source", { source_id: target, payload: { title: "Piratée" } }),
+        bob.client.rpc("update_project_source", {
+          source_id: target,
+          payload: { title: "", publication_year: "x", accessed_on: "y" },
+        }),
+        bob.client.rpc("save_literature_note", { source_id: target, payload: { problem: "Intrus" } }),
+        bob.client.rpc("delete_project_source", { source_id: target }),
+      ]);
+      const outcomes = responses.map((response) => [response.error?.code, response.error?.message]);
+      expect(new Set(outcomes.map((outcome) => JSON.stringify(outcome))).size, target).toBe(1);
+      expect(outcomes[0]?.[1]).not.toContain("Source privée");
+    }
+    const additions = [];
+    for (const target of [projectId, randomUUID()]) {
+      for (const response of [
+        await bob.client.rpc("add_project_source", {
+          project_id: target,
+          payload: { title: "Intruse" },
+        }),
+        await bob.client.rpc("add_project_source_from_resource", {
+          project_id: target,
+          resource_id: randomUUID(),
+        }),
+      ]) {
+        expect(response.error).not.toBeNull();
+        additions.push(JSON.stringify([response.error?.code, response.error?.message]));
+      }
+    }
+    // Projet d'autrui et projet inexistant : strictement la même réponse.
+    expect(new Set(additions).size).toBe(1);
+
+    const intact = await fatou.client.from("project_sources").select("title").eq("id", sourceId);
+    expect(intact.data).toEqual([{ title: `Source privée ${run}` }]);
+    const note = await fatou.client.from("literature_notes").select("problem").eq("source_id", sourceId);
+    expect(note.data).toEqual([{ problem: "Note privée" }]);
+
+    // Projet supprimé : sources et fiches cessent aussitôt d'être lisibles.
+    await fatou.client.rpc("delete_project", { project_id: projectId });
+    const gone = await fatou.client.from("project_sources").select("id").eq("id", sourceId);
+    expect(gone.data).toEqual([]);
+    const goneNote = await fatou.client.from("literature_notes").select("source_id").eq("source_id", sourceId);
+    expect(goneNote.data).toEqual([]);
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",

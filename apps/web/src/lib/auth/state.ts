@@ -1,6 +1,7 @@
 import type { ResourceFieldErrorCode } from "@/lib/catalogue/schemas";
 import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
 import type { ProjectFieldErrorCode } from "@/lib/projects/schemas";
+import type { SourceFieldErrorCode } from "@/lib/projects/source-schemas";
 import type { FieldErrorCode } from "./schemas";
 
 // État renvoyé par les actions d'authentification. Uniquement des codes : les
@@ -49,7 +50,11 @@ export type AuthFormState =
       error: AuthErrorCode;
       fields?: Record<
         string,
-        FieldErrorCode | ProfileFieldErrorCode | ResourceFieldErrorCode | ProjectFieldErrorCode
+        | FieldErrorCode
+        | ProfileFieldErrorCode
+        | ResourceFieldErrorCode
+        | ProjectFieldErrorCode
+        | SourceFieldErrorCode
       >;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;

@@ -59,6 +59,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002000_library_hardening.sql` | Corrections de la revue de sécurité : description, forme Unicode du nom, renommage sous verrou |
 | `20261006002100_research_projects.sql` | Projets de recherche privés |
 | `20261006002200_research_projects_hardening.sql` | Corrections de la revue de sécurité : purge, plafond quotidien, modification partielle sans écrasement, échéance |
+| `20261006002300_project_sources.sql` | Sources d'un projet et fiches de lecture |
+| `20261006002400_project_sources_hardening.sql` | Corrections de la revue de sécurité : plafond quotidien, institution reprise pour les thèses seulement, caractères invisibles des champs d'une ligne |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -272,6 +274,35 @@ projets supprimés depuis plus de trente jours : **elle doit être planifiée** 
 
 Les tables enfants d'un projet contrôlent l'accès par `private.my_project_ids()`, jamais
 par une colonne recopiée, et portent `on delete cascade` vers le projet.
+
+### `public.project_sources` et `public.literature_notes`
+
+Sources bibliographiques d'un projet et fiche de lecture de chacune (cahier §6.8).
+Privées, comme le projet : l'accès passe par le projet parent
+(`private.my_project_ids()`, `private.my_source_ids()`), jamais par une colonne recopiée.
+
+`project_sources` : `project_id` (cascade, non modifiable), `resource_id` (fiche du
+catalogue reprise, `on delete set null`), `source_type` (article, livre, chapitre, thèse,
+rapport, conférence, web, autre), `title` (500), `authors` (50 × 200), `publication_year`
+(1400–2100), `container_title` (300), `publisher` (200), `volume`, `issue`, `pages` (50),
+`doi`, `url` (`http` ou `https`, sans `@`), `accessed_on` (1990–2100). Index :
+`(project_id, created_at)`, `(resource_id)`, et unique partiel `(project_id, resource_id)`.
+
+`literature_notes` : clé primaire `source_id` (cascade) ; `problem`, `concepts`, `method`,
+`population_field`, `results`, `limits`, `project_link` (3 000 caractères), `useful_quote`
+(2 000), `quote_pages` (50), `target_chapter` (200).
+
+Règles :
+
+- lecture par RLS ; écriture par fonctions seulement, la propriété étant vérifiée avant
+  tout examen de la requête ;
+- une source reprise du catalogue copie titre, auteurs, année, DOI et lien officiel d'une
+  fiche publiée ; l'institution n'est reprise que pour une thèse ; rien d'autre n'est
+  complété. La copie survit au retrait de la fiche : l'écran retire alors la mention du
+  catalogue et n'affiche plus l'adresse en lien ;
+- plafonds : 300 sources par projet, 600 ajouts par jour et par compte, projets supprimés
+  compris ;
+- aucune ligne d'audit ; ni `anon` ni `service_role` n'ont de droit sur ces tables.
 
 ### `private.rate_limit_buckets`
 

@@ -128,7 +128,8 @@ Détail dans `docs/security/initial-audit.md`.
 - Bibliothèque personnelle (B-17) : favoris et collections privées.
 - Le MVP du catalogue (B-13 à B-17) est complet.
 - Phase 3 découpée en cinq tâches (C-01 à C-05). C-01 fait : projet de recherche privé,
-  avec sa fiche. Sources, fiches de lecture, bibliographie et export restent à faire.
+  avec sa fiche. C-02 fait : sources, fiches de lecture et matrice de littérature.
+  Bibliographie, plan rédigé et export restent à faire.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

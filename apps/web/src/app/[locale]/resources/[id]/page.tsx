@@ -11,6 +11,8 @@ import { REPORT_REASONS } from "@/lib/catalogue/schemas";
 import { setCollectionItem, setFavorite } from "@/lib/library/actions";
 import { getCollectionIdsContaining, getCollections, isFavorite } from "@/lib/library/queries";
 import { requireOnboardedUser } from "@/lib/profile/guard";
+import { getProjects } from "@/lib/projects/queries";
+import { addSourceFromResource } from "@/lib/projects/source-actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Catalogue.resource");
@@ -40,15 +42,18 @@ export default async function ResourcePage({
     notFound();
   }
 
-  const [t, tReason, tLibrary, favorite, collections, containing, { notice }] = await Promise.all([
-    getTranslations("Catalogue.resource"),
-    getTranslations("Catalogue.reportReason"),
-    getTranslations("Library"),
-    isFavorite(resource.id),
-    getCollections(),
-    getCollectionIdsContaining(resource.id),
-    searchParams,
-  ]);
+  const [t, tReason, tLibrary, tSources, favorite, collections, containing, projects, { notice }] =
+    await Promise.all([
+      getTranslations("Catalogue.resource"),
+      getTranslations("Catalogue.reportReason"),
+      getTranslations("Library"),
+      getTranslations("Projects.sources"),
+      isFavorite(resource.id),
+      getCollections(),
+      getCollectionIdsContaining(resource.id),
+      getProjects(),
+      searchParams,
+    ]);
   const libraryNotice =
     typeof notice === "string" && Object.hasOwn(LIBRARY_NOTICES, notice)
       ? LIBRARY_NOTICES[notice as keyof typeof LIBRARY_NOTICES]
@@ -136,6 +141,28 @@ export default async function ResourcePage({
           </Link>
         </p>
       </section>
+
+      {projects.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">{tSources("citeHeading")}</h2>
+          <p className="text-sm opacity-80">{tSources("citeIntro")}</p>
+          <AuthForm
+            action={addSourceFromResource}
+            submitLabel={tSources("cite")}
+            pendingLabel={tSources("pending")}
+          >
+            <input type="hidden" name="resourceId" value={resource.id} />
+            <SelectField
+              name="projectId"
+              label={tSources("project")}
+              placeholder={tSources("fields.choose")}
+              options={projects.map(({ id: value, title }) => ({ value, label: title }))}
+              defaultValue={projects.length === 1 ? projects[0]?.id : undefined}
+              required
+            />
+          </AuthForm>
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("reportHeading")}</h2>

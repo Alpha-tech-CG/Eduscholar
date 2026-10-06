@@ -140,6 +140,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"literature_notes": {
+                  Row: {
+                    "concepts": string | null,"limits": string | null,"method": string | null,"population_field": string | null,"problem": string | null,"project_link": string | null,"quote_pages": string | null,"results": string | null,"source_id": string,"target_chapter": string | null,"updated_at": string,"useful_quote": string | null
+                  }
+                  Insert: {
+                    "concepts"?: string | null,"limits"?: string | null,"method"?: string | null,"population_field"?: string | null,"problem"?: string | null,"project_link"?: string | null,"quote_pages"?: string | null,"results"?: string | null,"source_id": string,"target_chapter"?: string | null,"updated_at"?: string,"useful_quote"?: string | null
+                  }
+                  Update: {
+                    "concepts"?: string | null,"limits"?: string | null,"method"?: string | null,"population_field"?: string | null,"problem"?: string | null,"project_link"?: string | null,"quote_pages"?: string | null,"results"?: string | null,"source_id"?: string,"target_chapter"?: string | null,"updated_at"?: string,"useful_quote"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "literature_notes_source_id_fkey"
+      columns: ["source_id"]
+isOneToOne: true
+      referencedRelation: "project_sources"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"organization_members": {
                   Row: {
                     "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"user_id": string
@@ -258,6 +277,31 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "academic_programs"
       referencedColumns: ["code"]
+    }
+                  ]
+                },"project_sources": {
+                  Row: {
+                    "accessed_on": string | null,"authors": (string)[],"container_title": string | null,"created_at": string,"doi": string | null,"id": string,"issue": string | null,"pages": string | null,"project_id": string,"publication_year": number | null,"publisher": string | null,"resource_id": string | null,"source_type": string,"title": string,"updated_at": string,"url": string | null,"volume": string | null
+                  }
+                  Insert: {
+                    "accessed_on"?: string | null,"authors"?: (string)[],"container_title"?: string | null,"created_at"?: string,"doi"?: string | null,"id"?: string,"issue"?: string | null,"pages"?: string | null,"project_id": string,"publication_year"?: number | null,"publisher"?: string | null,"resource_id"?: string | null,"source_type"?: string,"title": string,"updated_at"?: string,"url"?: string | null,"volume"?: string | null
+                  }
+                  Update: {
+                    "accessed_on"?: string | null,"authors"?: (string)[],"container_title"?: string | null,"created_at"?: string,"doi"?: string | null,"id"?: string,"issue"?: string | null,"pages"?: string | null,"project_id"?: string,"publication_year"?: number | null,"publisher"?: string | null,"resource_id"?: string | null,"source_type"?: string,"title"?: string,"updated_at"?: string,"url"?: string | null,"volume"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_sources_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "project_sources_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
     }
                   ]
                 },"research_projects": {
@@ -445,6 +489,12 @@ isOneToOne: false
             "account_deletion_check":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"add_project_source":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
+"add_project_source_from_resource":
+{ Args: { "project_id": string,"resource_id": string }; Returns: string
+                           },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },
@@ -459,6 +509,9 @@ isOneToOne: false
                            },
 "delete_project":
 { Args: { "project_id": string }; Returns: undefined
+                           },
+"delete_project_source":
+{ Args: { "source_id": string }; Returns: undefined
                            },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
@@ -475,11 +528,17 @@ isOneToOne: false
 "my_submission_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
+"purge_deleted_projects":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
                            },
 "resolve_report":
 { Args: { "note"?: string,"report_id": string,"status": string }; Returns: undefined
+                           },
+"save_literature_note":
+{ Args: { "payload": Json,"source_id": string }; Returns: undefined
                            },
 "second_factor_status":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -500,6 +559,9 @@ isOneToOne: false
                            },
 "update_project":
 { Args: { "payload": Json,"project_id": string }; Returns: undefined
+                           },
+"update_project_source":
+{ Args: { "payload": Json,"source_id": string }; Returns: undefined
                            },
 "update_submission":
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined

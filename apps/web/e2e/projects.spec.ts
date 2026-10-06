@@ -76,7 +76,9 @@ test.describe("projet de recherche privé", () => {
     await expect(main).toContainText("Quels modèles détectent le mieux ?");
     await expect(main).toContainText("Ce projet est privé");
     // Deux hypothèses : le doublon est retiré, le balisage reste du texte.
-    const hypotheses = main.locator("section", { hasText: "Hypothèses" }).getByRole("listitem");
+    const hypotheses = main
+      .getByRole("heading", { name: "Hypothèses" })
+      .locator("xpath=following-sibling::ol[1]/li");
     await expect(hypotheses).toHaveText(["Les forêts aléatoires suffisent.", "<script>alert(1)</script>"]);
 
     await page.goto("/fr/projects");

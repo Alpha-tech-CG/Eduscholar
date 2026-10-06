@@ -204,6 +204,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   Non retenu : restreindre la lecture par colonne, la politique devant lire le
   propriétaire et la date de suppression. Ces corrections n'ont pas fait l'objet d'une
   seconde revue.
+- 6 octobre 2026 — Sources de projet et fiches de lecture (C-02) relues par l'agent
+  sécurité : aucun constat critique ou élevé, 2 moyens et 6 faibles. Cloisonnement,
+  rattachement croisé et absence d'oracle jugés sains. Corrigés : volume non plafonné par
+  compte, source reprise d'une fiche ensuite retirée gardant la caution du catalogue et
+  un lien cliquable, institution d'un article prise pour son éditeur, caractères
+  invisibles moins filtrés sur les champs d'une ligne, erreur de lecture présentée comme
+  une liste vide. Non corrigé : la redirection après écriture utilise l'identifiant de
+  projet du formulaire (sans effet sur les données). Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 
