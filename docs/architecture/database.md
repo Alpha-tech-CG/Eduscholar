@@ -53,6 +53,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006001300_my_submissions.sql` | Lecture par un contributeur de ses propres propositions |
 | `20261006001500_connector_import.sql` | Import d'une fiche par un connecteur, au nom d'un modérateur |
 | `20261006001600_import_hardening.sql` | Corrections de la revue de sécurité : second regard sur une fiche importée, limite journalière sérialisée, réimport après refus |
+| `20261006001700_resource_search.sql` | Index plein texte du catalogue, tenu par déclencheur |
+| `20261006001800_search_tokens.sql` | Découpage des mots de l'index aligné sur celui de la requête |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables

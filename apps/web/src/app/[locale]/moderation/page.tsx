@@ -5,7 +5,11 @@ import { AuthPageShell } from "@/components/auth/page-shell";
 import { Link } from "@/i18n/navigation";
 import { resolveReport } from "@/lib/catalogue/actions";
 import { requireModerator } from "@/lib/catalogue/guard";
-import { getModerationQueue, getOpenReports } from "@/lib/catalogue/queries";
+import {
+  getModerationQueue,
+  getOpenReports,
+  MODERATION_PAGE_SIZE,
+} from "@/lib/catalogue/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Catalogue.moderation");
@@ -16,15 +20,25 @@ export default async function ModerationPage({
   searchParams,
 }: PageProps<"/[locale]/moderation">) {
   await requireModerator("/moderation");
-  const [t, tStatus, tReason, format, queue, reports, { notice }] = await Promise.all([
+  const { notice, q, page: rawPage } = await searchParams;
+  const words = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 200) ?? "";
+  const requested = Number.parseInt((Array.isArray(rawPage) ? rawPage[0] : rawPage) ?? "", 10);
+  const wanted = Number.isInteger(requested) && requested >= 1 ? Math.min(requested, 500) : 1;
+
+  const [t, tStatus, tReason, format, result, reports] = await Promise.all([
     getTranslations("Catalogue.moderation"),
     getTranslations("Catalogue.editorialStatus"),
     getTranslations("Catalogue.reportReason"),
     getFormatter(),
-    getModerationQueue(),
+    getModerationQueue(words, wanted),
     getOpenReports(),
-    searchParams,
   ]);
+  const { resources: queue, total, page } = result;
+  const lastPage = Math.max(1, Math.ceil(total / MODERATION_PAGE_SIZE));
+  const pageHref = (target: number) => ({
+    pathname: "/moderation" as const,
+    query: { ...(words ? { q: words } : {}), ...(target > 1 ? { page: String(target) } : {}) },
+  });
 
   return (
     <AuthPageShell wide title={t("title")} intro={t("intro")}>
@@ -41,7 +55,26 @@ export default async function ModerationPage({
       </p>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">{t("queue", { count: queue.length })}</h2>
+        <h2 className="text-lg font-semibold">{t("queue", { count: total })}</h2>
+        <form method="get" role="search" className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="q" className="text-sm font-medium">
+              {t("filter")}
+            </label>
+            <input
+              id="q"
+              name="q"
+              type="search"
+              defaultValue={words}
+              maxLength={200}
+              autoComplete="off"
+              className="rounded border border-foreground/30 bg-background px-3 py-2"
+            />
+          </div>
+          <button type="submit" className="rounded border border-foreground/30 px-4 py-2 font-medium">
+            {t("filterSubmit")}
+          </button>
+        </form>
         {queue.length === 0 ? (
           <p className="opacity-70">{t("queueEmpty")}</p>
         ) : (
@@ -67,6 +100,25 @@ export default async function ModerationPage({
             ))}
           </ul>
         )}
+        {lastPage > 1 ? (
+          <nav aria-label={t("pagination")} className="flex items-center justify-between gap-4">
+            {page > 1 ? (
+              <Link href={pageHref(page - 1)} className="underline underline-offset-4">
+                {t("previous")}
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span className="text-sm opacity-70">{t("page", { page, pages: lastPage })}</span>
+            {page < lastPage ? (
+              <Link href={pageHref(page + 1)} className="underline underline-offset-4">
+                {t("next")}
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+        ) : null}
       </section>
 
       <section className="flex flex-col gap-3">

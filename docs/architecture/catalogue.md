@@ -144,14 +144,55 @@ par jour et par modérateur en base. Une réponse `429` ou une panne de la sourc
 n'entraîne aucune nouvelle tentative automatique ; le respect de l'en-tête `Retry-After`
 reste à faire (dette D-20).
 
+## Recherche et fiche publiée
+
+La recherche (`/search`) et la fiche (`/resources/[id]`) sont réservées aux comptes
+connectés au profil complété. La recherche sans compte est reportée : elle demande un
+cache côté serveur et une limitation de débit devant l'API (dette D-15).
+
+- **Index** : la colonne `search_vector` est tenue par un déclencheur — titre (poids A),
+  auteurs, mots-clés et institution (B), résumé (C), sans accents ni analyse
+  linguistique. La ponctuation qui soude des mots (trait d'union, point, barre,
+  apostrophe) est remplacée par des espaces, pour que l'index découpe comme la requête :
+  « feu » trouve « pare-feu ». Une valeur fournie est écrasée.
+- **Requête** : l'application ne garde des mots saisis que lettres et chiffres, huit mots
+  au plus, chacun cherché par son début (`arbre` trouve `arbres`) ; tous sont exigés.
+  Aucun opérateur ne peut y être glissé.
+- **Filtres** : type, langue, statut d'accès, niveau, matière. Une valeur absente du
+  référentiel est ignorée.
+- **Lecture** : sous la session de l'utilisateur, par l'API ; la RLS décide. La recherche
+  ajoute « publiée et publique », pour qu'un modérateur ou un contributeur n'y voie pas
+  de fiche en attente. Résultats par 20, les plus récemment publiés d'abord.
+- **Fiche** : origine, licence, statut d'accès, date de dernière vérification, lien
+  officiel (`rel="noopener noreferrer nofollow"`). Une fiche non publiée, réservée ou
+  inexistante répond « introuvable » de la même façon.
+- **Signalement** : depuis la fiche, par `report_resource`. L'identité du signaleur n'est
+  lisible de personne.
+- **Débit** : 150 recherches par cinq minutes et par compte. Pas de limite par adresse :
+  un seul compte bloquerait tout un campus placé derrière la même adresse.
+
+Limites connues :
+
+- Sous RLS, PostgreSQL n'utilise pas l'index plein texte pour la requête d'un
+  utilisateur (l'opérateur n'est pas « leakproof ») : chaque recherche parcourt les
+  fiches. Mesuré le 6 octobre 2026 sur 50 000 fiches : 47 ms. C'est acceptable pour le
+  pilote ; à revoir avant 200 000 fiches ou si une recherche dépasse 300 ms (dette D-21).
+- Les résultats ne sont pas classés par pertinence.
+- Les mots cherchés figurent dans l'adresse de la page (historique du navigateur,
+  journaux d'accès de l'hébergeur). Ils ne partent pas vers les sites externes.
+- Hors écritures latine, grecque et cyrillique, le retrait des signes diacritiques peut
+  différer entre l'application et l'index.
+
 ## Écrans
 
 | Page | Pour qui |
 |---|---|
 | `/contribute` | Proposer une ressource |
 | `/contributions`, `/contributions/[id]` | Suivre, corriger ou retirer ses propositions |
-| `/moderation`, `/moderation/[id]` | File d'attente, signalements, décision et correction |
+| `/moderation`, `/moderation/[id]` | File d'attente (par pages de 20, les plus anciennes d'abord, filtrable par mots), signalements, décision et correction |
 | `/moderation/import` | Importer une fiche par son DOI (modérateurs) |
+| `/search` | Rechercher parmi les fiches publiées |
+| `/resources/[id]` | Fiche publiée et signalement |
 
 Les pages de modération répondent « introuvable » à qui n'est pas modérateur. Ce n'est
 qu'un aiguillage : chaque lecture passe par la RLS, chaque décision par la base.

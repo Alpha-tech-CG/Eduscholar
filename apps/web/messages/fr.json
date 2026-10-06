@@ -177,7 +177,8 @@
     "security": "Sécurité du compte",
     "contribute": "Proposer une ressource",
     "contributions": "Mes contributions",
-    "moderation": "Modération"
+    "moderation": "Modération",
+    "search": "Rechercher une ressource"
   },
   "Profile": {
     "title": "Mon profil",
@@ -407,7 +408,13 @@
       "back": "Retour à la file de modération",
       "importLink": "Importer une ressource par son DOI",
       "imported": "La fiche est importée. Vérifiez-la avant de la publier.",
-      "alreadyImported": "Cette ressource figure déjà au catalogue : voici sa fiche."
+      "alreadyImported": "Cette ressource figure déjà au catalogue : voici sa fiche.",
+      "filter": "Filtrer par mots du titre ou des auteurs",
+      "filterSubmit": "Filtrer",
+      "pagination": "Pages de la file",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {page} sur {pages}"
     },
     "import": {
       "title": "Importer par DOI",
@@ -425,6 +432,44 @@
       "submit": "Importer",
       "pending": "Interrogation de la source…",
       "back": "Retour à la modération"
+    },
+    "search": {
+      "title": "Rechercher dans le catalogue",
+      "intro": "Chaque ressource indique son origine, sa licence et son statut d'accès. Les liens mènent à la source officielle.",
+      "query": "Mots recherchés",
+      "queryHint": "Titre, auteur, mot-clé. Tous les mots sont cherchés, sans tenir compte des accents.",
+      "type": "Type de ressource",
+      "language": "Langue",
+      "access": "Statut d'accès",
+      "level": "Niveau",
+      "subject": "Matière",
+      "any": "Tous",
+      "submit": "Rechercher",
+      "reset": "Effacer les filtres",
+      "results": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}}",
+      "empty": "Aucune ressource publiée ne correspond. Essayez moins de mots ou retirez un filtre.",
+      "rateLimited": "Trop de recherches en peu de temps. Réessayez dans quelques minutes.",
+      "source": "Origine : {source}",
+      "separator": " · ",
+      "pagination": "Pages de résultats",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {page} sur {pages}",
+      "resultsHeading": "Résultats",
+      "unavailable": "La recherche est momentanément indisponible. Réessayez dans un instant."
+    },
+    "resource": {
+      "title": "Ressource",
+      "backToSearch": "Retour à la recherche",
+      "externalNotice": "EduScholar n'héberge pas ce document : le lien officiel mène au site de sa source. Vérifiez la licence avant toute réutilisation.",
+      "reportHeading": "Signaler cette ressource",
+      "reportIntro": "Lien cassé, erreur, atteinte à un droit : la modération examine chaque signalement. Votre identité n'est pas communiquée.",
+      "reportReason": "Motif",
+      "reportDetails": "Précisions",
+      "reportSubmit": "Envoyer le signalement",
+      "reported": "Merci : votre signalement a été transmis à la modération.",
+      "choose": "Choisir…",
+      "pending": "Un instant…"
     }
   }
 }

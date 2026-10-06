@@ -123,7 +123,9 @@ Détail dans `docs/security/initial-audit.md`.
   la recherche et la fiche publique sont l'objet de B-16.
 - Import par DOI (B-15) : un modérateur importe une fiche depuis Crossref ; elle entre
   en file de modération avec sa provenance.
-- Toujours aucune fonctionnalité de recherche, de bibliothèque ou de projet.
+- Recherche (B-16) : recherche plein texte avec cinq filtres, fiche publiée affichant
+  origine, licence et statut d'accès, signalement depuis la fiche.
+- Pas encore de bibliothèque personnelle (B-17) ni de projet de recherche (Phase 3).
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

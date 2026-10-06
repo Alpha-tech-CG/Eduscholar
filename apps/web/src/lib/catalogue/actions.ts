@@ -11,6 +11,7 @@ import {
   moderationSchema,
   moderatorEditSchema,
   reportResolutionSchema,
+  reportSchema,
   resourceFieldErrors,
   resourceSchema,
   splitList,
@@ -223,6 +224,36 @@ export async function moderatorUpdateResource(
   const locale = await getLocale();
   return redirect({
     href: { pathname: `/moderation/${parsed.data.resourceId}`, query: { notice: "edited" } },
+    locale,
+  });
+}
+
+/** Signalement d'une fiche publiée, depuis sa page. */
+export async function reportResource(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  if (!(await getFullySignedInUser())) return expired;
+
+  const values = { details: text(formData, "details").slice(0, 2000) };
+  const parsed = reportSchema.safeParse({
+    resourceId: text(formData, "resourceId"),
+    reason: text(formData, "reason"),
+    details: text(formData, "details"),
+  });
+  if (!parsed.success) return { status: "error", error: "validation", values };
+
+  const supabase = await createSessionClient();
+  const { error } = await supabase.rpc("report_resource", {
+    resource_id: parsed.data.resourceId,
+    reason: parsed.data.reason,
+    details: parsed.data.details ?? "",
+  });
+  if (error) return { status: "error", error: catalogueErrorCode(error), values };
+
+  const locale = await getLocale();
+  return redirect({
+    href: { pathname: `/resources/${parsed.data.resourceId}`, query: { notice: "reported" } },
     locale,
   });
 }

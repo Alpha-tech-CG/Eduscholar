@@ -339,6 +339,18 @@ select is(
   'Les fonctions exécutables par authenticated sont celles attendues'
 );
 
+-- Aucun déclencheur n'est resté désactivé après une migration.
+select is_empty(
+  $$
+    select c.relname || '.' || t.tgname
+    from pg_trigger t
+    join pg_class c on c.oid = t.tgrelid
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname in ('public', 'private') and not t.tgisinternal and t.tgenabled <> 'O'
+  $$,
+  'Tous les déclencheurs des tables de l''application sont actifs'
+);
+
 -- Droits d'écriture de service_role.
 select is(
   (select string_agg(ligne, E'\n' order by ligne collate "C")

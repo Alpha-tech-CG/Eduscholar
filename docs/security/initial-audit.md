@@ -179,6 +179,14 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   précisée reprise à tort, lien officiel non encodé, adresse de test de la source
   acceptée sans drapeau explicite. Reste en dette : D-20. Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 6 octobre 2026 — Recherche, fiche publiée et signalement (B-16) relus par l'agent
+  sécurité : aucun constat critique ou élevé, 2 moyens et 4 faibles. Mesuré puis
+  accepté avec un seuil de révision : l'index plein texte n'est pas utilisé sous RLS
+  (D-21). Corrigés : limite de débit par adresse qui laissait un compte bloquer toute
+  son adresse, migration qui suspendait toutes les gardes de la table, recherche en
+  échec présentée comme « aucun résultat ». Les tests ont aussi révélé un défaut de la
+  file de modération, corrigé : au-delà de cent fiches, les plus récentes n'étaient
+  plus affichées. Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

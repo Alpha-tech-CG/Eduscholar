@@ -662,6 +662,48 @@ describe("catalogue, par appel direct à l'API", () => {
     expect(row.data).toEqual([{ title }]);
   });
 
+  it("la recherche plein texte par appel direct ne montre que les fiches visibles", async () => {
+    const token = `zzdirect${run.replace(/[^a-z0-9]/gi, "").toLowerCase()}`;
+    const { data: pendingId, error } = await fatou.client.rpc("submit_resource" as never, {
+      payload: payload({ title: `Proposition ${token}` }),
+    } as never);
+    expect(error).toBeNull();
+
+    // Opérateurs libres, négation comprise : la RLS s'applique avant le filtre.
+    for (const expression of [`${token}:*`, `!${token}:*`, `${token}:* | a:*`]) {
+      const anon = await anonymous
+        .from("resources")
+        .select("id")
+        .textSearch("search_vector", expression, { config: "simple" });
+      expect(anon.error, expression).not.toBeNull();
+
+      const other = await alice.client
+        .from("resources")
+        .select("id, editorial_status")
+        .textSearch("search_vector", expression, { config: "simple" });
+      expect(other.error, expression).toBeNull();
+      expect((other.data ?? []).map((row) => row.id)).not.toContain(pendingId);
+      expect((other.data ?? []).every((row) => row.editorial_status === "published")).toBe(true);
+    }
+
+    // Son auteur, lui, la retrouve.
+    const mine = await fatou.client
+      .from("resources")
+      .select("id")
+      .textSearch("search_vector", `${token}:*`, { config: "simple" });
+    expect((mine.data ?? []).map((row) => row.id)).toEqual([pendingId]);
+
+    // Mots limites : aucun ne fait échouer la requête.
+    for (const words of ["²:*", "123:*", "1e5:*", "شبكات:* & 网络:*", `${"a".repeat(40)}:*`]) {
+      const result = await alice.client
+        .from("resources")
+        .select("id")
+        .textSearch("search_vector", words, { config: "simple" })
+        .limit(1);
+      expect(result.error, words).toBeNull();
+    }
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",

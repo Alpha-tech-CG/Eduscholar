@@ -177,7 +177,8 @@
     "security": "Account security",
     "contribute": "Suggest a resource",
     "contributions": "My contributions",
-    "moderation": "Moderation"
+    "moderation": "Moderation",
+    "search": "Search for a resource"
   },
   "Profile": {
     "title": "My profile",
@@ -407,7 +408,13 @@
       "back": "Back to the moderation queue",
       "importLink": "Import a resource by its DOI",
       "imported": "The record has been imported. Check it before publishing.",
-      "alreadyImported": "This resource is already in the catalogue: here is its record."
+      "alreadyImported": "This resource is already in the catalogue: here is its record.",
+      "filter": "Filter by words from the title or authors",
+      "filterSubmit": "Filter",
+      "pagination": "Queue pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}"
     },
     "import": {
       "title": "Import by DOI",
@@ -425,6 +432,44 @@
       "submit": "Import",
       "pending": "Querying the source…",
       "back": "Back to moderation"
+    },
+    "search": {
+      "title": "Search the catalogue",
+      "intro": "Each resource states its origin, licence and access status. Links lead to the official source.",
+      "query": "Search words",
+      "queryHint": "Title, author, keyword. All words are searched, ignoring accents.",
+      "type": "Resource type",
+      "language": "Language",
+      "access": "Access status",
+      "level": "Level",
+      "subject": "Subject",
+      "any": "Any",
+      "submit": "Search",
+      "reset": "Clear filters",
+      "results": "{count, plural, =0 {No results} one {# result} other {# results}}",
+      "empty": "No published resource matches. Try fewer words or remove a filter.",
+      "rateLimited": "Too many searches in a short time. Try again in a few minutes.",
+      "source": "Origin: {source}",
+      "separator": " · ",
+      "pagination": "Result pages",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}",
+      "resultsHeading": "Results",
+      "unavailable": "Search is temporarily unavailable. Try again in a moment."
+    },
+    "resource": {
+      "title": "Resource",
+      "backToSearch": "Back to search",
+      "externalNotice": "EduScholar does not host this document: the official link leads to its source's website. Check the licence before any reuse.",
+      "reportHeading": "Report this resource",
+      "reportIntro": "Broken link, error, rights infringement: moderators review every report. Your identity is not disclosed.",
+      "reportReason": "Reason",
+      "reportDetails": "Details",
+      "reportSubmit": "Send report",
+      "reported": "Thank you: your report has been passed on to the moderators.",
+      "choose": "Choose…",
+      "pending": "One moment…"
     }
   }
 }

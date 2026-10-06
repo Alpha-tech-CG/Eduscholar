@@ -107,7 +107,11 @@ test.describe("catalogue : de la proposition à la publication", () => {
 
     // --- Modération : demande de correction --------------------------------
     const moderator = await openModerator(browser, used);
+    // La file est paginée, les plus anciennes d'abord : la fiche se retrouve
+    // par ses mots.
     await moderator.page.goto("/fr/moderation");
+    await moderator.page.getByLabel("Filtrer par mots du titre ou des auteurs").fill(title);
+    await moderator.page.getByRole("button", { name: "Filtrer" }).click();
     await moderator.page.getByRole("link", { name: title }).click();
     await expect(moderator.page).toHaveURL(new RegExp(`/fr/moderation/${resourceId}`));
     await expect(moderator.page.getByTestId("resource-status")).toHaveText("En attente");
@@ -200,7 +204,11 @@ test.describe("catalogue : de la proposition à la publication", () => {
     await moderator.page.getByRole("button", { name: "Envoyer la proposition" }).click();
     await expect(moderator.page).toHaveURL(/\/fr\/contributions\?notice=submitted/);
 
+    // La file est paginée, les plus anciennes d'abord : la fiche se retrouve
+    // par ses mots.
     await moderator.page.goto("/fr/moderation");
+    await moderator.page.getByLabel("Filtrer par mots du titre ou des auteurs").fill(title);
+    await moderator.page.getByRole("button", { name: "Filtrer" }).click();
     await moderator.page.getByRole("link", { name: title }).click();
     await decide(moderator.page, "Prendre en charge");
     await expect(alert(moderator.page)).toContainText(

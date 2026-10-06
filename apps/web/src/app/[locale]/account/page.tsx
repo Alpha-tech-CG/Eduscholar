@@ -90,6 +90,11 @@ export default async function AccountPage({
 
       <ul className="flex flex-col gap-2 text-sm">
         <li>
+          <Link href="/search" className="underline underline-offset-4">
+            {t("search")}
+          </Link>
+        </li>
+        <li>
           <Link href="/contribute" className="underline underline-offset-4">
             {t("contribute")}
           </Link>

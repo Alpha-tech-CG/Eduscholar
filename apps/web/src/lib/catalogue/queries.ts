@@ -4,6 +4,7 @@ import { getSecondFactorState } from "@/lib/auth/second-factor";
 import { getCurrentUser } from "@/lib/auth/session";
 import type { Option } from "@/lib/profile/queries";
 import { createSessionClient } from "@/lib/supabase/server";
+import { SEARCH_PAGE_SIZE, toTsQuery, type SearchFilters } from "./search";
 
 // Lectures du catalogue, faites sous le jeton de l'utilisateur : la RLS décide
 // de ce qu'il voit. Les colonnes sont nommées une à une (modèle de menaces M-52).
@@ -147,6 +148,50 @@ export async function getResourceHistory(resourceId: string): Promise<HistoryEnt
   }));
 }
 
+export type SearchResult = { resources: Resource[]; total: number; failed: boolean };
+
+/**
+ * Recherche parmi les fiches publiées. Le statut et la visibilité sont filtrés
+ * explicitement : un modérateur, qui lit aussi les fiches en attente, ne les
+ * voit pas apparaître ici. La RLS reste la règle ; ce filtre est un choix
+ * d'affichage.
+ */
+export async function searchResources(filters: SearchFilters): Promise<SearchResult> {
+  const supabase = await createSessionClient();
+  let query = supabase
+    .from("resources")
+    .select(RESOURCE_COLUMNS, { count: "exact" })
+    .eq("editorial_status", "published")
+    .eq("visibility", "public");
+
+  const tsQuery = toTsQuery(filters.query);
+  if (tsQuery) query = query.textSearch("search_vector", tsQuery, { config: "simple" });
+  if (filters.typeCode) query = query.eq("type_code", filters.typeCode);
+  if (filters.languageCode) query = query.eq("language_code", filters.languageCode);
+  if (filters.accessStatus) query = query.eq("access_status", filters.accessStatus);
+  if (filters.levelCode) query = query.contains("level_codes", [filters.levelCode]);
+  if (filters.subjectCode) query = query.contains("subject_codes", [filters.subjectCode]);
+
+  const from = (filters.page - 1) * SEARCH_PAGE_SIZE;
+  const { data, count, error } = await query
+    .order("published_at", { ascending: false })
+    .order("id")
+    .range(from, from + SEARCH_PAGE_SIZE - 1);
+  if (error) {
+    // Page au-delà de la dernière : on revient à la première.
+    if (error.code === "PGRST103" && filters.page > 1) {
+      return searchResources({ ...filters, page: 1 });
+    }
+    return { resources: [], total: 0, failed: true };
+  }
+
+  return {
+    resources: ((data ?? []) as ResourceRow[]).map(toResource),
+    total: count ?? 0,
+    failed: false,
+  };
+}
+
 /** Les soumissions de l'utilisateur courant, récentes d'abord. */
 export async function getMySubmissions(): Promise<Resource[]> {
   const user = await getCurrentUser();
@@ -191,17 +236,37 @@ export const MODERATION_QUEUE_STATUSES = [
   "suspended",
 ] as const;
 
-export async function getModerationQueue(): Promise<Resource[]> {
-  const supabase = await createSessionClient();
-  const { data } = await supabase
-    .from("resources")
-    .select(RESOURCE_COLUMNS)
-    .eq("visibility", "public")
-    .in("editorial_status", [...MODERATION_QUEUE_STATUSES])
-    .order("created_at", { ascending: true })
-    .limit(100);
+export const MODERATION_PAGE_SIZE = 20;
 
-  return ((data ?? []) as ResourceRow[]).map(toResource);
+export type ModerationQueue = { resources: Resource[]; total: number; page: number };
+
+/**
+ * File de modération, les plus anciennes d'abord, par pages. `words` filtre par
+ * les mots du titre, des auteurs ou des mots-clés.
+ */
+export async function getModerationQueue(words: string, page: number): Promise<ModerationQueue> {
+  const supabase = await createSessionClient();
+  let query = supabase
+    .from("resources")
+    .select(RESOURCE_COLUMNS, { count: "exact" })
+    .eq("visibility", "public")
+    .in("editorial_status", [...MODERATION_QUEUE_STATUSES]);
+
+  const tsQuery = toTsQuery(words);
+  if (tsQuery) query = query.textSearch("search_vector", tsQuery, { config: "simple" });
+
+  const from = (page - 1) * MODERATION_PAGE_SIZE;
+  const { data, count, error } = await query
+    .order("created_at", { ascending: true })
+    .order("id")
+    .range(from, from + MODERATION_PAGE_SIZE - 1);
+  if (error) {
+    // Page au-delà de la dernière : on revient à la première.
+    if (error.code === "PGRST103" && page > 1) return getModerationQueue(words, 1);
+    return { resources: [], total: 0, page: 1 };
+  }
+
+  return { resources: ((data ?? []) as ResourceRow[]).map(toResource), total: count ?? 0, page };
 }
 
 export type InternalNotes = {

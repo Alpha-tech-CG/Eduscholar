@@ -21,7 +21,7 @@ import { clientAddress } from "./client-address";
 // Un compteur n'est consommé que si le précédent a accepté.
 
 type Rule = { limit: number; windowSeconds: number };
-type Rules = { ip: Rule; pair?: Rule; account?: Rule };
+type Rules = { ip?: Rule; pair?: Rule; account?: Rule };
 
 const MINUTE = 60;
 const HOUR = 60 * MINUTE;
@@ -54,9 +54,15 @@ const RULES = {
     pair: { limit: 8, windowSeconds: 15 * MINUTE },
     account: { limit: 30, windowSeconds: 15 * MINUTE },
   },
+  // Recherche dans le catalogue : large pour un usage normal, borne un robot.
+  // Limite par compte seulement : l'action exige une session, et une limite
+  // par adresse laisserait un seul compte bloquer tout un campus placé derrière
+  // la même adresse.
+  search: {
+    account: { limit: 150, windowSeconds: 5 * MINUTE },
+  },
   // Import par DOI (modération) : une requête vers la source par essai.
   "doi-import": {
-    ip: { limit: 120, windowSeconds: 15 * MINUTE },
     account: { limit: 60, windowSeconds: 15 * MINUTE },
   },
   reauthentication: {
@@ -97,9 +103,10 @@ export async function checkAttempt(
   email?: string,
 ): Promise<RateLimitVerdict> {
   const rules: Rules = RULES[action];
-  const address = clientAddress(await headers());
+  // Une règle sans compteur d'adresse ni de couple ne lit pas l'adresse.
+  const address = rules.ip || rules.pair ? clientAddress(await headers()) : "";
 
-  if (!(await consume(fingerprint(action, "ip", address), rules.ip))) {
+  if (rules.ip && !(await consume(fingerprint(action, "ip", address), rules.ip))) {
     return "client_limited";
   }
   if (email && rules.pair) {

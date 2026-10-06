@@ -179,6 +179,22 @@ export const moderatorEditSchema = z.object({
   moderationNotes: z.preprocess(empty, z.string().trim().max(5000, "too_long").optional()),
 });
 
+export const REPORT_REASONS = [
+  "copyright",
+  "privacy",
+  "error",
+  "broken_link",
+  "inappropriate",
+  "malware",
+  "other",
+] as const;
+
+export const reportSchema = z.object({
+  resourceId: z.uuid(),
+  reason: z.enum(REPORT_REASONS),
+  details: z.preprocess(empty, z.string().trim().max(2000).optional()),
+});
+
 export const reportResolutionSchema = z.object({
   reportId: z.uuid(),
   status: z.enum(["resolved", "dismissed"]),
