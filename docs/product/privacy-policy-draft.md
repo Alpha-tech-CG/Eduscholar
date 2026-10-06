@@ -100,7 +100,12 @@ Propositions, à confirmer.
 
 Depuis votre compte ou en nous écrivant, vous pouvez :
 
-- accéder à vos données et en obtenir une copie dans un format réutilisable ;
+- accéder à vos données et en obtenir une copie dans un format réutilisable : depuis
+  « Mon compte », après avoir saisi votre mot de passe. La copie contient votre profil,
+  votre bibliothèque, vos projets de recherche, vos propositions et vos signalements.
+  Elle ne contient pas les projets supprimés en attente d'effacement ni le journal de
+  sécurité de votre compte, que vous pouvez nous demander. Chaque copie est notée dans
+  ce journal ;
 - corriger votre profil ;
 - supprimer un projet, une note, ou votre compte entier ;
 - retirer un consentement (assistance automatisée, visibilité du profil, publication) ;

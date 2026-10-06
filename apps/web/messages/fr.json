@@ -185,7 +185,8 @@
     "moderation": "Modération",
     "search": "Rechercher une ressource",
     "library": "Ma bibliothèque",
-    "projects": "Mes projets de recherche"
+    "projects": "Mes projets de recherche",
+    "exportData": "Télécharger mes données"
   },
   "Profile": {
     "title": "Mon profil",
@@ -789,6 +790,39 @@
         "pages": "Pages citées",
         "pagesHint": "Par exemple p. 12-14."
       }
+    },
+    "document": {
+      "open": "Voir et exporter le mémoire",
+      "title": "Document du mémoire",
+      "intro": "Votre mémoire tel qu'il s'exporte : titre, table des matières, sections rédigées et bibliographie. Rien n'y est ajouté ni reformulé.",
+      "language": "Langue du document :",
+      "languages": {
+        "fr": "Français",
+        "en": "Anglais"
+      },
+      "print": "Imprimer ou enregistrer en PDF",
+      "printHint": "Pour un PDF, choisissez « Enregistrer au format PDF » dans la boîte d'impression. Le fichier Word reprend le même contenu, avec des styles de titres que vous pourrez adapter.",
+      "downloadDocx": "Télécharger en Word (.docx)",
+      "downloadMarkdown": "Télécharger en Markdown (.md)",
+      "backToProject": "Retour au projet",
+      "empty": "Le plan ne contient encore aucune section.",
+      "loadFailed": "Le document n'a pas pu être lu en entier. Il n'est pas affiché, pour ne pas en montrer un incomplet. Réessayez dans un instant.",
+      "rateLimited": "Trop d'affichages du document en peu de temps. Réessayez dans quelques minutes.",
+      "tooLarge": "Ce document compte trop de lignes pour être affiché ou exporté d'un seul tenant. Regroupez les lignes très courtes en paragraphes."
     }
+  },
+  "DataExport": {
+    "title": "Télécharger mes données",
+    "intro": "Recevez une copie de vos données dans un fichier lisible par un programme (JSON).",
+    "contains": "Elle contient votre profil, votre bibliothèque, vos projets de recherche avec leurs sources, fiches de lecture et sections, vos propositions au catalogue et vos signalements.",
+    "excludes": "Elle ne contient ni les projets supprimés en attente d'effacement, ni le journal des événements de sécurité de votre compte : demandez-les à l'assistance.",
+    "trace": "Chaque téléchargement est noté dans le journal de sécurité de votre compte.",
+    "password": "Mot de passe actuel",
+    "passwordHint": "Il est redemandé pour que personne d'autre ne puisse emporter vos données depuis une session restée ouverte.",
+    "submit": "Télécharger le fichier",
+    "back": "Retour à mon compte",
+    "errorPassword": "Mot de passe incorrect.",
+    "errorRate": "Trop de demandes en peu de temps. Réessayez plus tard.",
+    "errorUnavailable": "Vos données n'ont pas pu être réunies en entier. Aucun fichier n'a été produit ; réessayez dans un instant."
   }
 }

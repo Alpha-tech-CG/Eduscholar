@@ -63,6 +63,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002400_project_sources_hardening.sql` | Corrections de la revue de sécurité : plafond quotidien, institution reprise pour les thèses seulement, caractères invisibles des champs d'une ligne |
 | `20261006002500_thesis_sections.sql` | Plan du mémoire : sections et sources citées |
 | `20261006002600_thesis_sections_hardening.sql` | Corrections de la revue de sécurité : volume de texte, date de modification limitée au contenu, fins de ligne, verrou du projet, plafond de citations |
+| `20261006002700_personal_data_export.sql` | Appuis de l'export des données personnelles : identifiants de ses signalements, trace de l'export |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -347,6 +348,27 @@ Règles :
 - verrous consultatifs, toujours pris dans cet ordre : `section_quota:<compte>` puis
   `thesis_sections:<projet>` ;
 - aucune ligne d'audit ; ni `anon` ni `service_role` n'ont de droit sur ces tables.
+
+### Exports
+
+Aucune table. Le document d'un projet (titre, table des matières, sections, sources
+citées, bibliographie) est calculé à la demande par `apps/web/src/lib/projects/document.ts`
+et rendu de trois façons qui disent la même chose :
+
+- la page `/projects/[id]/document`, imprimable (PDF par la boîte d'impression du navigateur) ;
+- un fichier DOCX, écrit directement — une archive ZIP de fichiers XML — sans bibliothèque
+  tierce (`docx.ts`). Validé par un lecteur indépendant ; non essayé dans Microsoft Word ;
+- un fichier Markdown.
+
+Rien n'est ajouté, résumé ni reformulé. Un document de plus de 30 000 lignes n'est pas
+produit ; si une lecture échoue, rien n'est remis plutôt qu'un document incomplet.
+
+La copie des données personnelles (`/account/export`) est un fichier JSON au format
+`eduscholar-personal-data`, version 1 : profil, bibliothèque, projets avec sources, fiches
+de lecture, sections et citations, propositions au catalogue avec leur historique,
+signalements. Elle n'inclut ni les projets supprimés en attente de purge, ni le journal de
+sécurité du compte, ce que le fichier indique lui-même (`not_included`). Le mot de passe
+est redemandé et chaque copie laisse un événement `account.data_exported`.
 
 ### `private.rate_limit_buckets`
 

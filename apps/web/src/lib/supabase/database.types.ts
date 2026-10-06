@@ -566,6 +566,9 @@ isOneToOne: false
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
                            },
+"log_personal_data_export":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "moderate_resource":
 { Args: { "action": string,"reason"?: string,"resource_id": string }; Returns: string
                            },
@@ -577,6 +580,9 @@ isOneToOne: false
                            },
 "must_keep_second_factor":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"my_report_ids":
+{ Args: Record<PropertyKey, never>; Returns: string[]
                            },
 "my_submission_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]

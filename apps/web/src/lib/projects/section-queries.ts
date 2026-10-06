@@ -76,6 +76,55 @@ export async function getCitations(sectionId: string): Promise<Citation[]> {
   return (data ?? []).map((row) => ({ sourceId: row.source_id, pages: row.pages }));
 }
 
+export type SectionContent = { id: string; level: number; title: string; body: string | null };
+
+/** Toutes les sections d'un projet avec leur texte, dans l'ordre. `null` si la lecture échoue. */
+export async function getSectionContents(projectId: string): Promise<SectionContent[] | null> {
+  if (!UUID.test(projectId)) return [];
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase
+    .from("thesis_sections")
+    .select("id, level, title, body")
+    .eq("project_id", projectId)
+    .order("position")
+    .limit(100);
+  if (error) return null;
+  return data ?? [];
+}
+
+/**
+ * Citations de plusieurs sections, par identifiant de section. Lues par pages :
+ * l'API plafonne chaque réponse. `null` si une lecture échoue.
+ */
+export async function getCitationsBySection(
+  sectionIds: string[],
+): Promise<Map<string, Citation[]> | null> {
+  const ids = sectionIds.filter((id) => UUID.test(id)).slice(0, 100);
+  const bySection = new Map<string, Citation[]>();
+  if (ids.length === 0) return bySection;
+
+  const supabase = await createSessionClient();
+  // Soixante sections de cent citations au plus : soixante pages suffisent.
+  for (let from = 0; from < 6000; from += 100) {
+    const { data, error } = await supabase
+      .from("section_citations")
+      .select("section_id, source_id, pages")
+      .in("section_id", ids)
+      .order("section_id")
+      .order("source_id")
+      .range(from, from + 99);
+    if (error) return null;
+    for (const row of data ?? []) {
+      const list = bySection.get(row.section_id) ?? [];
+      list.push({ sourceId: row.source_id, pages: row.pages });
+      bySection.set(row.section_id, list);
+    }
+    if ((data ?? []).length < 100) break;
+  }
+  return bySection;
+}
+
 /** Nombre de sections d'un projet. */
 export async function countSections(projectId: string): Promise<number> {
   if (!UUID.test(projectId)) return 0;

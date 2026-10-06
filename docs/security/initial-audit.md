@@ -222,6 +222,14 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   non affichées. Acceptés et consignés : limite quotidienne contournable par ajout puis
   suppression (stock borné), pas de limite de débit sur les enregistrements (D-24). Ces
   corrections n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Exports (C-05) relus par l'agent sécurité : aucun constat critique
+  ou élevé, 4 moyens et 7 faibles. Écriture du DOCX, neutralisation du Markdown, en-têtes
+  et contrôle d'accès jugés sains. Corrigés : copie des données d'un modérateur contenant
+  les signalements d'autrui, export déclenchable depuis un autre site, copie complète sans
+  mot de passe ni trace, coût non borné (page non limitée, compression bloquante, document
+  sans plafond), export tronqué remis comme complet, pagination instable, adresses
+  altérées dans le Markdown, noms de fichiers réservés. Reste en dette : D-25. Ces
+  corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

@@ -172,11 +172,18 @@ export default async function ProjectPage({
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("outline.heading")}</h2>
         <p data-testid="section-count">{t("outline.count", { count: sectionCount })}</p>
-        <p>
-          <Link href={`/projects/${project.id}/outline`} className="underline underline-offset-4">
-            {t("outline.manage")}
-          </Link>
-        </p>
+        <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          <li>
+            <Link href={`/projects/${project.id}/outline`} className="underline underline-offset-4">
+              {t("outline.manage")}
+            </Link>
+          </li>
+          <li>
+            <Link href={`/projects/${project.id}/document`} className="underline underline-offset-4">
+              {t("document.open")}
+            </Link>
+          </li>
+        </ul>
       </section>
 
       {filled ? null : <p className="opacity-70">{t("notFilled")}</p>}

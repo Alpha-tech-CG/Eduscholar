@@ -459,7 +459,18 @@ my_source_ids()                          sources des projets non supprimés de l
                                          politique des fiches de lecture
 my_section_ids()                         sections des projets non supprimés de l'appelant, pour la
                                          politique des citations
+my_report_ids()                          signalements faits par l'appelant ; exposée pour l'export
 ```
+
+**Règle des exports.** Un export filtre explicitement sur le titulaire et ne s'en remet
+jamais à la seule RLS : certaines politiques ont une branche par rôle (un modérateur lit
+tous les signalements), et la copie des données d'une personne ne doit contenir que ce
+qui lui appartient. La règle vaudra pour les projets partagés de la Phase 4.
+
+**Gestionnaires de route.** Les actions serveur sont protégées par Next ; un gestionnaire
+de route ne l'est pas. Un export par GET refuse une requête déclenchée par un autre site
+(`Sec-Fetch-Site`) ; la copie des données passe par un POST dont l'origine est comparée
+à l'hôte visé, mot de passe redemandé.
 
 Fonctions internes, exécutables par aucun rôle de l'API : `require_own_project`,
 `require_own_source`, `require_own_section`, `check_source_payload`, `check_daily_source_quota`, `clean_line`,
@@ -484,6 +495,10 @@ Règles :
 
 Inventaire fermé. Chaque fonction contrôle elle-même l'appelant, applique la règle et
 écrit l'audit. Tout ajout modifie ce document et passe en revue de sécurité.
+
+Export : celui d'un projet par son propriétaire n'est pas journalisé, pour la même
+raison que ses autres actions ; la copie de toutes ses données l'est, par un événement de
+sécurité que le titulaire lit et que l'administration ne peut pas rattacher à un contenu.
 
 Exception à l'audit : les fonctions de la bibliothèque personnelle et celles des projets
 de recherche n'écrivent rien au journal quand c'est le titulaire qui agit. Le journal est
@@ -510,6 +525,7 @@ depuis le serveur) :
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
+| `log_personal_data_export` | Le titulaire, compte actif ; écrit un événement de sécurité sans contenu, lisible de lui seul, avant la remise de la copie de ses données |
 | `add_thesis_section`, `update_thesis_section`, `move_thesis_section`, `delete_thesis_section`, `set_section_citation` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour la section ou le projet d'autrui, supprimés ou inexistants, avant tout examen de la requête ; une section ne cite qu'une source du même projet, et le retrait d'une citation ne révèle rien ; un texte modifié entre-temps n'est pas écrasé ; aucune ligne d'audit |
 | `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |
 | `create_project`, `update_project`, `delete_project` | Le propriétaire, compte actif au profil complété ; même réponse pour le projet d'autrui, un projet supprimé et un projet inexistant, avant tout examen de la requête |

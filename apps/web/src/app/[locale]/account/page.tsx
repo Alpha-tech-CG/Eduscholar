@@ -127,6 +127,11 @@ export default async function AccountPage({
           </Link>
         </li>
         <li>
+          <Link href="/account/export" className="underline underline-offset-4">
+            {t("exportData")}
+          </Link>
+        </li>
+        <li>
           <Link href="/account/delete" className="underline underline-offset-4">
             {t("deleteAccount")}
           </Link>

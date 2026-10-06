@@ -185,7 +185,8 @@
     "moderation": "Moderation",
     "search": "Search for a resource",
     "library": "My library",
-    "projects": "My research projects"
+    "projects": "My research projects",
+    "exportData": "Download my data"
   },
   "Profile": {
     "title": "My profile",
@@ -789,6 +790,39 @@
         "pages": "Pages cited",
         "pagesHint": "For example pp. 12-14."
       }
+    },
+    "document": {
+      "open": "View and export the thesis",
+      "title": "Thesis document",
+      "intro": "Your thesis as it is exported: title, table of contents, written sections and bibliography. Nothing is added or rephrased.",
+      "language": "Document language:",
+      "languages": {
+        "fr": "French",
+        "en": "English"
+      },
+      "print": "Print or save as PDF",
+      "printHint": "For a PDF, choose “Save as PDF” in the print dialog. The Word file has the same content, with heading styles you can adapt.",
+      "downloadDocx": "Download as Word (.docx)",
+      "downloadMarkdown": "Download as Markdown (.md)",
+      "backToProject": "Back to the project",
+      "empty": "The outline has no section yet.",
+      "loadFailed": "The document could not be read in full. It is not shown, so that an incomplete one is not displayed. Try again in a moment.",
+      "rateLimited": "The document was displayed too many times in a short while. Try again in a few minutes.",
+      "tooLarge": "This document has too many lines to be displayed or exported in one piece. Group very short lines into paragraphs."
     }
+  },
+  "DataExport": {
+    "title": "Download my data",
+    "intro": "Receive a copy of your data in a machine-readable file (JSON).",
+    "contains": "It contains your profile, your library, your research projects with their sources, reading notes and sections, your catalogue submissions and your reports.",
+    "excludes": "It contains neither deleted projects awaiting erasure nor your account's security event log: ask support for those.",
+    "trace": "Each download is recorded in your account's security log.",
+    "password": "Current password",
+    "passwordHint": "It is asked again so that nobody else can take your data from a session left open.",
+    "submit": "Download the file",
+    "back": "Back to my account",
+    "errorPassword": "Incorrect password.",
+    "errorRate": "Too many requests in a short while. Try again later.",
+    "errorUnavailable": "Your data could not be gathered in full. No file was produced; try again in a moment."
   }
 }

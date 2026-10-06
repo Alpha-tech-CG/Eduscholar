@@ -29,6 +29,10 @@
 | `CROSSREF_API_URL` | non | À ne pas définir. Vaut `https://api.crossref.org` ; seule autre valeur admise : un serveur de test sur `http://127.0.0.1`, et seulement si `CROSSREF_TEST_STUB=1` hors Vercel (tests de bout en bout). |
 | `TRUSTED_CLIENT_IP_HEADER` | non | Hors Vercel : nom de l'en-tête, écrasé par le proxy frontal, qui porte l'adresse du client. Absent : la limitation de débit par client devient commune à tous les visiteurs. |
 
+Aucune variable n'est propre aux exports. Leur taille est bornée par l'hébergeur : la
+durée maximale d'une fonction et la taille d'une réponse non diffusée en flux limitent le
+document d'un projet et la copie des données d'un gros compte (dette D-25).
+
 Sur Vercel, `VERCEL` est défini par la plateforme et l'adresse du client est lue dans
 `x-vercel-forwarded-for`.
 

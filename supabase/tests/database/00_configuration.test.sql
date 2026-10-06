@@ -312,6 +312,9 @@ select is(
    ) q),
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.account_deletion_check()',
+    'private.log_personal_data_export()',
+    'public.log_personal_data_export()',
+    'public.my_report_ids()',
     'private.add_thesis_section(p_project_id uuid, p jsonb)',
     'private.delete_thesis_section(p_section_id uuid)',
     'private.move_thesis_section(p_section_id uuid, p_direction text)',

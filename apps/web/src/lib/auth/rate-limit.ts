@@ -61,6 +61,18 @@ const RULES = {
   search: {
     account: { limit: 150, windowSeconds: 5 * MINUTE },
   },
+  // Exports (document d'un projet, données personnelles) : lectures lourdes.
+  export: {
+    account: { limit: 30, windowSeconds: 15 * MINUTE },
+  },
+  // Affichage du document complet d'un projet : la même lecture que l'export.
+  document: {
+    account: { limit: 120, windowSeconds: 15 * MINUTE },
+  },
+  // Copie de toutes ses données : rare, et lourde.
+  "data-export": {
+    account: { limit: 5, windowSeconds: HOUR },
+  },
   // Import par DOI (modération) : une requête vers la source par essai.
   "doi-import": {
     account: { limit: 60, windowSeconds: 15 * MINUTE },

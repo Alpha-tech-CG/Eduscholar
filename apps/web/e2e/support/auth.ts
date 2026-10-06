@@ -146,6 +146,15 @@ export function sql(statement: string): void {
   );
 }
 
+/** Exécute une requête et rend sa valeur, en texte. */
+export function sqlValue(statement: string): string {
+  return execFileSync(
+    "docker",
+    ["exec", "supabase_db_eduscholar", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-Atc", statement],
+    { encoding: "utf8" },
+  ).trim();
+}
+
 const UUID = /^[0-9a-f-]{36}$/;
 
 /** Complète le profil minimal d'un compte de test, sans passer par le formulaire. */

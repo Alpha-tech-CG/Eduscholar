@@ -56,7 +56,7 @@ export default async function LocaleLayout({
           >
             {t("skipToContent")}
           </a>
-          <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+          <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm print:hidden">
             <nav aria-label={t("mainNavigation")}>
               <ul className="flex gap-3">
                 <li>
