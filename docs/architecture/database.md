@@ -61,6 +61,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002200_research_projects_hardening.sql` | Corrections de la revue de sécurité : purge, plafond quotidien, modification partielle sans écrasement, échéance |
 | `20261006002300_project_sources.sql` | Sources d'un projet et fiches de lecture |
 | `20261006002400_project_sources_hardening.sql` | Corrections de la revue de sécurité : plafond quotidien, institution reprise pour les thèses seulement, caractères invisibles des champs d'une ligne |
+| `20261006002500_thesis_sections.sql` | Plan du mémoire : sections et sources citées |
+| `20261006002600_thesis_sections_hardening.sql` | Corrections de la revue de sécurité : volume de texte, date de modification limitée au contenu, fins de ligne, verrou du projet, plafond de citations |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -317,6 +319,34 @@ en anglais. Règles :
   d'une page web manquants ; doublon par DOI, ou par titre et année ;
 - si toutes les sources ne peuvent pas être lues, rien n'est affiché plutôt qu'une
   bibliographie incomplète.
+
+### `public.thesis_sections` et `public.section_citations`
+
+Plan du mémoire (cahier §6.9, version simple) : une liste ordonnée de sections sur trois
+niveaux de titres, chacune avec son texte, et les sources du projet qu'elle cite.
+
+`thesis_sections` : `project_id` (cascade, non modifiable), `position` (unique par projet,
+contrainte différée pour permettre l'échange de deux rangs), `level` (1 à 3), `title`
+(300), `body` (30 000 caractères et 90 000 octets, sauts de ligne simples).
+`updated_at` ne suit que le titre, le niveau et le texte : déplacer une section ne la
+« modifie » pas.
+
+`section_citations` : clé primaire `(section_id, source_id)`, cascade des deux côtés,
+`pages` (50). La source doit appartenir au même projet que la section ; c'est la fonction
+`set_section_citation` qui le garantit.
+
+Règles :
+
+- lecture par RLS (`my_project_ids`, `my_section_ids`) ; écriture par fonctions seulement ;
+- `update_thesis_section` refuse d'écraser un texte modifié depuis sa lecture
+  (`expected_updated_at`, code `conflict`) ; l'application fournit toujours cette date ;
+- plafonds : 60 sections par projet, 200 sections créées par jour et par compte, 100
+  sources citées par section, 3 millions de caractères de texte par compte, projets
+  supprimés compris. La limite quotidienne compte les sections existantes : ajouter puis
+  supprimer en boucle ne la déclenche pas, le stock restant borné ;
+- verrous consultatifs, toujours pris dans cet ordre : `section_quota:<compte>` puis
+  `thesis_sections:<projet>` ;
+- aucune ligne d'audit ; ni `anon` ni `service_role` n'ont de droit sur ces tables.
 
 ### `private.rate_limit_buckets`
 

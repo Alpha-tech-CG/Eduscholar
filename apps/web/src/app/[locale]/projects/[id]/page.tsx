@@ -8,6 +8,7 @@ import { requireOnboardedUser } from "@/lib/profile/guard";
 import { getReferenceData } from "@/lib/profile/queries";
 import { deleteProject } from "@/lib/projects/actions";
 import { getProject } from "@/lib/projects/queries";
+import { countSections } from "@/lib/projects/section-queries";
 import { countSources } from "@/lib/projects/source-queries";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,12 +29,13 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const locale = await getLocale();
-  const [t, tStatus, format, reference, sourceCount, { notice }] = await Promise.all([
+  const [t, tStatus, format, reference, sourceCount, sectionCount, { notice }] = await Promise.all([
     getTranslations("Projects"),
     getTranslations("Projects.status"),
     getFormatter(),
     getReferenceData(locale),
     countSources(project.id),
+    countSections(project.id),
     searchParams,
   ]);
 
@@ -165,6 +167,16 @@ export default async function ProjectPage({
             </>
           ) : null}
         </ul>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">{t("outline.heading")}</h2>
+        <p data-testid="section-count">{t("outline.count", { count: sectionCount })}</p>
+        <p>
+          <Link href={`/projects/${project.id}/outline`} className="underline underline-offset-4">
+            {t("outline.manage")}
+          </Link>
+        </p>
       </section>
 
       {filled ? null : <p className="opacity-70">{t("notFilled")}</p>}

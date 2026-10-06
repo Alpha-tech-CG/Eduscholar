@@ -44,7 +44,7 @@ Phase 3, un projet n'a d'autre lecteur que son propriétaire.
 | C-01 | Projet de recherche privé : fiche du projet (cahier §6.7), création, modification, suppression logique | B-11 | fait — fiche complète, strictement privée, purge à trente jours écrite mais non planifiée (D-23) |
 | C-02 | Sources du projet, saisies ou reprises du catalogue ; fiche de lecture par source ; matrice de littérature (§6.8) | C-01, B-16 | fait — sources saisies ou reprises d'une fiche publiée, fiche de lecture, matrice ; rien n'est inventé ni complété |
 | C-03 | Bibliographie de base (APA) construite à partir des seules sources du projet ; références incomplètes et doublons signalés (§6.10) | C-02 | fait — APA 7e édition en français ou en anglais, signalements, texte à copier ; autres styles et import BibTeX/RIS non faits |
-| C-04 | Plan du mémoire : chapitres et sections rédigés en texte, citations liées aux sources (§6.9, version simple) | C-02 | à faire |
+| C-04 | Plan du mémoire : chapitres et sections rédigés en texte, citations liées aux sources (§6.9, version simple) | C-02 | fait — plan ordonné sur trois niveaux, texte simple, sources citées par section avec leurs pages, protection contre l'écrasement ; sans enregistrement automatique ni mise en forme riche |
 | C-05 | Export du projet (document imprimable en PDF, DOCX) ; export des données personnelles, bibliothèque comprise (D-22) | C-03, C-04 | à faire |
 
 ## Dette de sécurité à solder avant la production
@@ -75,6 +75,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-21 | Recherche : l'index plein texte n'est pas utilisé sous RLS (47 ms pour 50 000 fiches). Avant 200 000 fiches ou au-delà de 300 ms : fonction de recherche dédiée (ADR à écrire), compteur estimé, classement par pertinence. Étendre D-15 à la table des ressources. Fixer la durée de conservation des journaux d'accès, qui contiennent les mots cherchés. | Avant l'import en lot |
 | D-22 | Bibliothèque : inclure favoris et collections dans l'export des données personnelles ; limite de débit propre si un abus est observé | Avec l'export des données (Phase 3) |
 | D-23 | Planifier `purge_deleted_projects()` (tâche quotidienne avec le rôle serveur) et vérifier son exécution — elle efface aussi les sources et les fiches de lecture ; même traitement pour les futures données à durée de conservation | À la création du projet de staging |
+| D-24 | Rédaction : enregistrement automatique et sortie de conflit sans rechargement ; limite de débit sur les enregistrements (réécriture répétée d'un gros texte) ; historique des versions (Phase 4) | Avant l'ouverture publique |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
 
 ## Phases suivantes (non détaillées)

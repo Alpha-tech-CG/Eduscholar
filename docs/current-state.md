@@ -130,7 +130,8 @@ Détail dans `docs/security/initial-audit.md`.
 - Phase 3 découpée en cinq tâches (C-01 à C-05). C-01 fait : projet de recherche privé,
   avec sa fiche. C-02 fait : sources, fiches de lecture et matrice de littérature.
   C-03 fait : bibliographie APA calculée à partir des seules sources du projet.
-  Plan rédigé et export restent à faire.
+  C-04 fait : plan du mémoire, sections rédigées et sources citées. L'export reste à
+  faire.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

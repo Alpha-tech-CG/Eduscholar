@@ -735,6 +735,60 @@
         "author_not_inverted": "At least one author is not entered as “Family name, Given name”: it is kept as is.",
         "duplicate": "Possible duplicate: another source has the same DOI, or the same title and year."
       }
+    },
+    "outline": {
+      "heading": "Writing",
+      "count": "{count, plural, =0 {No section written yet.} one {# section in the outline.} other {# sections in the outline.}}",
+      "manage": "Open the thesis outline",
+      "title": "Thesis outline",
+      "sectionTitle": "Thesis section",
+      "intro": "Project: {project}. Chapters, sections and subsections, in document order.",
+      "backToProject": "Back to the project",
+      "backToOutline": "Back to the outline",
+      "list": "{count, plural, =0 {No sections} one {# section} other {# sections}}",
+      "empty": "Add a first chapter below.",
+      "loadFailed": "The content could not be loaded. Try again in a moment; nothing has been changed.",
+      "separator": " · ",
+      "moveUp": "Move “{title}” up",
+      "moveDown": "Move “{title}” down",
+      "moved": "The section has been moved.",
+      "deleted": "The section has been deleted.",
+      "added": "The section has been added. You can write it.",
+      "saved": "The section has been saved.",
+      "cited": "The source is cited in this section.",
+      "citationRemoved": "The citation has been removed.",
+      "addHeading": "Add a section",
+      "add": "Add to the outline",
+      "choose": "Choose…",
+      "pending": "One moment…",
+      "writeHeading": "Writing",
+      "words": "{count, plural, =0 {No words} one {# word} other {# words}}",
+      "save": "Save section",
+      "citationsHeading": "Cited sources ({count})",
+      "citationsIntro": "State which of the project's sources this section cites, with their pages. Only your sources are offered.",
+      "cite": "Cite this source",
+      "removeCitation": "Remove citation",
+      "noSources": "This project has no source yet.",
+      "toSources": "Add sources",
+      "unknownSource": "Source not found",
+      "deleteHeading": "Delete section",
+      "deleteIntro": "The section, its text and its citations are deleted permanently. The sources stay in the project.",
+      "deleteConfirm": "I want to delete this section and its text.",
+      "delete": "Delete this section",
+      "levels": {
+        "1": "Chapter",
+        "2": "Section",
+        "3": "Subsection"
+      },
+      "fields": {
+        "title": "Section title",
+        "level": "Heading level",
+        "body": "Section text",
+        "bodyHint": "Plain text, 30,000 characters at most. Leave an empty line between two paragraphs. Save regularly: there is no autosave yet.",
+        "source": "Source to cite",
+        "pages": "Pages cited",
+        "pagesHint": "For example pp. 12-14."
+      }
     }
   }
 }

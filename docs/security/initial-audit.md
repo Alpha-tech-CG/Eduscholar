@@ -213,6 +213,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   une liste vide. Non corrigé : la redirection après écriture utilise l'identifiant de
   projet du formulaire (sans effet sur les données). Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 6 octobre 2026 — Plan du mémoire (C-04) relu par l'agent sécurité : aucun constat
+  critique ou élevé, 1 moyen et 6 faibles. Cloisonnement, rattachement croisé des
+  citations, ordre des contrôles et verrous jugés sains. Corrigés : volume de texte non
+  borné par compte, faux conflit d'édition après un déplacement, contrôle de
+  concurrence qui s'ouvrait en silence sans date de lecture, fins de ligne Windows
+  comptées double, projet supprimable pendant une écriture, citations au-delà de cent
+  non affichées. Acceptés et consignés : limite quotidienne contournable par ajout puis
+  suppression (stock borné), pas de limite de débit sur les enregistrements (D-24). Ces
+  corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

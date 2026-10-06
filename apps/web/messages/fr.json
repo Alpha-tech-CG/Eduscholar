@@ -735,6 +735,60 @@
         "author_not_inverted": "Un auteur au moins n'est pas saisi « Nom, Prénom » : il est repris tel quel.",
         "duplicate": "Doublon possible : une autre source a le même DOI, ou le même titre et la même année."
       }
+    },
+    "outline": {
+      "heading": "Rédaction",
+      "count": "{count, plural, =0 {Aucune section rédigée pour l'instant.} one {# section au plan.} other {# sections au plan.}}",
+      "manage": "Ouvrir le plan du mémoire",
+      "title": "Plan du mémoire",
+      "sectionTitle": "Section du mémoire",
+      "intro": "Projet : {project}. Chapitres, sections et sous-sections, dans l'ordre du document.",
+      "backToProject": "Retour au projet",
+      "backToOutline": "Retour au plan",
+      "list": "{count, plural, =0 {Aucune section} one {# section} other {# sections}}",
+      "empty": "Ajoutez un premier chapitre ci-dessous.",
+      "loadFailed": "Le contenu n'a pas pu être chargé. Réessayez dans un instant ; rien n'a été modifié.",
+      "separator": " · ",
+      "moveUp": "Monter « {title} »",
+      "moveDown": "Descendre « {title} »",
+      "moved": "La section est déplacée.",
+      "deleted": "La section est supprimée.",
+      "added": "La section est ajoutée. Vous pouvez la rédiger.",
+      "saved": "La section est enregistrée.",
+      "cited": "La source est citée dans cette section.",
+      "citationRemoved": "La citation est retirée.",
+      "addHeading": "Ajouter une section",
+      "add": "Ajouter au plan",
+      "choose": "Choisir…",
+      "pending": "Un instant…",
+      "writeHeading": "Rédaction",
+      "words": "{count, plural, =0 {Aucun mot} one {# mot} other {# mots}}",
+      "save": "Enregistrer la section",
+      "citationsHeading": "Sources citées ({count})",
+      "citationsIntro": "Indiquez les sources du projet que cette section cite, avec leurs pages. Seules vos sources sont proposées.",
+      "cite": "Citer cette source",
+      "removeCitation": "Retirer la citation",
+      "noSources": "Ce projet n'a pas encore de source.",
+      "toSources": "Ajouter des sources",
+      "unknownSource": "Source introuvable",
+      "deleteHeading": "Supprimer la section",
+      "deleteIntro": "La section, son texte et ses citations sont supprimés définitivement. Les sources restent dans le projet.",
+      "deleteConfirm": "Je veux supprimer cette section et son texte.",
+      "delete": "Supprimer cette section",
+      "levels": {
+        "1": "Chapitre",
+        "2": "Section",
+        "3": "Sous-section"
+      },
+      "fields": {
+        "title": "Titre de la section",
+        "level": "Niveau de titre",
+        "body": "Texte de la section",
+        "bodyHint": "Texte simple, 30 000 caractères au plus. Laissez une ligne vide entre deux paragraphes. Enregistrez régulièrement : il n'y a pas encore d'enregistrement automatique.",
+        "source": "Source à citer",
+        "pages": "Pages citées",
+        "pagesHint": "Par exemple p. 12-14."
+      }
     }
   }
 }

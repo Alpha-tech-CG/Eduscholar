@@ -461,6 +461,31 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"section_citations": {
+                  Row: {
+                    "created_at": string,"pages": string | null,"section_id": string,"source_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"pages"?: string | null,"section_id": string,"source_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"pages"?: string | null,"section_id"?: string,"source_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "section_citations_section_id_fkey"
+      columns: ["section_id"]
+isOneToOne: false
+      referencedRelation: "thesis_sections"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "section_citations_source_id_fkey"
+      columns: ["source_id"]
+isOneToOne: false
+      referencedRelation: "project_sources"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"subjects": {
                   Row: {
                     "code": string,"is_active": boolean,"labels": NonNullable<Json>,"position": number,"program_code": string
@@ -480,6 +505,25 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"thesis_sections": {
+                  Row: {
+                    "body": string | null,"created_at": string,"id": string,"level": number,"position": number,"project_id": string,"title": string,"updated_at": string
+                  }
+                  Insert: {
+                    "body"?: string | null,"created_at"?: string,"id"?: string,"level"?: number,"position": number,"project_id": string,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "body"?: string | null,"created_at"?: string,"id"?: string,"level"?: number,"position"?: number,"project_id"?: string,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "thesis_sections_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -494,6 +538,9 @@ isOneToOne: false
                            },
 "add_project_source_from_resource":
 { Args: { "project_id": string,"resource_id": string }; Returns: string
+                           },
+"add_thesis_section":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
                            },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
@@ -513,6 +560,9 @@ isOneToOne: false
 "delete_project_source":
 { Args: { "source_id": string }; Returns: undefined
                            },
+"delete_thesis_section":
+{ Args: { "section_id": string }; Returns: undefined
+                           },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
                            },
@@ -521,6 +571,9 @@ isOneToOne: false
                            },
 "moderator_update_resource":
 { Args: { "payload": Json,"resource_id": string }; Returns: string
+                           },
+"move_thesis_section":
+{ Args: { "direction": string,"section_id": string }; Returns: undefined
                            },
 "must_keep_second_factor":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -551,6 +604,9 @@ isOneToOne: false
 "set_favorite":
 { Args: { "favorite": boolean,"resource_id": string }; Returns: undefined
                            },
+"set_section_citation":
+{ Args: { "pages"?: string,"present": boolean,"section_id": string,"source_id": string }; Returns: undefined
+                           },
 "submit_resource":
 { Args: { "payload": Json }; Returns: string
                            },
@@ -565,6 +621,9 @@ isOneToOne: false
                            },
 "update_submission":
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined
+                           },
+"update_thesis_section":
+{ Args: { "payload": Json,"section_id": string }; Returns: undefined
                            },
 "withdraw_submission":
 { Args: { "resource_id": string }; Returns: undefined

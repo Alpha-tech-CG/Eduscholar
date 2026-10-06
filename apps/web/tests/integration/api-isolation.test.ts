@@ -917,6 +917,88 @@ describe("catalogue, par appel direct à l'API", () => {
     expect(goneNote.data).toEqual([]);
   });
 
+  it("le plan d'un mémoire et ses citations sont fermés aux autres, par appel direct", async () => {
+    const project = await fatou.client.rpc("create_project", { payload: { title: `Plan ${run}` } });
+    const projectId = project.data as string;
+    const section = await fatou.client.rpc("add_thesis_section", {
+      project_id: projectId,
+      payload: { title: `Section privée ${run}`, level: "1" },
+    });
+    expect(section.error).toBeNull();
+    const sectionId = section.data as string;
+    const written = await fatou.client.rpc("update_thesis_section", {
+      section_id: sectionId,
+      payload: { body: "Texte privé du mémoire." },
+    });
+    expect(written.error).toBeNull();
+    const source = await fatou.client.rpc("add_project_source", {
+      project_id: projectId,
+      payload: { title: `Source citée ${run}` },
+    });
+    const sourceId = source.data as string;
+    expect(
+      (await fatou.client.rpc("set_section_citation", {
+        section_id: sectionId,
+        source_id: sourceId,
+        present: true,
+        pages: "p. 3",
+      })).error,
+    ).toBeNull();
+
+    // Lecture : personne d'autre, pas même le rôle serveur.
+    for (const client of [bob.client, alice.client, anonymous, admin]) {
+      const sections = await client.from("thesis_sections").select("id").eq("id", sectionId);
+      expect(sections.data ?? []).toEqual([]);
+      const citations = await client.from("section_citations").select("section_id").eq("section_id", sectionId);
+      expect(citations.data ?? []).toEqual([]);
+    }
+
+    // Écritures directes refusées, y compris pour la propriétaire.
+    const direct = await Promise.all([
+      fatou.client.from("thesis_sections").update({ body: "Directe" } as never).eq("id", sectionId),
+      fatou.client.from("thesis_sections").delete().eq("id", sectionId),
+      fatou.client
+        .from("thesis_sections")
+        .insert({ project_id: projectId, position: 99, title: "Directe" } as never),
+      bob.client
+        .from("section_citations")
+        .insert({ section_id: sectionId, source_id: sourceId } as never),
+      fatou.client.from("section_citations").delete().eq("section_id", sectionId),
+    ]);
+    for (const result of direct) expect(result.error).not.toBeNull();
+
+    // Par les fonctions : la section d'autrui et une section inexistante
+    // donnent strictement la même réponse, requête valide ou non.
+    for (const target of [sectionId, randomUUID()]) {
+      const responses = await Promise.all([
+        bob.client.rpc("update_thesis_section", { section_id: target, payload: { body: "Piraté" } }),
+        bob.client.rpc("update_thesis_section", {
+          section_id: target,
+          payload: { level: "9", expected_updated_at: "x" },
+        }),
+        bob.client.rpc("move_thesis_section", { section_id: target, direction: "up" }),
+        bob.client.rpc("move_thesis_section", { section_id: target, direction: "ailleurs" }),
+        bob.client.rpc("delete_thesis_section", { section_id: target }),
+        bob.client.rpc("set_section_citation", { section_id: target, source_id: sourceId, present: true }),
+        bob.client.rpc("set_section_citation", { section_id: target, source_id: sourceId, present: false }),
+      ]);
+      const outcomes = new Set(
+        responses.map((response) => JSON.stringify([response.error?.code, response.error?.message])),
+      );
+      expect(outcomes.size, target).toBe(1);
+      expect([...outcomes][0]).not.toContain("Section privée");
+    }
+
+    const intact = await fatou.client.from("thesis_sections").select("title, body").eq("id", sectionId);
+    expect(intact.data).toEqual([{ title: `Section privée ${run}`, body: "Texte privé du mémoire." }]);
+    const citations = await fatou.client.from("section_citations").select("pages").eq("section_id", sectionId);
+    expect(citations.data).toEqual([{ pages: "p. 3" }]);
+
+    await fatou.client.rpc("delete_project", { project_id: projectId });
+    const gone = await fatou.client.from("thesis_sections").select("id").eq("id", sectionId);
+    expect(gone.data).toEqual([]);
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",
