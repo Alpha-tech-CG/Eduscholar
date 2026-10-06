@@ -495,11 +495,13 @@ depuis le serveur) :
 | Création de notifications | Tâche système |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
+| Limitation de débit de l'authentification (`consume_rate_limit`) | Aucun : l'appel précède l'authentification. La fonction ne lit et n'écrit que des compteurs, sous des clés qui sont des empreintes. |
 
 Règles de `service_role` :
 
 - Toute opération vérifie l'identité par un appel au serveur d'authentification
-  (`getUser()`), jamais par la seule lecture du cookie de session.
+  (`getUser()`), jamais par la seule lecture du cookie de session. Seule exception : la
+  limitation de débit, appelée avant toute authentification.
 - `service_role` n'est jamais utilisé pour lire un projet au nom d'un utilisateur dans une
   requête interactive.
 - **Tâches différées sur du contenu privé** (export long, traitement IA) : la tâche est

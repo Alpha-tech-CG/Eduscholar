@@ -6,7 +6,11 @@
   "Layout": {
     "skipToContent": "Aller au contenu",
     "languageSwitcher": "Langue",
-    "footer": "EduScholar — socle technique, aucune fonctionnalité disponible pour l'instant."
+    "mainNavigation": "Navigation principale",
+    "home": "Accueil",
+    "signIn": "Se connecter",
+    "account": "Mon compte",
+    "footer": "EduScholar — plateforme en construction."
   },
   "Home": {
     "title": "EduScholar",
@@ -21,5 +25,82 @@
     "title": "Page introuvable",
     "description": "La page demandée n'existe pas.",
     "backHome": "Retour à l'accueil"
+  },
+  "Auth": {
+    "pending": "Envoi en cours…",
+    "fields": {
+      "email": "Adresse électronique",
+      "password": "Mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "passwordConfirmation": "Confirmez le mot de passe",
+      "passwordHint": "12 caractères au moins, avec des lettres et des chiffres.",
+      "ageConfirmed": "Je déclare avoir l'âge requis dans mon pays pour créer ce compte."
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "intro": "Votre profil et vos travaux restent privés. Vous choisissez ce que vous partagez.",
+      "submit": "Créer mon compte",
+      "haveAccount": "Vous avez déjà un compte ?"
+    },
+    "signIn": {
+      "title": "Se connecter",
+      "submit": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "emailConfirmed": "Votre adresse est confirmée. Connectez-vous avec votre mot de passe.",
+      "passwordUpdated": "Votre mot de passe a été modifié et tous vos appareils ont été déconnectés. Connectez-vous avec le nouveau mot de passe."
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "intro": "Indiquez votre adresse : nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+      "submit": "Recevoir le lien",
+      "back": "Retour à la connexion"
+    },
+    "resetPassword": {
+      "title": "Nouveau mot de passe",
+      "intro": "Choisissez un nouveau mot de passe. Tous vos appareils seront déconnectés, puis vous vous reconnecterez.",
+      "submit": "Enregistrer le mot de passe",
+      "account": "Compte concerné"
+    },
+    "confirm": {
+      "title": "Confirmer votre adresse",
+      "intro": "Dernière étape : confirmez pour activer votre compte. Vous pourrez ensuite vous connecter.",
+      "submit": "Confirmer mon adresse",
+      "recoveryTitle": "Réinitialiser votre mot de passe",
+      "recoveryIntro": "Confirmez pour choisir un nouveau mot de passe.",
+      "recoverySubmit": "Continuer",
+      "signedInTitle": "Vous êtes déjà connecté",
+      "signedIn": "Vous êtes connecté avec le compte {email}. Déconnectez-vous avant d'utiliser ce lien, puis ouvrez-le de nouveau.",
+      "signOutFirst": "Me déconnecter"
+    },
+    "notices": {
+      "check_email_signup": "Si cette adresse peut être utilisée, un message vient d'y être envoyé. Ouvrez le lien qu'il contient pour activer votre compte.",
+      "check_email_reset": "Si un compte existe pour cette adresse, un message vient d'y être envoyé avec un lien pour choisir un nouveau mot de passe."
+    },
+    "errors": {
+      "validation": "Certains champs sont à corriger.",
+      "invalid_credentials": "Adresse ou mot de passe incorrect, ou adresse non encore confirmée.",
+      "rate_limited": "Trop de tentatives. Réessayez dans quelques minutes.",
+      "invalid_link": "Ce lien n'est plus valable. Demandez-en un nouveau.",
+      "weak_password": "Ce mot de passe est trop faible ou figure dans une liste de mots de passe connus. Choisissez-en un autre.",
+      "same_password": "Le nouveau mot de passe doit être différent de l'ancien.",
+      "session_expired": "Votre session a expiré. Recommencez la procédure.",
+      "unavailable": "Le service est momentanément indisponible. Réessayez plus tard.",
+      "already_signed_in": "Vous êtes déjà connecté. Déconnectez-vous avant d'utiliser ce lien."
+    },
+    "fieldErrors": {
+      "email_invalid": "Indiquez une adresse électronique valide.",
+      "password_too_short": "Le mot de passe doit compter au moins 12 caractères.",
+      "password_too_long": "Le mot de passe ne peut pas dépasser 72 caractères.",
+      "password_needs_letter_and_digit": "Le mot de passe doit contenir des lettres et des chiffres.",
+      "password_mismatch": "Les deux mots de passe ne sont pas identiques.",
+      "age_required": "Cette déclaration est nécessaire pour créer un compte."
+    }
+  },
+  "Account": {
+    "title": "Mon compte",
+    "email": "Adresse électronique",
+    "privacy": "Votre profil n'est visible que de vous.",
+    "signOut": "Se déconnecter"
   }
 }

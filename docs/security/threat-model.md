@@ -178,11 +178,22 @@ en place. La colonne « Tâche » renvoie au backlog.
 | M-55 | Métadonnées sensibles dans un fichier publié : auteur, commentaires, suivi des modifications | M | Nettoyage des métadonnées avant publication ; avertissement au contributeur | Fichier témoin publié puis inspecté | Phase 2 |
 | M-56 | Coûts de stockage et de trafic par téléversements ou téléchargements massifs | M | Quotas par utilisateur et par organisation ; limites au niveau du bucket ; alertes de consommation | Dépassement de quota refusé | Phase 2 |
 
+### 5.10 Menaces identifiées pendant la réalisation de l'authentification
+
+| ID | Menace | Grav. | Mesures exigées | Test | Tâche |
+|---|---|---|---|---|---|
+| M-57 | Pré-détournement de compte : un tiers inscrit l'adresse d'une personne avec son propre mot de passe ; le service conserve ce mot de passe quand la personne s'inscrit et confirme | H | La confirmation n'ouvre pas de session ; la personne doit se connecter, donc réinitialiser, ce qui remplace le mot de passe du tiers et ferme toutes les sessions ; purge des comptes non confirmés | Parcours complet de bout en bout | B-10 (fait), D-12 |
+| M-58 | Confusion de session : un tiers envoie son propre lien de confirmation ou de réinitialisation ; la victime se retrouve sur le compte du tiers et y dépose ses travaux | M | Un lien n'est pas traité si une session est ouverte ; la confirmation n'ouvre pas de session ; l'adresse du compte est affichée avant de choisir un mot de passe | Lien d'un tiers ouvert par une personne connectée | B-10 (fait) |
+| M-59 | Jeton de courriel de faible entropie : il dérive d'un code à 6 chiffres et se devine en un million d'essais | H | Code à 10 chiffres ; validité de 15 minutes ; limites de vérification | Le jeton ne se déduit pas d'un code à 6 chiffres | B-10 (fait) |
+| M-60 | Prise de contrôle par une session laissée ouverte : changement du mot de passe sans connaître l'ancien | M | Changement réservé à la session de réinitialisation récente ; courriel de notification ; toutes les sessions fermées après changement. Reste l'appel direct à l'API d'authentification. | Session par mot de passe sans accès à la page ni à l'action | B-10 (fait), D-10 |
+| M-61 | Verrouillage ciblé d'un compte par épuisement de sa limite de tentatives | M | Refus courant sur le couple client + compte ; limite par compte dix fois plus haute ; CAPTCHA à la place du refus | Titulaire qui se connecte d'une autre adresse pendant l'attaque | B-10 (fait), D-09 |
+| M-62 | Contournement de la limite par client au moyen d'un en-tête d'adresse choisi par le client | M | Adresse lue dans un en-tête de confiance propre à l'hébergeur ; jamais `x-forwarded-for` par défaut | En-tête falsifié sans effet | B-10 (fait) |
+
 ## 6. Couverture du cahier §17
 
 | Menace du cahier | Identifiants |
 |---|---|
-| Vol de compte | M-01, M-02, M-03, M-04, M-48, M-49 |
+| Vol de compte | M-01, M-02, M-03, M-04, M-48, M-49, M-57 à M-62 |
 | IDOR | M-07, M-08, M-11, M-12, M-47, M-53 |
 | Upload malveillant | M-20, M-21 |
 | XSS | M-03, M-17, M-18 |

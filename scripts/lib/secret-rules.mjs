@@ -69,8 +69,23 @@ export function isForbiddenName(file) {
   );
 }
 
+// Une valeur comme « parsed.data.password » est une référence dans le code,
+// pas une valeur littérale.
+const codeReference = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)+[,;)]?$/;
+
+/**
+ * Marqueur réservé aux fichiers de test : la ligne contient un mot de passe
+ * fictif, écrit en clair pour la lisibilité du test. Il n'a d'effet que pour
+ * l'affectation générique, jamais pour un format de jeton reconnu.
+ */
+export const FIXTURE_MARKER = "valeur-fictive";
+
+export function isTestFile(file) {
+  return /(^|\/)(tests?|e2e)\/.*\.(ts|tsx|mjs|sql)$/.test(file);
+}
+
 /** Renvoie la liste des constats `{ line, label }` pour un contenu texte. */
-export function scanContent(content) {
+export function scanContent(content, { allowFixtureMarker = false } = {}) {
   const findings = [];
 
   content.split(/\r?\n/).forEach((text, index) => {
@@ -84,6 +99,8 @@ export function scanContent(content) {
     if (
       assigned &&
       !notALiteral.test(text) &&
+      !codeReference.test(assigned[1]) &&
+      !(allowFixtureMarker && text.includes(FIXTURE_MARKER)) &&
       looksLikeSecretValue(assigned[1])
     ) {
       findings.push({ line, label: "secret affecté en clair" });

@@ -1,7 +1,8 @@
 # EduScholar
 
 Plateforme de recherche académique, de bibliothèque personnelle et d'accompagnement à la
-rédaction. Le dépôt en est au socle technique : aucune fonctionnalité métier.
+rédaction. Le dépôt contient le socle technique, la base de fondation et
+l'authentification ; aucune fonctionnalité métier pour l'instant.
 
 ## Documentation
 
@@ -14,6 +15,8 @@ rédaction. Le dépôt en est au socle technique : aucune fonctionnalité métie
 | Modèle de menaces | `docs/security/threat-model.md` |
 | Politiques (brouillons) | `docs/product/` |
 | Variables d'environnement | `docs/environment.md` |
+| Base de données | `docs/architecture/database.md` |
+| Authentification | `docs/architecture/authentication.md` |
 | Règles pour les agents | `AGENTS.md`, `CLAUDE.md` |
 
 ## Structure
@@ -31,7 +34,7 @@ Prérequis : Node.js 22 ou plus.
 
 ```bash
 npm install
-git config core.hooksPath .githooks
+npm run db:start
 npm run dev
 ```
 
@@ -46,7 +49,10 @@ L'application répond sur http://localhost:3000 et redirige vers `/fr` ou `/en`.
 | `npm run typecheck` | Types des routes puis TypeScript strict |
 | `npm test` | Tests unitaires (Vitest) |
 | `npm run build` | Build de production |
-| `npm run test:e2e` | Tests de bout en bout (Playwright), après un build |
+| `npm run db:start` | Démarre l'instance Supabase locale (Docker requis) |
+| `npm run test:db` | Tests de la base (pgTAP) |
+| `npm run test:integration` | Tests par appel direct à l'API de l'instance locale |
+| `npm run test:e2e` | Tests de bout en bout (Playwright), après un build, instance locale démarrée |
 | `npm run check:secrets` | Recherche de secrets dans les fichiers suivis |
 | `npm run check` | Secrets, lint, types et tests unitaires |
 

@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { isSessionCookie } from "@/lib/supabase/cookies";
 import "./globals.css";
 
 export async function generateMetadata({
@@ -34,44 +36,72 @@ export default async function LocaleLayout({
   const t = await getTranslations({ locale, namespace: "Layout" });
   const tLocales = await getTranslations({ locale, namespace: "Locales" });
 
+  // Simple indice d'affichage pour choisir le lien du menu. Ce n'est pas un
+  // contrôle d'accès : chaque page protégée vérifie la session elle-même.
+  const cookieStore = await cookies();
+  const mayBeSignedIn = cookieStore.getAll().some(({ name }) => isSessionCookie(name));
+
+  const linkClass =
+    "rounded px-2 py-1 underline-offset-4 hover:underline aria-[current=true]:font-semibold";
+
   return (
     <html lang={locale} dir="ltr" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         {/* Les composants client ne reçoivent que la langue : les messages restent
             sur le serveur tant qu'un composant client n'en a pas besoin. */}
         <NextIntlClientProvider locale={locale} messages={null}>
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:rounded focus:bg-foreground focus:px-3 focus:py-2 focus:text-background"
-        >
-          {t("skipToContent")}
-        </a>
-        <header className="flex items-center justify-end px-4 py-3">
-          <nav aria-label={t("languageSwitcher")}>
-            <ul className="flex gap-3 text-sm">
-              {routing.locales.map((target) => (
-                <li key={target}>
-                  <Link
-                    href="/"
-                    locale={target}
-                    lang={target}
-                    hrefLang={target}
-                    aria-current={target === locale ? "true" : undefined}
-                    className="rounded px-2 py-1 underline-offset-4 hover:underline aria-[current=true]:font-semibold"
-                  >
-                    {tLocales(target)}
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:rounded focus:bg-foreground focus:px-3 focus:py-2 focus:text-background"
+          >
+            {t("skipToContent")}
+          </a>
+          <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+            <nav aria-label={t("mainNavigation")}>
+              <ul className="flex gap-3">
+                <li>
+                  <Link href="/" className={linkClass}>
+                    {t("home")}
                   </Link>
                 </li>
-              ))}
-            </ul>
-          </nav>
-        </header>
-        <main id="main" className="flex flex-1 flex-col px-4">
-          {children}
-        </main>
-        <footer className="px-4 py-6 text-center text-sm opacity-70">
-          {t("footer")}
-        </footer>
+                <li>
+                  {mayBeSignedIn ? (
+                    <Link href="/account" className={linkClass}>
+                      {t("account")}
+                    </Link>
+                  ) : (
+                    <Link href="/sign-in" className={linkClass}>
+                      {t("signIn")}
+                    </Link>
+                  )}
+                </li>
+              </ul>
+            </nav>
+            <nav aria-label={t("languageSwitcher")}>
+              <ul className="flex gap-3">
+                {routing.locales.map((target) => (
+                  <li key={target}>
+                    <Link
+                      href="/"
+                      locale={target}
+                      lang={target}
+                      hrefLang={target}
+                      aria-current={target === locale ? "true" : undefined}
+                      className={linkClass}
+                    >
+                      {tLocales(target)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </header>
+          <main id="main" className="flex flex-1 flex-col px-4">
+            {children}
+          </main>
+          <footer className="px-4 py-6 text-center text-sm opacity-70">
+            {t("footer")}
+          </footer>
         </NextIntlClientProvider>
       </body>
     </html>

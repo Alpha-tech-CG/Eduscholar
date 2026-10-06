@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isForbiddenName, scanContent } from "./lib/secret-rules.mjs";
+import {
+  FIXTURE_MARKER,
+  isForbiddenName,
+  isTestFile,
+  scanContent,
+} from "./lib/secret-rules.mjs";
 
 // Les valeurs sont assemblées à l'exécution : aucun faux secret n'est écrit
 // tel quel dans le dépôt.
@@ -107,4 +112,29 @@ test("accepte le gabarit .env.example et les fichiers ordinaires", () => {
   ]) {
     assert.ok(!isForbiddenName(name), `refusé à tort : ${name}`);
   }
+});
+
+test("ne prend pas une référence du code pour une valeur", () => {
+  for (const line of [
+    "password: parsed.data.password,",
+    "const apiKey = config.keys.primary;",
+  ]) {
+    assert.deepEqual(scanContent(line), [], `faux positif : ${line}`);
+  }
+});
+
+test("le marqueur de valeur fictive ne vaut que dans un fichier de test", () => {
+  const line = `password: "${"motdepasse" + "2026"}", // ${FIXTURE_MARKER}`;
+  assert.equal(scanContent(line).length, 1, "ignoré hors fichier de test");
+  assert.deepEqual(scanContent(line, { allowFixtureMarker: true }), []);
+
+  assert.ok(isTestFile("apps/web/tests/auth-schemas.test.ts"));
+  assert.ok(isTestFile("apps/web/e2e/auth.spec.ts"));
+  assert.ok(!isTestFile("apps/web/src/lib/auth/actions.ts"));
+  assert.ok(!isTestFile("supabase/migrations/20261006000100_foundation.sql"));
+});
+
+test("le marqueur ne masque jamais un format de jeton reconnu", () => {
+  const line = `const k = "${"sb_secret_" + "a".repeat(24)}"; // ${FIXTURE_MARKER}`;
+  assert.ok(scanContent(line, { allowFixtureMarker: true }).length > 0);
 });

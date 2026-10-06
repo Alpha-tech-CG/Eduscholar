@@ -147,6 +147,13 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   durcissement ; le reste est planifié dans la dette de sécurité du backlog (D-01 à D-08).
   Le test de configuration renforcé a révélé un écart réel, corrigé : `service_role`
   détenait `TRUNCATE` sur toutes les tables.
+- 6 octobre 2026 — Authentification (B-10) relue par l'agent sécurité : 2 constats
+  élevés, 6 moyens, 4 faibles. Les deux élevés ont été reproduits sur l'instance locale
+  puis corrigés : détournement de compte par une inscription antérieure non confirmée, et
+  jeton des liens par courriel dérivé d'un code à 6 chiffres. Corrigés aussi : confusion
+  de session, changement de mot de passe par une session ordinaire, verrouillage ciblé,
+  adresse du client falsifiable. Le reste est en dette D-09 à D-14. Ces corrections n'ont
+  pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

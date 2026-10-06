@@ -6,7 +6,7 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { isForbiddenName, scanContent } from "./lib/secret-rules.mjs";
+import { isForbiddenName, isTestFile, scanContent } from "./lib/secret-rules.mjs";
 
 const staged = process.argv.includes("--staged");
 const maxSize = 1_000_000;
@@ -56,7 +56,8 @@ for (const file of files) {
     continue;
   }
 
-  for (const { line, label } of scanContent(buffer.toString("utf8"))) {
+  const options = { allowFixtureMarker: isTestFile(file) };
+  for (const { line, label } of scanContent(buffer.toString("utf8"), options)) {
     findings.push(`${file}:${line} : ${label}`);
   }
 }

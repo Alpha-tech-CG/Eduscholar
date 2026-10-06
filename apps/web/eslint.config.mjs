@@ -55,6 +55,24 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Seuls modules autorisés à importer Supabase : ils sont réservés au serveur.
+    files: ["src/lib/supabase/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "next/link",
+              message:
+                "Utiliser Link de @/i18n/navigation pour conserver la langue.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   globalIgnores([
     ".next/**",
     "out/**",
@@ -62,6 +80,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    "src/lib/supabase/database.types.ts",
   ]),
 ]);
 

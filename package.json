@@ -24,7 +24,8 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "test:db": "supabase test db",
-    "db:lint": "supabase db lint --level warning --fail-on warning"
+    "db:lint": "supabase db lint --level warning --fail-on warning",
+    "test:integration": "npm run test:integration --workspace @eduscholar/web"
   },
   "devDependencies": {
     "supabase": "^2.119.0"

@@ -6,7 +6,11 @@
   "Layout": {
     "skipToContent": "Skip to content",
     "languageSwitcher": "Language",
-    "footer": "EduScholar — technical foundation, no feature available yet."
+    "mainNavigation": "Main navigation",
+    "home": "Home",
+    "signIn": "Sign in",
+    "account": "My account",
+    "footer": "EduScholar — platform under construction."
   },
   "Home": {
     "title": "EduScholar",
@@ -21,5 +25,82 @@
     "title": "Page not found",
     "description": "The requested page does not exist.",
     "backHome": "Back to home"
+  },
+  "Auth": {
+    "pending": "Sending…",
+    "fields": {
+      "email": "Email address",
+      "password": "Password",
+      "newPassword": "New password",
+      "passwordConfirmation": "Confirm the password",
+      "passwordHint": "At least 12 characters, with letters and digits.",
+      "ageConfirmed": "I declare that I am old enough in my country to create this account."
+    },
+    "signUp": {
+      "title": "Create an account",
+      "intro": "Your profile and your work stay private. You choose what you share.",
+      "submit": "Create my account",
+      "haveAccount": "Already have an account?"
+    },
+    "signIn": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "forgot": "Forgot your password?",
+      "noAccount": "No account yet?",
+      "emailConfirmed": "Your address is confirmed. Sign in with your password.",
+      "passwordUpdated": "Your password has been changed and all your devices have been signed out. Sign in with the new password."
+    },
+    "forgotPassword": {
+      "title": "Forgot your password",
+      "intro": "Enter your address: we will send you a link to choose a new password.",
+      "submit": "Send me the link",
+      "back": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "New password",
+      "intro": "Choose a new password. All your devices will be signed out, then you will sign in again.",
+      "submit": "Save the password",
+      "account": "Account concerned"
+    },
+    "confirm": {
+      "title": "Confirm your address",
+      "intro": "Last step: confirm to activate your account. You will then be able to sign in.",
+      "submit": "Confirm my address",
+      "recoveryTitle": "Reset your password",
+      "recoveryIntro": "Confirm to choose a new password.",
+      "recoverySubmit": "Continue",
+      "signedInTitle": "You are already signed in",
+      "signedIn": "You are signed in with the account {email}. Sign out before using this link, then open it again.",
+      "signOutFirst": "Sign me out"
+    },
+    "notices": {
+      "check_email_signup": "If this address can be used, a message has just been sent to it. Open the link it contains to activate your account.",
+      "check_email_reset": "If an account exists for this address, a message has just been sent to it with a link to choose a new password."
+    },
+    "errors": {
+      "validation": "Some fields need to be corrected.",
+      "invalid_credentials": "Incorrect address or password, or address not yet confirmed.",
+      "rate_limited": "Too many attempts. Try again in a few minutes.",
+      "invalid_link": "This link is no longer valid. Request a new one.",
+      "weak_password": "This password is too weak or appears in a list of known passwords. Choose another one.",
+      "same_password": "The new password must be different from the old one.",
+      "session_expired": "Your session has expired. Start the procedure again.",
+      "unavailable": "The service is temporarily unavailable. Try again later.",
+      "already_signed_in": "You are already signed in. Sign out before using this link."
+    },
+    "fieldErrors": {
+      "email_invalid": "Enter a valid email address.",
+      "password_too_short": "The password must be at least 12 characters long.",
+      "password_too_long": "The password cannot exceed 72 characters.",
+      "password_needs_letter_and_digit": "The password must contain letters and digits.",
+      "password_mismatch": "The two passwords do not match.",
+      "age_required": "This declaration is required to create an account."
+    }
+  },
+  "Account": {
+    "title": "My account",
+    "email": "Email address",
+    "privacy": "Your profile is visible only to you.",
+    "signOut": "Sign out"
   }
 }

@@ -10,5 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts", "src/**/*.test.ts"],
+    // Les tests d'intégration ont besoin de l'instance Supabase locale.
+    exclude: ["tests/integration/**", "node_modules/**"],
   },
 });

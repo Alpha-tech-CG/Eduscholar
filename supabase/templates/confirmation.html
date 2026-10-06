@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+
+    <p>Bonjour,</p>
+    <p>Pour activer votre compte EduScholar, ouvrez ce lien puis confirmez :</p>
+    <p>
+      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email">
+        Confirmer mon adresse
+      </a>
+    </p>
+    <p>Ce lien est valable 15 minutes. Si vous n'avez pas créé de compte, ignorez ce message.</p>
+
+    <hr />
+
+    <p lang="en">Hello,</p>
+    <p lang="en">To activate your EduScholar account, open this link and confirm:</p>
+    <p lang="en">
+      <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email">
+        Confirm my address
+      </a>
+    </p>
+    <p lang="en">
+      This link is valid for 15 minutes. If you did not create an account, ignore this message.
+    </p>
+  </body>
+</html>

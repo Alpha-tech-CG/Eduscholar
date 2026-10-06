@@ -289,6 +289,9 @@ select is(
        and has_table_privilege('service_role', c.oid, p.privilege)
    ) q),
   concat_ws(E'\n',
+    'private.rate_limit_buckets DELETE',
+    'private.rate_limit_buckets INSERT',
+    'private.rate_limit_buckets UPDATE',
     'public.organization_members DELETE',
     'public.organization_members INSERT',
     'public.organization_members UPDATE',

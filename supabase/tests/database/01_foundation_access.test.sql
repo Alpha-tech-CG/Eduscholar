@@ -61,12 +61,20 @@ insert into auth.users (id, instance_id, aud, role, email) values
   ('a2000000-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'suspendu@test.invalid'),
   ('a3000000-0000-0000-0000-000000000009', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'super-admin@test.invalid');
 
+-- Les contrôles portent sur les comptes créés ci-dessus : la base locale peut
+-- contenir d'autres comptes, laissés par les tests de bout en bout.
 select is(
-  (select count(*) from public.profiles), 9::bigint,
+  (select count(*) from public.profiles p
+   join auth.users u on u.id = p.user_id
+   where u.email like '%@test.invalid' and u.instance_id = '00000000-0000-0000-0000-000000000000'
+     and u.id::text ~ '^[a-f][0-9]0{6}-0000-0000-0000-00000000000[1-9]$'),
+  9::bigint,
   'Un profil est créé pour chaque nouveau compte'
 );
 select is(
-  (select count(*) from public.profile_public where is_public), 0::bigint,
+  (select count(*) from public.profile_public
+   where is_public and user_id::text ~ '^[a-f][0-9]0{6}-0000-0000-0000-00000000000[1-9]$'),
+  0::bigint,
   'Aucun profil n''est public par défaut'
 );
 

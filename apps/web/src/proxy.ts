@@ -5,15 +5,19 @@ import {
   buildContentSecurityPolicy,
   generateNonce,
 } from "@/lib/security/headers";
+import { refreshSession } from "@/lib/supabase/proxy";
 
 const handleI18nRouting = createIntlMiddleware(routing);
 
 /**
- * Le proxy ne fait que deux choses : le routage par langue et la CSP.
- * Il ne porte aucune autorisation (modèle de menaces M-53) : chaque
- * Route Handler et chaque Server Action contrôle l'accès lui-même.
+ * Le proxy fait trois choses : rafraîchir la session, router par langue et
+ * poser la CSP. Il ne porte aucune autorisation (modèle de menaces M-53) :
+ * chaque page protégée, Route Handler et Server Action contrôle l'accès
+ * lui-même.
  */
-export default function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
+  const sessionCookies = await refreshSession(request);
+
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(
     nonce,
@@ -21,7 +25,8 @@ export default function proxy(request: NextRequest) {
   );
 
   // Next.js lit le nonce dans l'en-tête CSP de la requête pour l'appliquer
-  // à ses propres scripts.
+  // à ses propres scripts. Les en-têtes sont copiés après le rafraîchissement
+  // de la session, pour transmettre les cookies à jour au rendu.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
@@ -30,6 +35,14 @@ export default function proxy(request: NextRequest) {
     new NextRequest(request, { headers: requestHeaders }),
   );
   response.headers.set("Content-Security-Policy", csp);
+
+  for (const { name, value, options } of sessionCookies) {
+    response.cookies.set(name, value, options);
+  }
+  if (sessionCookies.length > 0) {
+    // Une réponse qui pose une session ne doit être mise en cache nulle part (M-51).
+    response.headers.set("Cache-Control", "private, no-store");
+  }
 
   return response;
 }

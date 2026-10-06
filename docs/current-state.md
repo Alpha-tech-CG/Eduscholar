@@ -108,7 +108,12 @@ Détail dans `docs/security/initial-audit.md`.
 - Base de données (B-09) : instance Supabase locale, 7 tables de fondation sous RLS forcée,
   fonctions de rôle, journal d'audit en ajout seul, 139 tests pgTAP. Voir
   `docs/architecture/database.md`.
-- Toujours aucune authentification ni fonctionnalité métier.
+- Authentification (B-10) : inscription avec confirmation par courriel, connexion,
+  déconnexion, mot de passe oublié ; session en cookie `HttpOnly` ; limitation de débit
+  en base. Voir `docs/architecture/authentication.md`.
+- Tests : 19 de scripts, 82 unitaires, 153 de base, 27 par appel direct à l'API,
+  78 de bout en bout.
+- Toujours aucune fonctionnalité métier (recherche, bibliothèque, projets).
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

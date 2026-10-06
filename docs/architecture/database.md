@@ -41,6 +41,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006000100_foundation.sql` | Fermeture par défaut, tables, fonctions d'appui, déclencheurs, RLS |
 | `20261006000200_foundation_hardening.sql` | Corrections de la revue de sécurité : lecture par colonne, acteur de l'audit, politiques évaluées par requête |
 | `20261006000300_revoke_residual_privileges.sql` | Retrait de `TRUNCATE`, `REFERENCES` et `TRIGGER` aux rôles de l'API |
+| `20261006000400_rate_limits.sql` | Compteurs de limitation de débit de l'authentification |
 
 ## Tables
 
@@ -170,6 +171,22 @@ d'UUID ne renvoyant plus à aucune donnée : c'est la pseudonymisation retenue.
 Reste à faire avant la production : partitionnement par mois, durée de conservation et
 export hors base (modèle de menaces M-38).
 
+### `private.rate_limit_buckets`
+
+Compteurs de tentatives par fenêtre fixe. Aucun accès utilisateur.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `bucket_key` | text | 8 à 200 caractères ; une empreinte, jamais une adresse en clair |
+| `window_start` | timestamptz | Début de la fenêtre |
+| `hits` | integer | Au moins 1 |
+
+Clé primaire `(bucket_key, window_start)` ; index sur `window_start`. Les fenêtres de plus
+d'un jour sont purgées au fil de l'eau.
+
+`public.consume_rate_limit(clé, limite, fenêtre)` compte une tentative et dit si elle est
+autorisée. Elle est `security invoker` et n'est exécutable que par `service_role`.
+
 ## Fonctions du schéma `private`
 
 | Fonction | Rôle |
@@ -237,9 +254,13 @@ staging ou de production, y appliquer :
 | Durée d'une session | 12 heures au plus, 1 heure d'inactivité |
 | Délai entre deux courriels d'authentification | 60 secondes |
 | Validité d'un code à usage unique | 15 minutes |
+| Longueur du code à usage unique | 10 chiffres : le jeton des liens en dérive |
+| Courriel de notification de changement de mot de passe | activé |
+| Courriels par heure | à dimensionner selon le trafic, jamais la valeur par défaut de 2 |
+| Adresse du site | égale à `APP_URL` |
 | Rotation du jeton de rafraîchissement | activée |
 | Mot de passe | 12 caractères au moins, lettres et chiffres ; contrôle des mots de passe compromis |
-| Changement de mot de passe | ré-authentification exigée |
+| Changement de mot de passe | ré-authentification exigée par le service après 24 heures de session seulement ; l'application le réserve au lien de réinitialisation (voir `authentication.md`) |
 | Second facteur TOTP | activé |
 | CAPTCHA de l'authentification | à activer en B-10 (non configuré en local) |
 | Limites de débit de l'authentification | activées |

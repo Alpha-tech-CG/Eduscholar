@@ -1,0 +1,153 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import {
+  createContext,
+  useActionState,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
+import { initialAuthState, type AuthFormState } from "@/lib/auth/state";
+
+type Action = (previous: AuthFormState, formData: FormData) => Promise<AuthFormState>;
+
+const FormStateContext = createContext<{ state: AuthFormState; pending: boolean }>({
+  state: initialAuthState,
+  pending: false,
+});
+
+type AuthFormProps = {
+  action: Action;
+  submitLabel: string;
+  pendingLabel: string;
+  children: ReactNode;
+};
+
+/**
+ * Formulaire d'authentification. Fonctionne sans JavaScript ; avec, il affiche
+ * l'état d'envoi et les erreurs renvoyées par le serveur.
+ */
+export function AuthForm({ action, submitLabel, pendingLabel, children }: AuthFormProps) {
+  const t = useTranslations("Auth");
+  const [state, formAction, pending] = useActionState(action, initialAuthState);
+  const feedback = useRef<HTMLDivElement>(null);
+
+  // Le message est annoncé et rendu visible dès qu'il change.
+  useEffect(() => {
+    if (state.status !== "idle") feedback.current?.focus();
+  }, [state]);
+
+  if (state.status === "success") {
+    return (
+      <div
+        ref={feedback}
+        tabIndex={-1}
+        role="status"
+        className="rounded border border-foreground/20 p-4 outline-none"
+      >
+        {t(`notices.${state.notice}`)}
+      </div>
+    );
+  }
+
+  return (
+    <FormStateContext value={{ state, pending }}>
+      <form action={formAction} noValidate className="flex flex-col gap-4">
+        <div ref={feedback} tabIndex={-1} aria-live="assertive" className="outline-none">
+          {state.status === "error" ? (
+            <p role="alert" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">
+              {t(`errors.${state.error}`)}
+            </p>
+          ) : null}
+        </div>
+        {children}
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded bg-foreground px-4 py-3 font-medium text-background disabled:opacity-60"
+        >
+          {pending ? pendingLabel : submitLabel}
+        </button>
+      </form>
+    </FormStateContext>
+  );
+}
+
+type TextFieldProps = {
+  name: string;
+  label: string;
+  type: "email" | "password";
+  autoComplete: string;
+  hint?: string;
+};
+
+export function TextField({ name, label, type, autoComplete, hint }: TextFieldProps) {
+  const t = useTranslations("Auth");
+  const { state } = useContext(FormStateContext);
+  const error = state.status === "error" ? state.fields?.[name] : undefined;
+  const value = state.status === "error" ? state.values?.[name] : undefined;
+  const describedBy = [hint ? `${name}-hint` : null, error ? `${name}-error` : null]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={name} className="font-medium">
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        required
+        // Un mot de passe n'est jamais renvoyé par le serveur ni réaffiché.
+        defaultValue={type === "password" ? undefined : value}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy || undefined}
+        className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
+      />
+      {hint ? (
+        <p id={`${name}-hint`} className="text-sm opacity-70">
+          {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+          {t(`fieldErrors.${error}`)}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+type CheckboxFieldProps = { name: string; label: string };
+
+export function CheckboxField({ name, label }: CheckboxFieldProps) {
+  const t = useTranslations("Auth");
+  const { state } = useContext(FormStateContext);
+  const error = state.status === "error" ? state.fields?.[name] : undefined;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          name={name}
+          required
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${name}-error` : undefined}
+          className="mt-1 size-4"
+        />
+        <span>{label}</span>
+      </label>
+      {error ? (
+        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+          {t(`fieldErrors.${error}`)}
+        </p>
+      ) : null}
+    </div>
+  );
+}

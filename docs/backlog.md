@@ -19,7 +19,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-07 | Gouvernance des agents : 3 agents manquants, durcissement de `settings.json`, format de rapport unique | orchestrateur | — | Écarts 2 à 4 de `docs/current-state.md` et constats S-03, S-04, S-08 levés | fait |
 | B-08 | Socle technique sans fonctionnalité métier : structure du dépôt, TypeScript strict, lint, typecheck, tests, i18n fr/en, en-têtes de sécurité, `.env.example`, CI avec scan de secrets et audit des dépendances | frontend-engineer, backend-engineer, qa-engineer | B-01, B-02 | `npm run lint`, `typecheck`, `test` et `build` passent en local et en CI | fait — ADR-0008 à valider ; la CI n'a jamais tourné faute de dépôt distant |
 | B-09 | Schéma de fondation : profils, organisations, membres, journal d'audit, avec politiques d'accès et tests d'isolation | database-engineer, security-reviewer | B-02, B-03, B-08 | Migration versionnée, tests utilisateur A / B et organisation A / B verts | fait — trois migrations, 139 tests pgTAP ; revue de l'agent sécurité intégrée |
-| B-10 | Authentification : inscription, connexion, déconnexion, réinitialisation, sessions | backend-engineer, frontend-engineer, qa-engineer, security-reviewer | B-08, B-09 | Messages d'erreur génériques, cookies sécurisés, limitation de débit, tests verts | à faire |
+| B-10 | Authentification : inscription, connexion, déconnexion, réinitialisation, sessions | backend-engineer, frontend-engineer, qa-engineer, security-reviewer | B-08, B-09 | Messages d'erreur génériques, cookies sécurisés, limitation de débit, tests verts | fait — voir `docs/architecture/authentication.md` ; revue de l'agent sécurité intégrée, dont deux constats élevés confirmés et corrigés |
 
 ## Phase 1 — MVP recherche
 
@@ -47,6 +47,12 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-06 | Dépôt distant : épingler les actions par empreinte, `CODEOWNERS`, protection de `main` | À la création du dépôt |
 | D-07 | Copie chiffrée hors plateforme de la base et des fichiers ; exercice de restauration | Avant la production |
 | D-08 | Mesure du plan d'exécution des politiques sur un journal d'audit volumineux | Avec D-03 |
+| D-09 | Authentification : CAPTCHA, contrôle des mots de passe compromis, alerte de nouvelle connexion, journalisation des événements de sécurité (échecs, limites atteintes). Sans CAPTCHA, un appel direct à l'API d'authentification n'est limité que par adresse IP. | Avant l'ouverture publique |
+| D-10 | Exiger le mot de passe actuel pour un changement fait par appel direct à l'API d'authentification avec une session ordinaire (réglage du service à vérifier sur le projet hébergé) | À la création du projet de staging |
+| D-11 | Enregistrer la déclaration d'âge en base et l'exiger à la première connexion, quel que soit le chemin d'inscription | Avec le profil académique (B-11) |
+| D-12 | Purger les comptes jamais confirmés | Avant l'ouverture publique |
+| D-13 | Neutraliser ou personnaliser les modèles de courriel non utilisés (lien magique, changement d'adresse, invitation), dont les liens agissent par simple chargement | Avant l'ouverture publique |
+| D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | Avec le profil académique (B-11) |
 
 ## Phases suivantes (non détaillées)
 

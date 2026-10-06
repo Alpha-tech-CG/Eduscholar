@@ -1,0 +1,38 @@
+import type { FieldErrorCode } from "./schemas";
+
+// État renvoyé par les actions d'authentification. Uniquement des codes : les
+// textes sont traduits à l'affichage, et aucun détail interne ne fuit.
+
+export type AuthErrorCode =
+  | "validation"
+  | "invalid_credentials"
+  | "rate_limited"
+  | "invalid_link"
+  | "already_signed_in"
+  | "weak_password"
+  | "same_password"
+  | "session_expired"
+  | "unavailable";
+
+export type AuthNoticeCode = "check_email_signup" | "check_email_reset";
+
+export type AuthFormState =
+  | { status: "idle" }
+  | {
+      status: "error";
+      error: AuthErrorCode;
+      fields?: Record<string, FieldErrorCode>;
+      /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
+      values?: Record<string, string>;
+    }
+  | { status: "success"; notice: AuthNoticeCode };
+
+export const initialAuthState: AuthFormState = { status: "idle" };
+
+/** Messages affichés sur la page de connexion après une redirection. */
+export const SIGN_IN_NOTICES = ["email-confirmed", "password-updated"] as const;
+export type SignInNotice = (typeof SIGN_IN_NOTICES)[number];
+
+export function parseSignInNotice(value: unknown): SignInNotice | null {
+  return SIGN_IN_NOTICES.find((notice) => notice === value) ?? null;
+}
