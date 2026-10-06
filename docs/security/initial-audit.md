@@ -195,6 +195,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   présenté comme « plus disponible ». Le contrôle de configuration ferme désormais aussi
   ce que le rôle serveur lit et exécute. Reste en dette : D-22. Ces corrections n'ont
   pas fait l'objet d'une seconde revue.
+- 6 octobre 2026 — Projets de recherche privés (C-01) relus par l'agent sécurité : aucun
+  constat critique ou élevé, 3 moyens et 7 faibles. Cloisonnement jugé sain pour tous les
+  rôles. Corrigés : aucune purge des projets supprimés (fonction écrite, planification
+  en dette D-23), plafond contournable par créations et suppressions en boucle,
+  enregistrement partiel qui effaçait les champs absents et écrasement entre deux
+  onglets, échéance acceptant des valeurs spéciales, caractères invisibles non couverts.
+  Non retenu : restreindre la lecture par colonne, la politique devant lire le
+  propriétaire et la date de suppression. Ces corrections n'ont pas fait l'objet d'une
+  seconde revue.
 
 ## Suivi
 

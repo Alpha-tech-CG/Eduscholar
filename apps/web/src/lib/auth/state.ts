@@ -1,5 +1,6 @@
 import type { ResourceFieldErrorCode } from "@/lib/catalogue/schemas";
 import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
+import type { ProjectFieldErrorCode } from "@/lib/projects/schemas";
 import type { FieldErrorCode } from "./schemas";
 
 // État renvoyé par les actions d'authentification. Uniquement des codes : les
@@ -30,6 +31,7 @@ export type AuthErrorCode =
   | "duplicate"
   // Bibliothèque personnelle
   | "limit_reached"
+  | "conflict"
   | "duplicate_name"
   // Import par connecteur
   | "doi_not_found"
@@ -45,7 +47,10 @@ export type AuthFormState =
   | {
       status: "error";
       error: AuthErrorCode;
-      fields?: Record<string, FieldErrorCode | ProfileFieldErrorCode | ResourceFieldErrorCode>;
+      fields?: Record<
+        string,
+        FieldErrorCode | ProfileFieldErrorCode | ResourceFieldErrorCode | ProjectFieldErrorCode
+      >;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;
     }

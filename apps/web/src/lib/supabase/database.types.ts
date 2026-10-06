@@ -260,6 +260,25 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"research_projects": {
+                  Row: {
+                    "context": string | null,"created_at": string,"deleted_at": string | null,"due_date": string | null,"fieldwork": string | null,"general_objective": string | null,"hypotheses": (string)[],"id": string,"main_question": string | null,"methodology": string | null,"outline": string | null,"owner_id": string,"population_sample": string | null,"problem_statement": string | null,"program_code": string | null,"secondary_questions": (string)[],"specific_objectives": (string)[],"status": string,"supervisor_name": string | null,"theoretical_framework": string | null,"title": string,"updated_at": string
+                  }
+                  Insert: {
+                    "context"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"due_date"?: string | null,"fieldwork"?: string | null,"general_objective"?: string | null,"hypotheses"?: (string)[],"id"?: string,"main_question"?: string | null,"methodology"?: string | null,"outline"?: string | null,"owner_id": string,"population_sample"?: string | null,"problem_statement"?: string | null,"program_code"?: string | null,"secondary_questions"?: (string)[],"specific_objectives"?: (string)[],"status"?: string,"supervisor_name"?: string | null,"theoretical_framework"?: string | null,"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "context"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"due_date"?: string | null,"fieldwork"?: string | null,"general_objective"?: string | null,"hypotheses"?: (string)[],"id"?: string,"main_question"?: string | null,"methodology"?: string | null,"outline"?: string | null,"owner_id"?: string,"population_sample"?: string | null,"problem_statement"?: string | null,"program_code"?: string | null,"secondary_questions"?: (string)[],"specific_objectives"?: (string)[],"status"?: string,"supervisor_name"?: string | null,"theoretical_framework"?: string | null,"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "research_projects_program_code_fkey"
+      columns: ["program_code"]
+isOneToOne: false
+      referencedRelation: "academic_programs"
+      referencedColumns: ["code"]
+    }
+                  ]
                 },"resource_favorites": {
                   Row: {
                     "created_at": string,"resource_id": string,"user_id": string
@@ -432,8 +451,14 @@ isOneToOne: false
 "create_collection":
 { Args: { "description"?: string,"name": string }; Returns: string
                            },
+"create_project":
+{ Args: { "payload": Json }; Returns: string
+                           },
 "delete_collection":
 { Args: { "collection_id": string }; Returns: undefined
+                           },
+"delete_project":
+{ Args: { "project_id": string }; Returns: undefined
                            },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
@@ -472,6 +497,9 @@ isOneToOne: false
                            },
 "update_collection":
 { Args: { "collection_id": string,"description"?: string,"name": string }; Returns: undefined
+                           },
+"update_project":
+{ Args: { "payload": Json,"project_id": string }; Returns: undefined
                            },
 "update_submission":
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined

@@ -57,6 +57,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006001800_search_tokens.sql` | Découpage des mots de l'index aligné sur celui de la requête |
 | `20261006001900_library.sql` | Favoris et collections privées |
 | `20261006002000_library_hardening.sql` | Corrections de la revue de sécurité : description, forme Unicode du nom, renommage sous verrou |
+| `20261006002100_research_projects.sql` | Projets de recherche privés |
+| `20261006002200_research_projects_hardening.sql` | Corrections de la revue de sécurité : purge, plafond quotidien, modification partielle sans écrasement, échéance |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -240,6 +242,36 @@ secondes accepté. Aucun accès utilisateur. Elle est tenue par
 chaque essai de code : dix codes erronés en quinze minutes bloquent le facteur, et un
 même pas de trente secondes ne sert qu'une fois. La fonction n'est exécutable que par
 `supabase_auth_admin`.
+
+### `public.research_projects`
+
+Projet de recherche d'un utilisateur (cahier §6.7). Privé : lisible de son seul
+propriétaire ; ni la modération, ni l'administration, ni le rôle serveur ne le lisent.
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `id` | uuid | Clé primaire |
+| `owner_id` | uuid | Référence `auth.users`, suppression en cascade ; non modifiable |
+| `title` | text | 1 à 300 caractères, sans caractère de contrôle ni de format |
+| `program_code` | text | Référence `academic_programs`, facultative |
+| `status` | text | `draft`, `in_progress`, `completed`, `archived` |
+| `due_date` | date | Entre 2000 et 2100 |
+| `supervisor_name` | text | 200 caractères ; un simple nom, sans effet sur les droits |
+| `context`, `problem_statement`, `theoretical_framework`, `methodology` | text | 5 000 caractères |
+| `main_question`, `general_objective` | text | 1 000 caractères |
+| `fieldwork`, `population_sample` | text | 2 000 caractères |
+| `outline` | text | 10 000 caractères |
+| `secondary_questions`, `hypotheses`, `specific_objectives` | text[] | 20 éléments de 1 000 caractères, sans doublon |
+| `deleted_at` | timestamptz | Suppression logique ; purge après trente jours |
+
+Index : `(owner_id)` sur les projets non supprimés. Lecture par RLS ; écriture par
+`create_project`, `update_project` (seuls les champs présents sont écrits ; une fiche
+modifiée entre-temps n'est pas écrasée) et `delete_project`. Plafonds : 20 projets, 20
+créations par jour. `purge_deleted_projects()`, réservée au rôle serveur, efface les
+projets supprimés depuis plus de trente jours : **elle doit être planifiée** (dette D-23).
+
+Les tables enfants d'un projet contrôlent l'accès par `private.my_project_ids()`, jamais
+par une colonne recopiée, et portent `on delete cascade` vers le projet.
 
 ### `private.rate_limit_buckets`
 

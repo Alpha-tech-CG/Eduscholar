@@ -107,7 +107,8 @@
       "language_required": "La source n'indique pas la langue du document : choisissez-la.",
       "source_unavailable": "La source n'a pas répondu, ou sa réponse est inexploitable. Rien n'a été importé ; réessayez plus tard.",
       "limit_reached": "Vous avez atteint le nombre maximal autorisé. Retirez des éléments avant d'en ajouter.",
-      "duplicate_name": "Vous avez déjà une collection de ce nom."
+      "duplicate_name": "Vous avez déjà une collection de ce nom.",
+      "conflict": "Cette fiche a été modifiée ailleurs depuis son ouverture (autre onglet ou autre appareil). Rechargez la page pour repartir de la dernière version ; votre saisie est conservée ci-dessous."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -125,7 +126,9 @@
       "invalid_doi": "Ce DOI n'a pas la forme attendue, par exemple 10.1234/abcd.",
       "invalid_year": "Indiquez une année sur quatre chiffres.",
       "invalid_tags": "Mots-clés : 20 au plus, 40 caractères chacun, lettres, chiffres, espaces et tirets.",
-      "rights_required": "Cette déclaration est nécessaire pour proposer une ressource."
+      "rights_required": "Cette déclaration est nécessaire pour proposer une ressource.",
+      "invalid_date": "Indiquez une date au format AAAA-MM-JJ, par exemple 2027-06-30.",
+      "too_many": "Vingt éléments au plus."
     },
     "secondFactor": {
       "title": "Sécurité du compte",
@@ -181,7 +184,8 @@
     "contributions": "Mes contributions",
     "moderation": "Modération",
     "search": "Rechercher une ressource",
-    "library": "Ma bibliothèque"
+    "library": "Ma bibliothèque",
+    "projects": "Mes projets de recherche"
   },
   "Profile": {
     "title": "Mon profil",
@@ -524,5 +528,69 @@
     "previous": "Page précédente",
     "next": "Page suivante",
     "page": "Page {page} sur {pages}"
+  },
+  "Projects": {
+    "title": "Mes projets de recherche",
+    "projectTitle": "Projet de recherche",
+    "editTitle": "Fiche du projet",
+    "intro": "Préparez votre mémoire ou votre thèse. Un projet est privé : vous seul le voyez.",
+    "editIntro": "Remplissez ce que vous savez déjà ; tout se complète plus tard. Seul le titre est obligatoire.",
+    "privateNotice": "Ce projet est privé : vous seul pouvez le lire.",
+    "mine": "{count, plural, =0 {Aucun projet} one {# projet} other {# projets}}",
+    "empty": "Vous n'avez pas encore de projet.",
+    "newProject": "Nouveau projet",
+    "create": "Créer le projet",
+    "edit": "Modifier la fiche",
+    "save": "Enregistrer la fiche",
+    "cancel": "Annuler et revenir au projet",
+    "back": "Retour à mes projets",
+    "choose": "Choisir…",
+    "pending": "Un instant…",
+    "separator": " · ",
+    "dueOn": "Échéance : {date}",
+    "created": "Le projet est créé. Complétez sa fiche.",
+    "saved": "La fiche du projet est enregistrée.",
+    "deleted": "Le projet est supprimé.",
+    "notFilled": "La fiche n'est pas encore remplie.",
+    "deleteHeading": "Supprimer le projet",
+    "deleteIntro": "Le projet disparaît aussitôt de votre espace, puis il est effacé définitivement après un délai.",
+    "deleteConfirm": "Je veux supprimer ce projet et tout ce qu'il contient.",
+    "delete": "Supprimer ce projet",
+    "status": {
+      "draft": "Brouillon",
+      "in_progress": "En cours",
+      "completed": "Terminé",
+      "archived": "Archivé"
+    },
+    "sections": {
+      "question": "Problématique",
+      "objectives": "Objectifs",
+      "method": "Cadre et méthode",
+      "outline": "Plan"
+    },
+    "fields": {
+      "title": "Titre provisoire",
+      "titleHint": "Trois caractères au moins. Il pourra changer.",
+      "program": "Filière",
+      "status": "État d'avancement",
+      "dueDate": "Échéance",
+      "dueDateHint": "Format AAAA-MM-JJ.",
+      "supervisorName": "Encadreur",
+      "supervisorNameHint": "Un simple nom, pour mémoire : il ne donne aucun accès au projet.",
+      "context": "Contexte",
+      "problemStatement": "Problématique",
+      "mainQuestion": "Question principale",
+      "secondaryQuestions": "Questions secondaires",
+      "hypotheses": "Hypothèses",
+      "generalObjective": "Objectif général",
+      "specificObjectives": "Objectifs spécifiques",
+      "theoreticalFramework": "Cadre théorique",
+      "methodology": "Méthodologie",
+      "fieldwork": "Terrain",
+      "populationSample": "Population et échantillon",
+      "outline": "Plan provisoire",
+      "outlineHint": "Une ligne par chapitre ou section.",
+      "listHint": "Un élément par ligne, vingt au plus."
+    }
   }
 }

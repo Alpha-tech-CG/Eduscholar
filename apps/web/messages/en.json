@@ -107,7 +107,8 @@
       "language_required": "The source does not state the language of the document: please choose it.",
       "source_unavailable": "The source did not answer, or its answer could not be used. Nothing was imported; try again later.",
       "limit_reached": "You have reached the maximum allowed. Remove some items before adding more.",
-      "duplicate_name": "You already have a collection with this name."
+      "duplicate_name": "You already have a collection with this name.",
+      "conflict": "This sheet was changed elsewhere since you opened it (another tab or device). Reload the page to start from the latest version; what you typed is kept below."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -125,7 +126,9 @@
       "invalid_doi": "This DOI does not have the expected form, for example 10.1234/abcd.",
       "invalid_year": "Enter a four-digit year.",
       "invalid_tags": "Keywords: 20 at most, 40 characters each, letters, digits, spaces and hyphens.",
-      "rights_required": "This declaration is required to suggest a resource."
+      "rights_required": "This declaration is required to suggest a resource.",
+      "invalid_date": "Enter a date as YYYY-MM-DD, for example 2027-06-30.",
+      "too_many": "Twenty items at most."
     },
     "secondFactor": {
       "title": "Account security",
@@ -181,7 +184,8 @@
     "contributions": "My contributions",
     "moderation": "Moderation",
     "search": "Search for a resource",
-    "library": "My library"
+    "library": "My library",
+    "projects": "My research projects"
   },
   "Profile": {
     "title": "My profile",
@@ -524,5 +528,69 @@
     "previous": "Previous page",
     "next": "Next page",
     "page": "Page {page} of {pages}"
+  },
+  "Projects": {
+    "title": "My research projects",
+    "projectTitle": "Research project",
+    "editTitle": "Project sheet",
+    "intro": "Prepare your dissertation or thesis. A project is private: only you can see it.",
+    "editIntro": "Fill in what you already know; everything can be completed later. Only the title is required.",
+    "privateNotice": "This project is private: only you can read it.",
+    "mine": "{count, plural, =0 {No projects} one {# project} other {# projects}}",
+    "empty": "You have no project yet.",
+    "newProject": "New project",
+    "create": "Create project",
+    "edit": "Edit sheet",
+    "save": "Save sheet",
+    "cancel": "Cancel and go back to the project",
+    "back": "Back to my projects",
+    "choose": "Choose…",
+    "pending": "One moment…",
+    "separator": " · ",
+    "dueOn": "Due: {date}",
+    "created": "The project has been created. Complete its sheet.",
+    "saved": "The project sheet has been saved.",
+    "deleted": "The project has been deleted.",
+    "notFilled": "The sheet has not been filled in yet.",
+    "deleteHeading": "Delete project",
+    "deleteIntro": "The project disappears from your space at once, then is erased permanently after a delay.",
+    "deleteConfirm": "I want to delete this project and everything it contains.",
+    "delete": "Delete this project",
+    "status": {
+      "draft": "Draft",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "archived": "Archived"
+    },
+    "sections": {
+      "question": "Research problem",
+      "objectives": "Objectives",
+      "method": "Framework and method",
+      "outline": "Outline"
+    },
+    "fields": {
+      "title": "Working title",
+      "titleHint": "At least three characters. It can change later.",
+      "program": "Programme",
+      "status": "Progress",
+      "dueDate": "Due date",
+      "dueDateHint": "Format YYYY-MM-DD.",
+      "supervisorName": "Supervisor",
+      "supervisorNameHint": "Just a name, as a reminder: it gives no access to the project.",
+      "context": "Context",
+      "problemStatement": "Research problem",
+      "mainQuestion": "Main question",
+      "secondaryQuestions": "Secondary questions",
+      "hypotheses": "Hypotheses",
+      "generalObjective": "General objective",
+      "specificObjectives": "Specific objectives",
+      "theoreticalFramework": "Theoretical framework",
+      "methodology": "Methodology",
+      "fieldwork": "Fieldwork",
+      "populationSample": "Population and sample",
+      "outline": "Provisional outline",
+      "outlineHint": "One line per chapter or section.",
+      "listHint": "One item per line, twenty at most."
+    }
   }
 }

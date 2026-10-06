@@ -126,8 +126,9 @@ Détail dans `docs/security/initial-audit.md`.
 - Recherche (B-16) : recherche plein texte avec cinq filtres, fiche publiée affichant
   origine, licence et statut d'accès, signalement depuis la fiche.
 - Bibliothèque personnelle (B-17) : favoris et collections privées.
-- Le MVP du catalogue (B-13 à B-17) est complet. Pas encore de projet de recherche
-  (Phase 3).
+- Le MVP du catalogue (B-13 à B-17) est complet.
+- Phase 3 découpée en cinq tâches (C-01 à C-05). C-01 fait : projet de recherche privé,
+  avec sa fiche. Sources, fiches de lecture, bibliographie et export restent à faire.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
 
 ## Problèmes bloquants

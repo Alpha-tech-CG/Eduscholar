@@ -777,6 +777,63 @@ describe("catalogue, par appel direct à l'API", () => {
     await fatou.client.rpc("delete_collection", { collection_id: collectionId });
   });
 
+  it("un projet de recherche n'est lisible que de son propriétaire, par appel direct", async () => {
+    const created = await fatou.client.rpc("create_project", {
+      payload: { title: `Projet privé ${run}`, owner_id: bob.id, status: "completed" },
+    });
+    expect(created.error).toBeNull();
+    const projectId = created.data as string;
+
+    const mine = await fatou.client
+      .from("research_projects")
+      .select("title, status, owner_id")
+      .eq("id", projectId);
+    expect(mine.data).toEqual([{ title: `Projet privé ${run}`, status: "draft", owner_id: fatou.id }]);
+
+    // Ni un autre compte, ni un visiteur, ni même le rôle serveur ne le lisent.
+    for (const client of [bob.client, alice.client, anonymous, admin]) {
+      const read = await client.from("research_projects").select("id").eq("id", projectId);
+      expect(read.data ?? []).toEqual([]);
+    }
+    // Écritures directes refusées, y compris pour la propriétaire.
+    const direct = await Promise.all([
+      fatou.client.from("research_projects").update({ title: "Directe" } as never).eq("id", projectId),
+      fatou.client.from("research_projects").delete().eq("id", projectId),
+      fatou.client.from("research_projects").insert({ owner_id: fatou.id, title: "Directe" } as never),
+      bob.client.from("research_projects").update({ owner_id: bob.id } as never).eq("id", projectId),
+    ]);
+    for (const result of direct) expect(result.error).not.toBeNull();
+
+    // Un autre compte, par les fonctions : rien, et rien n'indique que le projet existe.
+    for (const client of [bob.client, anonymous]) {
+      for (const target of [projectId, randomUUID()]) {
+        const updated = await client.rpc("update_project", {
+          project_id: target,
+          payload: { title: "Piraté" },
+        });
+        const deleted = await client.rpc("delete_project", { project_id: target });
+        expect(updated.error).not.toBeNull();
+        expect(deleted.error).not.toBeNull();
+        expect(updated.error?.message).not.toContain("Projet privé");
+        // Une requête invalide ne renseigne pas davantage.
+        const invalid = await client.rpc("update_project", {
+          project_id: target,
+          payload: { due_date: "pas-une-date", status: "published" },
+        });
+        expect(invalid.error?.message).toBe(updated.error?.message);
+        expect(invalid.error?.code).toBe(updated.error?.code);
+      }
+    }
+
+    const intact = await fatou.client.from("research_projects").select("title").eq("id", projectId);
+    expect(intact.data).toEqual([{ title: `Projet privé ${run}` }]);
+
+    // Supprimé : il cesse d'être lisible, même de sa propriétaire.
+    expect((await fatou.client.rpc("delete_project", { project_id: projectId })).error).toBeNull();
+    const gone = await fatou.client.from("research_projects").select("id").eq("id", projectId);
+    expect(gone.data).toEqual([]);
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",

@@ -27,7 +27,10 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
       return message;
     case "limit_reached":
     case "duplicate_name":
+    case "conflict":
       return message;
+    case "invalid_date":
+      return "validation";
     case "source_not_allowed":
       return "forbidden";
     case "duplicate_doi":
@@ -47,6 +50,8 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
     case "22023":
     case "22P02":
     case "22003":
+    case "22007":
+    case "22008":
       return "validation";
     case "42501":
       return "forbidden";

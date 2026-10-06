@@ -227,6 +227,7 @@ select is(
     'public.collection_items | collection_items_select | SELECT | {authenticated}',
     'public.collections | collections_select | SELECT | {authenticated}',
     'public.resource_favorites | resource_favorites_select | SELECT | {authenticated}',
+    'public.research_projects | research_projects_select | SELECT | {authenticated}',
     'public.academic_programs | academic_programs_select_authenticated | SELECT | {authenticated}',
     'public.audit_logs | audit_logs_select | SELECT | {authenticated}',
     'public.licenses | licenses_select_authenticated | SELECT | {authenticated}',
@@ -307,6 +308,14 @@ select is(
    ) q),
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.account_deletion_check()',
+    'private.create_project(p jsonb)',
+    'private.delete_project(p_project_id uuid)',
+    'private.is_project_owner(p_project_id uuid)',
+    'private.my_project_ids()',
+    'private.update_project(p_project_id uuid, p jsonb)',
+    'public.create_project(payload jsonb)',
+    'public.delete_project(project_id uuid)',
+    'public.update_project(project_id uuid, payload jsonb)',
     'private.create_collection(p_name text, p_description text)',
     'private.delete_collection(p_collection_id uuid)',
     'private.my_collection_ids()',
@@ -402,7 +411,9 @@ select is(
     'private.import_connector_resource(p_actor uuid, p jsonb)',
     'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
     'public.consume_rate_limit(p_key text, p_limit integer, p_window_seconds integer)',
-    'public.import_connector_resource(actor_id uuid, payload jsonb)'
+    'public.import_connector_resource(actor_id uuid, payload jsonb)',
+    'private.purge_deleted_projects()',
+    'public.purge_deleted_projects()'
   ]) as x),
   'Les fonctions exécutables par service_role sont celles attendues'
 );

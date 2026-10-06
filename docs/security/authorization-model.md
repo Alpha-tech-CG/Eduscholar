@@ -229,7 +229,7 @@ liste de sections.
 
 | # | Opération | propriétaire | supervisor | viewer | tout autre utilisateur ou rôle |
 |---|---|---|---|---|---|
-| 1 | Créer un projet | ✔ (tout `user`) | — | — | — |
+| 1 | Créer un projet | ✔ (tout `user` au profil complété) | — | — | — |
 | 2 | Lire la fiche du projet (titre, statut, échéances) | ✔ | ✔ | ✔ | ✖ |
 | 3 | Lire une section | ✔ | ✔ complet, ou section autorisée | idem | ✖ |
 | 4 | Modifier le projet, les sections, les fiches, les citations | ✔ | ✖ | ✖ | ✖ |
@@ -439,7 +439,7 @@ Une lecture RLS directe d'une ligne par son propriétaire n'est pas journalisée
 ### 7.4 Fonctions d'appui des politiques
 
 ```text
-is_project_owner(project_id)             propriétaire du projet
+is_project_owner(project_id)             propriétaire d'un projet non supprimé
 is_project_member(project_id, roles[])   membre du projet avec l'un des rôles
 can_read_section(section_id)             propriétaire, membre complet, ou section autorisée
 has_full_project_access(project_id)      propriétaire ou membre à accès complet
@@ -453,6 +453,8 @@ must_keep_second_factor()                l'appelant détient un rôle qui exige 
 my_submission_ids()                      propositions de l'appelant au catalogue
 my_report_ids()                          signalements de l'appelant
 my_collection_ids()                      collections de l'appelant
+my_project_ids()                         projets non supprimés de l'appelant ; à utiliser dans les
+                                         politiques des tables enfants d'un projet
 ```
 
 Règles :
@@ -475,9 +477,10 @@ Règles :
 Inventaire fermé. Chaque fonction contrôle elle-même l'appelant, applique la règle et
 écrit l'audit. Tout ajout modifie ce document et passe en revue de sécurité.
 
-Exception à l'audit : les fonctions de la bibliothèque personnelle n'écrivent rien au
-journal. Celui-ci est lisible par l'administration, et les favoris d'une personne ne la
-regardent pas.
+Exception à l'audit : les fonctions de la bibliothèque personnelle et celles des projets
+de recherche n'écrivent rien au journal quand c'est le titulaire qui agit. Le journal est
+lisible par l'administration, et ni les favoris ni l'existence du projet d'une personne
+ne la regardent. L'accès d'un tiers à un projet partagé (Phase 4) sera, lui, journalisé.
 
 **Exécutées sous la session de l'utilisateur** (`security definer`, appelées par RPC
 depuis le serveur) :
@@ -499,6 +502,7 @@ depuis le serveur) :
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
+| `create_project`, `update_project`, `delete_project` | Le propriétaire, compte actif au profil complété ; même réponse pour le projet d'autrui, un projet supprimé et un projet inexistant, avant tout examen de la requête |
 | `account_deletion_check` : contrôle préalable à la suppression de son compte | Le titulaire, compte actif ; refuse le dernier administrateur d'une organisation |
 
 **Appelée par le service d'authentification seulement** (`supabase_auth_admin`) :
@@ -518,6 +522,7 @@ et refuse le rejeu.
 | Création de notifications | Tâche système |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
+| Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Tâche planifiée ; ne lit rien, ne renvoie qu'un nombre |
 | Limitation de débit de l'authentification (`consume_rate_limit`) | Aucun : l'appel précède l'authentification. La fonction ne lit et n'écrit que des compteurs, sous des clés qui sont des empreintes. |
 
 Règles de `service_role` :
