@@ -37,3 +37,18 @@ export const getSecondFactorState = cache(async (): Promise<SecondFactorState> =
 export function needsSecondFactor(state: SecondFactorState): boolean {
   return state.enabled && !state.sessionVerified;
 }
+
+/**
+ * Secondes à attendre avant qu'un nouveau code du compte puisse être accepté.
+ *
+ * Un code n'est accepté qu'une fois, et le suivant seulement une minute à une
+ * minute et demie plus tard. La base refuse un code présenté trop tôt en
+ * fermant toutes les sessions du compte : l'application lit donc l'attente
+ * avant d'envoyer le code, et l'annonce. Ce n'est pas elle qui protège — si la
+ * lecture échoue, le code part, et la base tranche.
+ */
+export async function codeWaitSeconds(): Promise<number> {
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase.rpc("second_factor_wait_seconds");
+  return error || typeof data !== "number" ? 0 : data;
+}

@@ -50,7 +50,7 @@
       "emailConfirmed": "Your address is confirmed. Sign in with your password.",
       "passwordUpdated": "Your password has been changed and all your devices have been signed out. Sign in with the new password.",
       "accountDeleted": "Your account has been deleted.",
-      "codeRefused": "For your security, you have been signed out of all your devices: too many wrong codes, or a code that was already used. Sign in again and enter a new code; after ten wrong codes, wait fifteen minutes."
+      "codeRefused": "For your security, you have been signed out of all your devices: too many wrong codes, or two codes entered less than a minute and a half apart. Sign in again and enter a new code; after ten wrong codes, wait fifteen minutes."
     },
     "forgotPassword": {
       "title": "Forgot your password",
@@ -115,7 +115,8 @@
       "account_suspended": "This account is suspended: it cannot be given a role.",
       "second_factor_missing": "This account has not turned on two-step verification: it cannot be given a role.",
       "user_not_found": "No account has this address.",
-      "last_super_admin_recovery": "You are the last super administrator: two-step verification on this account cannot be lifted with a backup code. Follow the two-person administration procedure."
+      "last_super_admin_recovery": "You are the last super administrator: two-step verification on this account cannot be lifted with a backup code. Follow the two-person administration procedure.",
+      "code_wait": "A code was just accepted for this account. For your security, wait a minute and a half, then enter the code your app shows at that moment."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -932,7 +933,7 @@
     "noticeConfirmed": "Identity confirmed.",
     "noticeRoleGranted": "The role has been given.",
     "noticeRoleRevoked": "The role has been removed.",
-    "noticeSuspended": "The account has been suspended.",
+    "noticeSuspended": "The account has been suspended: its sessions are closed and it cannot open a new one.",
     "noticeRestored": "The account has been restored.",
     "truncated": "The list is too long to be shown in full: it is incomplete. Use the search by address.",
     "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator."

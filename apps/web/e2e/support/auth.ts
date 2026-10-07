@@ -148,6 +148,11 @@ export function resetTestRoles(): void {
   sql(
     `delete from private.account_status where user_id in (select id from auth.users where email like '%@test.invalid')`,
   );
+  // Les signalements ouverts des exécutions précédentes : la file de modération
+  // n'en montre que cent, les plus anciens d'abord.
+  sql(
+    `delete from public.resource_reports where reporter_id in (select id from auth.users where email like '%@test.invalid')`,
+  );
 }
 
 /**

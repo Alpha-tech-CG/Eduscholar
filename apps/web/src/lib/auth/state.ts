@@ -17,6 +17,7 @@ export type AuthErrorCode =
   | "same_password"
   | "session_expired"
   | "invalid_code"
+  | "code_wait"
   | "second_factor_required"
   | "last_org_admin"
   | "last_super_admin"

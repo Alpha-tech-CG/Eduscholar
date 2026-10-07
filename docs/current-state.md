@@ -142,6 +142,8 @@ Détail dans `docs/security/initial-audit.md`.
   D-24).
 - Une session fermée cesse d'agir immédiatement, y compris par appel direct à l'API
   (dette D-19).
+- Rejeu d'un code de validation fermé, et suspension qui ferme les sessions (dette
+  D-28 et D-29).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

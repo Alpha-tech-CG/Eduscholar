@@ -282,6 +282,19 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   modèle de menaces : jeton sans identifiant de session non refusé. Constat antérieur
   noté en dette D-29 : la suspension ne ferme pas les sessions du service
   d'authentification. Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Rejeu d'un code et suspension (D-28, D-29) : un code accepté
+  interdit tout second code du facteur pendant 60 à 90 s ; la suspension ferme les
+  sessions du compte et l'empêche d'en rouvrir une. Relu par l'agent sécurité : un
+  constat élevé, confirmé par un essai — l'interdiction de connexion du service
+  (« bannissement ») répondait « compte banni » même à un mauvais mot de passe, et
+  révélait donc l'existence et la sanction d'un compte. Elle a été retirée au profit d'un
+  refus en base à l'ouverture de session, ce qui supprime aussi l'état incohérent entre
+  la base et le service et l'appel du rôle serveur (trois constats moyens). Acceptés et
+  écrits : l'attente entre deux codes suppose des horloges synchronisées entre le
+  service et la base ; `second_factor_wait_seconds` apprend à qui détient le mot de
+  passe qu'un code vient d'être accepté ; onze codes faux envoyés au service ferment
+  les sessions du titulaire (règle antérieure, voulue). Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 

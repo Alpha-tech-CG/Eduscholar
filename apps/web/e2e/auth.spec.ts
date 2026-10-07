@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+  awayFromWindowBoundary,
   createConfirmedUser,
   directSignUp,
   expectSignedIn,
@@ -287,6 +288,10 @@ test.describe("limitation de débit", () => {
   test("un en-tête x-forwarded-for choisi par le client ne contourne pas la limite", async ({
     browser,
   }) => {
+    // Onze connexions, chacune dans un contexte neuf, à compter dans une même
+    // fenêtre de limite.
+    test.setTimeout(240_000);
+    await awayFromWindowBoundary(90);
     const email = uniqueEmail("usurpation-ip");
     await createConfirmedUser(email, strongPassword());
 

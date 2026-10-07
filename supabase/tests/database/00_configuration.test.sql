@@ -405,6 +405,8 @@ select is(
     'private.is_session_aal2()',
     'private.my_org_ids(p_roles text[])',
     'private.must_keep_second_factor()',
+    'private.second_factor_wait_seconds()',
+    'public.second_factor_wait_seconds()',
     'public.must_keep_second_factor()',
     'public.account_deletion_check()',
     'public.second_factor_status()'

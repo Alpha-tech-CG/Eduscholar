@@ -73,6 +73,9 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006003400_section_autosave.sql` | Enregistrement automatique : la modification d'une section rend sa date de version ; limite de débit par compte |
 | `20261006003500_section_autosave_hardening.sql` | Corrections de la revue de sécurité : clé de compteur en empreinte, purge des compteurs, ordre des verrous, forme jugée avant le décompte |
 | `20261006003600_live_session.sql` | Une session fermée cesse d'agir immédiatement : contrôle de la session du jeton dans `is_account_active` |
+| `20261006003800_second_factor_replay.sql` | Un code accepté interdit tout second code pendant 60 à 90 s ; attente lisible par le titulaire |
+| `20261006003900_suspension_closes_sessions.sql` | La suspension d'un compte ferme ses sessions |
+| `20261006004000_suspended_no_session.sql` | Un compte suspendu n'ouvre plus de session |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -272,8 +275,17 @@ Une ligne par facteur : début de fenêtre, nombre de codes erronés, dernier pa
 secondes accepté. Aucun accès utilisateur. Elle est tenue par
 `private.hook_mfa_verification_attempt`, que le service d'authentification appelle à
 chaque essai de code : dix codes erronés en quinze minutes bloquent le facteur, et un
-même pas de trente secondes ne sert qu'une fois. La fonction n'est exécutable que par
-`supabase_auth_admin`.
+code accepté interdit tout autre succès du même facteur jusqu'à la fin du deuxième pas
+de trente secondes suivant (60 à 90 s) — le service accepte aussi le code des pas
+voisins, qui pourrait sinon resservir. La fonction n'est exécutable que par
+`supabase_auth_admin`. `second_factor_wait_seconds()` rend au titulaire l'attente
+restante.
+
+Un déclencheur sur `private.account_status` supprime les sessions du compte
+(`auth.sessions`, et leurs jetons de rafraîchissement) quand il devient suspendu. Un
+second, sur `auth.sessions`, refuse toute nouvelle session à un compte suspendu : le
+service d'authentification ne l'atteint qu'après avoir reconnu le mot de passe ou le
+lien, si bien qu'un tiers n'apprend rien d'un essai avec un mauvais mot de passe.
 
 ### `public.research_projects`
 

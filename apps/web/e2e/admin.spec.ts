@@ -105,17 +105,34 @@ test.describe("administration des rôles et des comptes", () => {
     await expect(page).toHaveURL(/notice=suspended/);
     await expect(row).toContainText("suspendu");
     await expect(row).toContainText("Enquête en cours");
+    await expect(status(page)).toContainText("ses sessions sont fermées et il ne peut plus en ouvrir");
 
-    expect((await moderator.page.goto("/fr/moderation"))?.status()).toBe(404);
+    // La session de la personne suspendue est fermée : elle est renvoyée à la
+    // connexion, qui ne lui ouvre plus de session — avec la même réponse qu'à
+    // un mot de passe erroné, pour ne rien dire à un tiers.
+    await moderator.page.goto("/fr/moderation");
+    await expect(moderator.page).toHaveURL(/\/fr\/sign-in/);
+    expect(sqlValue(`select count(*) from auth.sessions where user_id = '${candidate.id}'`)).toBe("0");
+    await signInThroughForm(moderator.page, candidate.email, candidate.password);
+    await expect(moderator.page.getByRole("main").getByRole("alert")).toContainText(
+      "Adresse ou mot de passe incorrect",
+    );
+    await expect(moderator.page).toHaveURL(/\/fr\/sign-in/);
+    expect(sqlValue(`select count(*) from auth.sessions where user_id = '${candidate.id}'`)).toBe("0");
+    await moderator.close();
 
     // --- Rétablissement, puis retrait du rôle --------------------------------
     await row.getByRole("button", { name: "Rétablir ce compte" }).click();
-    await expect(page).toHaveURL(/notice=restored/);
+    await expect(page).toHaveURL(/notice=restored$/);
+    // La personne rétablie se reconnecte, et retrouve son rôle.
+    const restored = await signInWithCode(browser, candidate, new Set());
+    await restored.page.goto("/fr/moderation");
+    await expect(restored.page.getByRole("heading", { level: 1 })).toHaveText("Modération");
     await row.getByRole("button", { name: "Retirer le rôle « Modération »" }).click();
     await expect(page).toHaveURL(/notice=role-revoked/);
     await expect(page.getByTestId("admin-account").filter({ hasText: candidate.email })).toHaveCount(0);
-    expect((await moderator.page.goto("/fr/moderation"))?.status()).toBe(404);
-    await moderator.close();
+    expect((await restored.page.goto("/fr/moderation"))?.status()).toBe(404);
+    await restored.close();
 
     // --- Journal d'audit -----------------------------------------------------
     const actions = sqlValue(

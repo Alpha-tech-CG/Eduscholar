@@ -121,7 +121,11 @@ droits n'existent que dans une session où le second facteur a été vérifié.
 - **Essais bornés, en base** : un hook du service d'authentification
   (`private.hook_mfa_verification_attempt`) compte les codes erronés par facteur. Au
   onzième en quinze minutes, l'essai est refusé, même avec le bon code, jusqu'à la fin
-  de la fenêtre. Un code déjà accepté ne sert pas une seconde fois. La règle vaut pour
+  de la fenêtre. Un code déjà accepté ne sert pas une seconde fois, et aucun autre code
+  n'est accepté pendant la minute à la minute et demie qui suit : le service reçoit
+  aussi le code des pas de trente secondes voisins. L'application lit cette attente et
+  l'annonce (« patientez une minute et demie ») au lieu d'envoyer le code, car un refus
+  en base ferme toutes les sessions du compte. La règle vaut pour
   un appel direct à l'API. Par l'interface, la limite de l'application se déclenche plus
   tôt (8 essais par quart d'heure pour une même adresse IP et un même compte, 30 par
   compte) : le blocage en base est le filet pour qui contourne l'application.

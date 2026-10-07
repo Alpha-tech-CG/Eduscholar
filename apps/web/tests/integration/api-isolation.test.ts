@@ -1125,15 +1125,26 @@ describe("second facteur, service d'authentification en appel direct", () => {
   }
 
   it("un code déjà utilisé est refusé", async () => {
-    // La base refuse un second succès dans le même pas de trente secondes. Le
-    // test se place en début de pas : le rejeu à cheval sur deux pas n'est pas
-    // encore refusé (dette D-28), et ferait échouer ce test par intermittence.
+    // Le test se place en fin de pas : le rejeu a lieu au pas suivant, où le
+    // service accepte encore le code du pas précédent. La base le refuse.
     const remaining = 30_000 - (Date.now() % 30_000);
-    if (remaining < 20_000) await new Promise((resolve) => setTimeout(resolve, remaining + 500));
-    const { actor, factorId, code, passwordOnly } = await withSecondFactor("rejeu");
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, remaining - 4_000)));
+    const { actor, factorId, secret, code, passwordOnly } = await withSecondFactor("rejeu");
     try {
+      const wait = 30_000 - (Date.now() % 30_000);
+      if (wait < 29_000) await new Promise((resolve) => setTimeout(resolve, wait + 300));
       const replay = await passwordOnly.auth.mfa.challengeAndVerify({ factorId, code });
-      expect(replay.error).not.toBeNull();
+      expect(replay.error?.code).toBe("mfa_verification_rejected");
+
+      // Un nouveau code, juste, saisi aussitôt après : refusé lui aussi.
+      const again = createClient(url, publishableKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      await again.auth.signInWithPassword({ email: actor.email, password });
+      const waiting = await again.rpc("second_factor_wait_seconds");
+      expect(waiting.data).toBeGreaterThan(0);
+      const tooSoon = await again.auth.mfa.challengeAndVerify({ factorId, code: totp(secret) });
+      expect(tooSoon.error?.code).toBe("mfa_verification_rejected");
     } finally {
       await admin.auth.admin.deleteUser(actor.id);
     }
@@ -1254,5 +1265,57 @@ describe("session fermée, jeton encore valable", () => {
     expect(await rest("profiles?select=user_id", fresh).then((r) => r.json())).toEqual([
       { user_id: actor.id },
     ]);
+  });
+});
+
+describe("compte suspendu, service d'authentification en appel direct", () => {
+  const fresh = () =>
+    createClient(url, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  it("un compte suspendu n'ouvre plus de session, sans que le refus renseigne un tiers", async () => {
+    const actor = await createActor("suspendu");
+    const actorPassword = password;
+    try {
+      // La suspension est écrite par la base au nom d'un administrateur ; ici,
+      // la ligne est posée par le rôle propriétaire, comme le fait la fonction.
+      const { execFileSync } = await import("node:child_process");
+      const psql = (statement: string) =>
+        execFileSync(
+          "docker",
+          ["exec", "supabase_db_eduscholar", "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-Atc", statement],
+          { encoding: "utf8" },
+        ).trim();
+      psql(
+        `insert into private.account_status (user_id, status, reason, changed_by) values ('${actor.id}', 'suspended', 'Test', '${alice.id}')`,
+      );
+
+      // La session ouverte avant la suspension est fermée : elle ne se renouvelle plus.
+      expect(psql(`select count(*) from auth.sessions where user_id = '${actor.id}'`)).toBe("0");
+      expect((await actor.client.auth.refreshSession()).error).not.toBeNull();
+
+      // Mauvais mot de passe : la réponse est celle d'un compte quelconque, ou inconnu.
+      const wrong = await fresh().auth.signInWithPassword({ email: actor.email, password: `Mauvais-${randomUUID()}` });
+      const unknown = await fresh().auth.signInWithPassword({
+        email: `inconnu-${run}@test.invalid`,
+        password: `Mauvais-${randomUUID()}`,
+      });
+      expect(wrong.error?.code).toBe("invalid_credentials");
+      expect(wrong.error?.code).toBe(unknown.error?.code);
+      expect(wrong.error?.status).toBe(unknown.error?.status);
+
+      // Bon mot de passe : aucune session.
+      const right = await fresh().auth.signInWithPassword({ email: actor.email, password: actorPassword });
+      expect(right.data.session).toBeNull();
+      expect(right.error).not.toBeNull();
+      expect(psql(`select count(*) from auth.sessions where user_id = '${actor.id}'`)).toBe("0");
+
+      // Rétabli, le compte se reconnecte.
+      psql(`update private.account_status set status = 'active', changed_by = '${alice.id}' where user_id = '${actor.id}'`);
+      const restored = await fresh().auth.signInWithPassword({ email: actor.email, password: actorPassword });
+      expect(restored.error).toBeNull();
+      expect(restored.data.session).not.toBeNull();
+    } finally {
+      await admin.auth.admin.deleteUser(actor.id);
+    }
   });
 });

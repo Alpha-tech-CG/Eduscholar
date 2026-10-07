@@ -5,6 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import { createServiceClient, createSessionClient, verifyPassword } from "@/lib/supabase/server";
 import { checkAttempt } from "./rate-limit";
 import { afterRefusedCode, isCodeRefusedByHook } from "./refused-code";
+import { codeWaitSeconds } from "./second-factor";
 import { getCurrentUser, getFullySignedInUser } from "./session";
 import type { AuthErrorCode, AuthFormState } from "./state";
 
@@ -51,6 +52,7 @@ export async function generateRecoveryCodes(
   const code = text(formData, "code").replace(/\s+/g, "");
   if (code.length > 0) {
     if (!/^\d{6}$/.test(code)) return { status: "error", error: "invalid_code" };
+    if ((await codeWaitSeconds()) > 0) return { status: "error", error: "code_wait" };
     if ((await checkAttempt("second-factor", user.id)) !== "allowed") {
       return { status: "error", error: "rate_limited" };
     }

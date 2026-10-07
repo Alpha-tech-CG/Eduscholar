@@ -7,7 +7,7 @@ import { isSessionCookie, sessionCookieOptions } from "@/lib/supabase/cookies";
 import { createSessionClient, verifyPassword } from "@/lib/supabase/server";
 import { checkAttempt } from "./rate-limit";
 import { nextAfterVerification } from "./redirect";
-import { getSecondFactorState } from "./second-factor";
+import { codeWaitSeconds, getSecondFactorState } from "./second-factor";
 import { getCurrentUser, getFullySignedInUser } from "./session";
 import type { AuthFormState } from "./state";
 
@@ -164,6 +164,8 @@ export async function verifySecondFactor(
 
   const code = normalizeCode(text(formData, "code"));
   if (!CODE.test(code)) return invalidCode;
+  // Un code vient d'être accepté : le suivant attend, sans compter d'essai.
+  if ((await codeWaitSeconds()) > 0) return { status: "error", error: "code_wait" };
 
   if ((await checkAttempt("second-factor", user.id)) !== "allowed") return rateLimited;
 
@@ -200,6 +202,7 @@ export async function disableSecondFactor(
 
   const code = normalizeCode(text(formData, "code"));
   if (!CODE.test(code)) return invalidCode;
+  if ((await codeWaitSeconds()) > 0) return { status: "error", error: "code_wait" };
 
   if ((await checkAttempt("second-factor", user.id)) !== "allowed") return rateLimited;
 

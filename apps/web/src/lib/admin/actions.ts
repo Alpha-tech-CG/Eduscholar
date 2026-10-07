@@ -5,6 +5,7 @@ import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
 import { afterRefusedCode, isCodeRefusedByHook } from "@/lib/auth/refused-code";
+import { codeWaitSeconds } from "@/lib/auth/second-factor";
 import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
@@ -36,6 +37,7 @@ export async function confirmAdminIdentity(
 
   const code = text(formData, "code").replace(/\s+/g, "");
   if (!/^\d{6}$/.test(code)) return { status: "error", error: "invalid_code" };
+  if ((await codeWaitSeconds()) > 0) return { status: "error", error: "code_wait" };
   if ((await checkAttempt("second-factor", user.id)) !== "allowed") {
     return { status: "error", error: "rate_limited" };
   }
@@ -171,6 +173,8 @@ export async function setAccountStatus(
   });
   if (error) return { status: "error", error: catalogueErrorCode(error), values };
 
+  // La base a fait le reste dans la même transaction : sessions du compte
+  // fermées, et plus aucune session ouvrable tant qu'il est suspendu.
   const locale = await getLocale();
   return redirect({
     href: {

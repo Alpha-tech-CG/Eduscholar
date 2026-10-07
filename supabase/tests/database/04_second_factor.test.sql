@@ -105,6 +105,69 @@ select is(
   private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'message',
   'code_already_used', 'Le même pas de trente secondes ne sert qu''une fois'
 );
+-- Le service accepte aussi le code des pas voisins : aucun second succès tant
+-- que le premier code peut encore être reçu.
+update private.second_factor_attempts set last_success_at = now() - interval '45 seconds'
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'message',
+  'code_already_used', 'Un second succès trois quarts de minute plus tard est encore refusé'
+);
+select is(
+  (select last_success_at < now() - interval '40 seconds' from private.second_factor_attempts
+   where factor_id = 'fa000000-0000-0000-0000-0000000000f1'),
+  true, 'Un refus ne prolonge pas l''attente'
+);
+update private.second_factor_attempts set last_success_at = now() - interval '120 seconds'
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'decision',
+  'continue', 'Deux minutes plus tard, un nouveau code est accepté'
+);
+
+-- Bornes exactes : refusé pendant tout le deuxième pas suivant, accepté au troisième.
+update private.second_factor_attempts
+  set last_success_at = to_timestamp((floor(extract(epoch from now()) / 30) - 2) * 30 + 29)
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'message',
+  'code_already_used', 'Au deuxième pas suivant, le code du premier vaut encore : refus'
+);
+update private.second_factor_attempts
+  set last_success_at = to_timestamp((floor(extract(epoch from now()) / 30) - 3) * 30 + 29)
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+select is(
+  private.hook_mfa_verification_attempt('{"factor_id": "fa000000-0000-0000-0000-0000000000f1", "valid": true}') ->> 'decision',
+  'continue', 'Au troisième, il ne vaut plus : un nouveau code est accepté'
+);
+
+-- L'attente restante, lue par le titulaire seulement.
+select set_config('request.jwt.claims',
+  (select jsonb_build_object('sub', f.user_id, 'role', 'authenticated', 'aal', 'aal1')::text
+   from auth.mfa_factors f where f.id = 'fa000000-0000-0000-0000-0000000000f1'), true);
+set local role authenticated;
+select cmp_ok(public.second_factor_wait_seconds(), '>', 60, 'Juste après un succès, plus d''une minute d''attente est annoncée');
+select cmp_ok(public.second_factor_wait_seconds(), '<=', 90, 'Et une minute et demie au plus');
+reset role;
+update private.second_factor_attempts set last_success_at = now() - interval '120 seconds'
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+set local role authenticated;
+select is(public.second_factor_wait_seconds(), 0, 'Passé ce délai, aucune attente');
+reset role;
+update private.second_factor_attempts set last_success_at = now()
+  where factor_id = 'fa000000-0000-0000-0000-0000000000f1';
+select set_config('request.jwt.claims',
+  (select jsonb_build_object('sub', f.user_id, 'role', 'authenticated', 'aal', 'aal1')::text
+   from auth.mfa_factors f where f.id = 'fb000000-0000-0000-0000-0000000000f2'), true);
+set local role authenticated;
+select is(public.second_factor_wait_seconds(), 0, 'L''attente d''un compte ne se lit pas depuis un autre');
+reset role;
+select set_config('request.jwt.claims', '', true);
+select is(
+  (select count(*) from unnest(array['anon', 'service_role']) r
+   where has_function_privilege(r, 'public.second_factor_wait_seconds()', 'execute')),
+  0::bigint, 'Ni le visiteur ni le rôle serveur ne lisent cette attente'
+);
 select is(
   (select count(*) from generate_series(1, 10) as n
    where private.hook_mfa_verification_attempt('{"factor_id": "fb000000-0000-0000-0000-0000000000f2", "valid": false}') ->> 'decision' = 'continue'),

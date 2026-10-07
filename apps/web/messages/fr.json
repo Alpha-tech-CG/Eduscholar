@@ -50,7 +50,7 @@
       "emailConfirmed": "Votre adresse est confirmée. Connectez-vous avec votre mot de passe.",
       "passwordUpdated": "Votre mot de passe a été modifié et tous vos appareils ont été déconnectés. Connectez-vous avec le nouveau mot de passe.",
       "accountDeleted": "Votre compte a été supprimé.",
-      "codeRefused": "Par sécurité, vous avez été déconnecté de tous vos appareils : trop de codes erronés, ou code déjà utilisé. Reconnectez-vous et saisissez un nouveau code ; après dix codes erronés, patientez quinze minutes."
+      "codeRefused": "Par sécurité, vous avez été déconnecté de tous vos appareils : trop de codes erronés, ou deux codes saisis à moins d'une minute et demie d'intervalle. Reconnectez-vous et saisissez un nouveau code ; après dix codes erronés, patientez quinze minutes."
     },
     "forgotPassword": {
       "title": "Mot de passe oublié",
@@ -115,7 +115,8 @@
       "account_suspended": "Ce compte est suspendu : il ne peut pas recevoir de rôle.",
       "second_factor_missing": "Ce compte n'a pas activé la validation en deux étapes : il ne peut pas recevoir de rôle.",
       "user_not_found": "Aucun compte n'a cette adresse.",
-      "last_super_admin_recovery": "Vous êtes le dernier super-administrateur : la validation en deux étapes de ce compte ne se lève pas par un code de secours. Suivez la procédure d'administration à deux personnes."
+      "last_super_admin_recovery": "Vous êtes le dernier super-administrateur : la validation en deux étapes de ce compte ne se lève pas par un code de secours. Suivez la procédure d'administration à deux personnes.",
+      "code_wait": "Un code vient d'être accepté pour ce compte. Par sécurité, patientez une minute et demie, puis saisissez le code que votre application affiche à ce moment-là."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -932,7 +933,7 @@
     "noticeConfirmed": "Identité confirmée.",
     "noticeRoleGranted": "Le rôle est attribué.",
     "noticeRoleRevoked": "Le rôle est retiré.",
-    "noticeSuspended": "Le compte est suspendu.",
+    "noticeSuspended": "Le compte est suspendu : ses sessions sont fermées et il ne peut plus en ouvrir.",
     "noticeRestored": "Le compte est rétabli.",
     "truncated": "La liste est trop longue pour être affichée en entier : elle est incomplète. Utilisez la recherche par adresse.",
     "ruleRank": "Une suspension décidée par un super-administrateur ne se lève que par un super-administrateur."

@@ -12,6 +12,9 @@ export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/support/global-setup.ts",
   fullyParallel: true,
+  // Une connexion enchaîne plusieurs redirections : cinq secondes ne suffisent
+  // pas toujours quand les deux projets tournent ensemble.
+  expect: { timeout: 10_000 },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",

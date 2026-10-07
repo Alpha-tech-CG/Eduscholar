@@ -642,6 +642,9 @@ isOneToOne: false
               "has_verified_factor": boolean,"session_verified": boolean
             }[]
                            },
+"second_factor_wait_seconds":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "set_collection_item":
 { Args: { "collection_id": string,"present": boolean,"resource_id": string }; Returns: undefined
                            },

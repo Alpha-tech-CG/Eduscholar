@@ -131,6 +131,59 @@ select tests.claims('a0000000-0000-0000-0000-000000003601', null);
 select is((select count(*) from public.research_projects), 1::bigint, 'Un jeton sans identifiant de session n''est pas refusé par ce contrôle');
 reset role;
 
+-- Suspension : les sessions du compte sont fermées dans la même transaction.
+insert into auth.sessions (id, user_id) values
+  ('5e000000-0000-0000-0000-00000000b002', 'b0000000-0000-0000-0000-000000003602');
+insert into auth.refresh_tokens (token, user_id, session_id) values
+  ('jeton-de-test-3602', 'b0000000-0000-0000-0000-000000003602', '5e000000-0000-0000-0000-00000000b002');
+insert into private.account_status (user_id, status, reason, changed_by)
+values ('b0000000-0000-0000-0000-000000003602', 'suspended', 'Test', 'c0000000-0000-0000-0000-000000003603');
+select is(
+  (select count(*) from auth.sessions where user_id = 'b0000000-0000-0000-0000-000000003602'),
+  0::bigint, 'La suspension ferme toutes les sessions du compte'
+);
+select is(
+  (select count(*) from auth.refresh_tokens where token = 'jeton-de-test-3602'),
+  0::bigint, 'Et leurs jetons de rafraîchissement'
+);
+select is(
+  (select count(*) from auth.sessions where user_id = 'a0000000-0000-0000-0000-000000003601'),
+  2::bigint, 'Sans toucher aux sessions des autres comptes'
+);
+-- Suspendu, le compte n'ouvre plus de session — y compris sous le rôle du
+-- service d'authentification, qui est celui qui les crée.
+select throws_ok(
+  $$ insert into auth.sessions (id, user_id) values ('5e000000-0000-0000-0000-00000000b009', 'b0000000-0000-0000-0000-000000003602') $$,
+  '42501', 'account_suspended', 'Un compte suspendu n''ouvre plus de session'
+);
+select is(
+  has_function_privilege('supabase_auth_admin', 'private.refuse_session_when_suspended()', 'execute'),
+  true, 'Le service d''authentification, qui crée les sessions, exécute ce contrôle'
+);
+select lives_ok(
+  $$ insert into auth.sessions (id, user_id) values ('5e000000-0000-0000-0000-00000000a009', 'a0000000-0000-0000-0000-000000003601') $$,
+  'Les sessions des autres comptes s''ouvrent toujours'
+);
+delete from auth.sessions where id = '5e000000-0000-0000-0000-00000000a009';
+
+-- Rétablir ne ferme rien ; suspendre à nouveau ferme la session ouverte entre-temps.
+update private.account_status set status = 'active', changed_by = 'c0000000-0000-0000-0000-000000003603'
+  where user_id = 'b0000000-0000-0000-0000-000000003602';
+insert into auth.sessions (id, user_id) values
+  ('5e000000-0000-0000-0000-00000000b003', 'b0000000-0000-0000-0000-000000003602');
+update private.account_status set reason = 'Motif précisé', changed_by = 'c0000000-0000-0000-0000-000000003603'
+  where user_id = 'b0000000-0000-0000-0000-000000003602';
+select is(
+  (select count(*) from auth.sessions where user_id = 'b0000000-0000-0000-0000-000000003602'),
+  1::bigint, 'Un compte rétabli garde la session qu''il rouvre'
+);
+update private.account_status set status = 'suspended', changed_by = 'c0000000-0000-0000-0000-000000003603'
+  where user_id = 'b0000000-0000-0000-0000-000000003602';
+select is(
+  (select count(*) from auth.sessions where user_id = 'b0000000-0000-0000-0000-000000003602'),
+  0::bigint, 'Une nouvelle suspension la ferme'
+);
+
 -- Le contrôle n'est exécutable par aucun rôle de l'API.
 select is(
   (select count(*) from unnest(array['anon', 'authenticated', 'service_role']) r

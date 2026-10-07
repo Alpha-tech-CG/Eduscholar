@@ -629,7 +629,7 @@ administrateur de l'organisation 2, modérateur, administrateur de plateforme, c
 | Fichiers | Aucun accès direct à `storage.objects` ; pas d'URL sans contrôle ; fichier non analysé illisible par un tiers |
 | Appel direct | Chaque interdiction est vérifiée par un appel direct à l'API Supabase avec le jeton de l'acteur, pas seulement par l'application |
 | MFA | Un modérateur en session `aal1` n'a aucun droit de modération |
-| Suspension | Un compte suspendu n'a plus aucun droit avant l'expiration de son jeton |
+| Suspension | Un compte suspendu n'a plus aucun droit avant l'expiration de son jeton ; ses sessions sont fermées, il n'en ouvre plus, et un mauvais mot de passe reçoit la même réponse que pour tout autre compte |
 | Recherche | Aucun contenu privé ou non publié dans les résultats |
 | Existence | Même réponse pour « interdit » et « inexistant » |
 | Audit | Aucune modification ni suppression possible ; une ligne par action sensible |

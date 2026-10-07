@@ -13,7 +13,7 @@ import {
   waitForEmailLink,
   waitForEmailSubject,
 } from "./support/auth";
-import { freshTotp } from "./support/totp";
+import { forgetLastSuccess, freshTotp } from "./support/totp";
 
 const alert = (page: Page) => page.getByRole("main").getByRole("alert");
 const status = (page: Page) => page.getByRole("main").getByRole("status");
@@ -22,7 +22,7 @@ async function enableSecondFactor(
   page: Page,
   used: Set<string>,
   password: string,
-  { tryWrongPassword = false } = {},
+  { tryWrongPassword = false, keepDelay = false } = {},
 ): Promise<string> {
   await page.goto("/fr/account/security");
   await expect(page.getByTestId("second-factor-state")).toContainText("désactivée");
@@ -48,6 +48,8 @@ async function enableSecondFactor(
 
   await expect(page).toHaveURL(/\/fr\/account\/security\?notice=enabled/);
   await expect(page.getByTestId("second-factor-state")).toContainText("activée");
+  // Les parcours enchaînent sur d'autres codes sans attendre le délai entre deux codes.
+  if (!keepDelay) forgetLastSuccess(secret);
   return secret;
 }
 
@@ -100,6 +102,7 @@ test.describe("validation en deux étapes", () => {
 
     // Désactivation : un code saisi à l'instant est exigé.
     await page.goto("/fr/account/security");
+    forgetLastSuccess(secret);
     await page.getByLabel("Code à six chiffres").fill("000000");
     await page.getByRole("button", { name: "Désactiver la validation en deux étapes" }).click();
     await expect(alert(page)).toContainText("Code incorrect ou expiré");
@@ -114,6 +117,36 @@ test.describe("validation en deux étapes", () => {
     // Le titulaire est prévenu par courriel de l'activation puis de la désactivation.
     await waitForEmailSubject(email, "Validation en deux étapes activée");
     await waitForEmailSubject(email, "Validation en deux étapes désactivée");
+  });
+
+  test("deux codes de suite : l'attente est annoncée, sans déconnexion", async ({ page }) => {
+    const email = uniqueEmail("deux-codes");
+    const password = strongPassword();
+    const used = new Set<string>();
+    await createConfirmedUser(email, password);
+    await signInThroughForm(page, email, password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    const secret = await enableSecondFactor(page, used, password, { keepDelay: true });
+
+    // Un code vient d'être accepté. Un nouveau code, même juste, est retenu par
+    // l'application : envoyé, il serait refusé par la base, qui fermerait toutes
+    // les sessions du compte.
+    await page.goto("/fr/account/security");
+    await page.getByLabel("Code à six chiffres").fill(await freshTotp(secret, used, { keepDelay: true }));
+    await page.getByRole("button", { name: "Désactiver la validation en deux étapes" }).click();
+    await expect(alert(page)).toContainText("patientez une minute et demie");
+    await expect(page.getByTestId("second-factor-state")).toContainText("activée");
+
+    // La session est intacte.
+    await page.goto("/fr/account/profile");
+    await expect(page.getByTestId("account-email")).toHaveText(email);
+
+    // Le délai écoulé, un nouveau code est accepté.
+    forgetLastSuccess(secret);
+    await page.goto("/fr/account/security");
+    await page.getByLabel("Code à six chiffres").fill(await freshTotp(secret, used));
+    await page.getByRole("button", { name: "Désactiver la validation en deux étapes" }).click();
+    await expect(page).toHaveURL(/\/fr\/account\/security\?notice=disabled/);
   });
 
   test("un code invalide n'active rien", async ({ page }) => {
