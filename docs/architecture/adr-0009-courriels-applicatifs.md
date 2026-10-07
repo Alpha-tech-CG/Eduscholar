@@ -34,6 +34,14 @@ L'application envoie ces avis elle-même, par SMTP, avec la bibliothèque `nodem
   l'opération acceptée par la base sous la session de l'administrateur ; elle n'est ni
   affichée ni journalisée (`authorization-model.md` §7.5).
 
+## Complément du 7 octobre 2026 : l'invitation à un projet
+
+L'invitation à suivre un projet (E-01) est le seul message de l'application qui porte un
+lien : celui de la plateforme elle-même, avec un jeton à usage unique. Elle ne nomme que
+la personne qui invite, par l'adresse confirmée de son compte ; le titre du projet, que
+cette personne choisit librement, n'y figure pas, pour qu'il ne serve pas à faire passer
+un autre message. Vingt invitations par jour et par compte.
+
 ## Écarté
 
 - **Confirmation par courriel avant de lever le second facteur** : fermerait la voie de

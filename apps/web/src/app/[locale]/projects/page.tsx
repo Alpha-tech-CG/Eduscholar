@@ -33,6 +33,12 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/[locale
         </p>
       ) : null}
 
+      <p>
+        <Link href="/shared" className="underline underline-offset-4">
+          {t("sharing.toShared")}
+        </Link>
+      </p>
+
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("mine", { count: projects.length })}</h2>
         {projects.length === 0 ? (

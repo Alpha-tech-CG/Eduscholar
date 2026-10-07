@@ -1,7 +1,7 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { serverEnv } from "@/lib/env.server";
-import { buildNotice, type NoticeKind } from "./notices";
+import { buildInvitation, buildNotice, type NoticeKind, type NoticeMessage } from "./notices";
 import { transportOptions } from "./transport";
 
 // Envoi des avis de sécurité de l'application (ADR-0009).
@@ -12,11 +12,7 @@ import { transportOptions } from "./transport";
 
 const TIMEOUT_MS = 5000;
 
-/**
- * Envoie un avis au titulaire. Rend `false` si l'envoi n'est pas configuré ou
- * s'il échoue.
- */
-export async function sendAccountNotice(to: string | null | undefined, kind: NoticeKind): Promise<boolean> {
+async function send(to: string | null | undefined, message: NoticeMessage, label: string): Promise<boolean> {
   const env = serverEnv();
   if (!to || !env.SMTP_URL || !env.MAIL_FROM) return false;
 
@@ -27,11 +23,30 @@ export async function sendAccountNotice(to: string | null | undefined, kind: Not
       greetingTimeout: TIMEOUT_MS,
       socketTimeout: TIMEOUT_MS,
     });
-    const { subject, text, html } = buildNotice(kind);
-    await transport.sendMail({ from: `EduScholar <${env.MAIL_FROM}>`, to, subject, text, html });
+    await transport.sendMail({ from: `EduScholar <${env.MAIL_FROM}>`, to, ...message });
     return true;
   } catch {
-    console.error(`Avis « ${kind} » non envoyé : le service de courriel n'a pas accepté le message.`);
+    console.error(`${label} non envoyé : le service de courriel n'a pas accepté le message.`);
     return false;
   }
+}
+
+/**
+ * Envoie un avis au titulaire. Rend `false` si l'envoi n'est pas configuré ou
+ * s'il échoue.
+ */
+export function sendAccountNotice(to: string | null | undefined, kind: NoticeKind): Promise<boolean> {
+  return send(to, buildNotice(kind), `Avis « ${kind} »`);
+}
+
+/**
+ * Envoie l'invitation à suivre un projet. Le lien porte le jeton : il n'est
+ * consigné nulle part, pas même en cas d'échec.
+ */
+export function sendProjectInvitation(
+  to: string,
+  link: string,
+  inviterEmail: string | null,
+): Promise<boolean> {
+  return send(to, buildInvitation(link, inviterEmail), "Invitation");
 }

@@ -1,7 +1,8 @@
 // Courriels que l'application envoie elle-même au titulaire d'un compte
 // (ADR-0009) : des avis de sécurité que le service d'authentification n'émet
 // pas. Comme ses propres messages, ils sont bilingues et ne portent ni lien ni
-// code : un avis ne demande jamais de cliquer.
+// code : un avis ne demande jamais de cliquer. Seule l'invitation à suivre un
+// projet, en fin de fichier, porte un lien — celui de la plateforme.
 //
 // Aucune donnée du compte n'entre dans le texte : tout y est constant.
 
@@ -120,4 +121,52 @@ export function buildNotice(kind: NoticeKind): NoticeMessage {
 `;
 
   return { subject: `EduScholar — ${fr.subject} / ${en.subject}`, text, html };
+}
+
+/**
+ * L'invitation à suivre un projet : le seul message de l'application qui porte
+ * un lien, vers la plateforme elle-même. Le lien et l'adresse de la personne
+ * qui invite sont les seules données variables ; le titre du projet, choisi
+ * par elle, n'y figure pas — il ne servira pas à faire passer un autre message.
+ */
+export function buildInvitation(link: string, inviterEmail: string | null): NoticeMessage {
+  // L'adresse n'est reprise que si elle ne peut pas passer pour un lien ou un
+  // autre message : lettres, chiffres et ponctuation courante, sans barre
+  // oblique ni préfixe « www. ». Sinon, formule neutre.
+  const sober =
+    inviterEmail !== null &&
+    /^[a-z0-9._+-]{1,64}@[a-z0-9.-]{1,190}$/i.test(inviterEmail) &&
+    !/^www\./i.test(inviterEmail);
+  const fromFr = sober ? `${inviterEmail} vous invite` : "Vous êtes invité";
+  const fromEn = sober ? `${inviterEmail} is inviting you` : "You are invited";
+  const fr = [
+    `${fromFr} à suivre un projet de recherche sur EduScholar.`,
+    "Pour accepter, ouvrez le lien ci-dessous et connectez-vous avec cette adresse électronique. Le lien est valable sept jours et ne sert qu'une fois.",
+    "Si vous n'attendiez pas cette invitation, ignorez ce message : sans votre accord, rien n'est partagé avec vous et rien ne vous est demandé.",
+  ];
+  const en = [
+    `${fromEn} to follow a research project on EduScholar.`,
+    "To accept, open the link below and sign in with this email address. The link is valid for seven days and works only once.",
+    "If you were not expecting this invitation, ignore this message: without your agreement, nothing is shared with you and nothing is asked of you.",
+  ];
+
+  const text = ["EduScholar", "", "Bonjour,", ...fr, link, "", "----", "", "Hello,", ...en, link].join("\n");
+  const block = (lang: "fr" | "en", greeting: string, paragraphs: string[], label: string) =>
+    [
+      `<p lang="${lang}">${greeting}</p>`,
+      ...paragraphs.map((p) => `<p lang="${lang}">${escape(p)}</p>`),
+      `<p lang="${lang}"><a href="${escape(link)}">${label}</a></p>`,
+    ].join("\n    ");
+  const html = `<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+    ${block("fr", "Bonjour,", fr, "Voir l'invitation")}
+    <hr />
+    ${block("en", "Hello,", en, "See the invitation")}
+  </body>
+</html>
+`;
+
+  return { subject: "EduScholar — Invitation à suivre un projet / Invitation to follow a project", text, html };
 }

@@ -146,6 +146,8 @@ Détail dans `docs/security/initial-audit.md`.
   D-28 et D-29).
 - Avis de sécurité par courriel envoyés par l'application (ADR-0009) : code de secours
   utilisé, codes générés, compte suspendu ou rétabli.
+- Phase 4 commencée : un projet se partage avec un encadreur, par invitation à son
+  adresse ; il le lit sans rien y modifier (E-01).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

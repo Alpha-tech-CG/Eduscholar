@@ -874,6 +874,12 @@
       "loadFailed": "The document could not be read in full. It is not shown, so that an incomplete one is not displayed. Try again in a moment.",
       "rateLimited": "The document was displayed too many times in a short while. Try again in a few minutes.",
       "tooLarge": "This document has too many lines to be displayed or exported in one piece. Group very short lines into paragraphs."
+    },
+    "sharing": {
+      "heading": "Sharing",
+      "intro": "Invite your supervisor to read your project. Without an invitation, only you can read it.",
+      "manage": "Manage sharing",
+      "toShared": "Projects shared with me"
     }
   },
   "DataExport": {
@@ -940,5 +946,74 @@
     "noticeRestored": "The account has been restored.",
     "truncated": "The list is too long to be shown in full: it is incomplete. Use the search by address.",
     "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator."
+  },
+  "Sharing": {
+    "title": "Project sharing",
+    "intro": "Project: {project}. The people you invite read your project and your text; they change nothing, and your reading notes stay private.",
+    "backToProject": "Back to the project",
+    "members": "{count, plural, =0 {Nobody follows this project} one {# person follows this project} other {# people follow this project}}",
+    "membersEmpty": "Your project is private: only you can read it.",
+    "invitations": "{count, plural, =0 {No pending invitation} one {# pending invitation} other {# pending invitations}}",
+    "inviteHeading": "Invite someone",
+    "inviteIntro": "They receive an email with a link valid for seven days. They must sign in with this address, confirmed, to accept: the link alone gives no access.",
+    "invite": "Send the invitation",
+    "revoke": "Cancel the invitation",
+    "remove": "Remove this person",
+    "pending": "One moment…",
+    "choose": "Choose…",
+    "separator": " · ",
+    "since": "since {date}",
+    "expires": "expires on {date}",
+    "dueOn": "due on {date}",
+    "unknownMember": "Address not available",
+    "fields": {
+      "email": "The person's email address",
+      "emailHint": "For example, your supervisor's.",
+      "role": "What they will be able to do"
+    },
+    "roles": {
+      "supervisor": "Supervision",
+      "viewer": "Read only"
+    },
+    "roleChoices": {
+      "supervisor": "Supervise: read the project (comments and decisions to come)",
+      "viewer": "Read only"
+    },
+    "roleHelp": {
+      "supervisor": "You will read the project and its text. You will not be able to change anything.",
+      "viewer": "You will read the project and its text. You will not be able to change anything."
+    },
+    "noticeInvited": "The invitation has been sent.",
+    "noticeInvitedNotSent": "The invitation was created, but the email could not be sent. Cancel it, then try again in a moment.",
+    "noticeRevoked": "The invitation has been cancelled.",
+    "noticeRemoved": "This person no longer follows your project.",
+    "noticeJoined": "You now follow this project.",
+    "noticeLeft": "You no longer follow this project.",
+    "invitationTitle": "Invitation to follow a project",
+    "invitationIntro": "{owner} invites you to follow the project “{project}” ({role}).",
+    "invitationInvalid": "This invitation is not valid for the account {email}: it may have expired, been cancelled or already been used, or it is addressed to another address. Ask the person who invited you for a new one.",
+    "accept": "Accept the invitation",
+    "toShared": "Projects shared with me",
+    "toMine": "My projects",
+    "sharedTitle": "Projects shared with me",
+    "sharedIntro": "Projects others have invited you to follow. You read them; you change nothing.",
+    "sharedEmpty": "No project is shared with you.",
+    "sharedProjectTitle": "Shared project",
+    "loadFailed": "The list could not be loaded. Try again in a moment.",
+    "readOnly": "Project shared with you ({role}): read only.",
+    "backToShared": "Back to shared projects",
+    "facts": {
+      "problemStatement": "Problem statement",
+      "mainQuestion": "Main question",
+      "generalObjective": "General objective",
+      "methodology": "Methodology"
+    },
+    "documentEmpty": "No section has been written yet.",
+    "tooLarge": "This document is too large to display.",
+    "rateLimited": "Too many reads in a short time. Try again in a few minutes.",
+    "leaveHeading": "Stop following this project",
+    "leaveIntro": "You will no longer be able to read it. Only its owner can invite you again.",
+    "leaveConfirm": "I no longer want to follow this project.",
+    "leave": "Leave this project"
   }
 }

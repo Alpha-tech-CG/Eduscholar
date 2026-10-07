@@ -306,6 +306,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   avis de suspension envoyé à une adresse non confirmée. Accepté : un administrateur
   qui alterne suspension et rétablissement peut envoyer jusqu'à soixante avis par heure
   à une même boîte. Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Partage d'un projet avec un encadreur (E-01) relu par l'agent
+  sécurité : aucun constat critique ou élevé, le cloisonnement et l'invitation sont
+  conformes au modèle ; 4 moyens et 7 faibles. Corrigés : un membre retiré revenait par
+  une invitation restée en attente ; le courriel d'invitation pouvait servir à harceler
+  une adresse (trois par jour au plus, tous expéditeurs confondus) ; l'adresse de la
+  personne qui invite, si elle est façonnée, n'est plus reprise dans le courriel ;
+  lecture du document sans débit en base ; invitations closes jamais effacées ; journal
+  du retrait incomplet ; tests qui annonçaient plus qu'ils ne prouvaient. Acceptés : le
+  propriétaire voit l'adresse actuelle du compte d'un membre ; la réponse « courriel non
+  parti » peut refléter le refus d'une boîte par le relais. Ces corrections n'ont pas
+  fait l'objet d'une seconde revue.
 
 ## Suivi
 

@@ -874,6 +874,12 @@
       "loadFailed": "Le document n'a pas pu être lu en entier. Il n'est pas affiché, pour ne pas en montrer un incomplet. Réessayez dans un instant.",
       "rateLimited": "Trop d'affichages du document en peu de temps. Réessayez dans quelques minutes.",
       "tooLarge": "Ce document compte trop de lignes pour être affiché ou exporté d'un seul tenant. Regroupez les lignes très courtes en paragraphes."
+    },
+    "sharing": {
+      "heading": "Partage",
+      "intro": "Invitez votre encadreur à lire votre projet. Sans invitation, vous seul le lisez.",
+      "manage": "Gérer le partage",
+      "toShared": "Projets partagés avec moi"
     }
   },
   "DataExport": {
@@ -940,5 +946,74 @@
     "noticeRestored": "Le compte est rétabli.",
     "truncated": "La liste est trop longue pour être affichée en entier : elle est incomplète. Utilisez la recherche par adresse.",
     "ruleRank": "Une suspension décidée par un super-administrateur ne se lève que par un super-administrateur."
+  },
+  "Sharing": {
+    "title": "Partage du projet",
+    "intro": "Projet : {project}. Les personnes que vous invitez lisent votre projet et votre texte ; elles ne modifient rien, et vos fiches de lecture restent privées.",
+    "backToProject": "Retour au projet",
+    "members": "{count, plural, =0 {Personne ne suit ce projet} one {# personne suit ce projet} other {# personnes suivent ce projet}}",
+    "membersEmpty": "Votre projet est privé : vous seul le lisez.",
+    "invitations": "{count, plural, =0 {Aucune invitation en attente} one {# invitation en attente} other {# invitations en attente}}",
+    "inviteHeading": "Inviter une personne",
+    "inviteIntro": "Elle reçoit un courriel avec un lien valable sept jours. Elle devra se connecter avec cette adresse, confirmée, pour accepter : le lien seul ne donne aucun accès.",
+    "invite": "Envoyer l'invitation",
+    "revoke": "Annuler l'invitation",
+    "remove": "Retirer cette personne",
+    "pending": "Un instant…",
+    "choose": "Choisir…",
+    "separator": " · ",
+    "since": "depuis le {date}",
+    "expires": "expire le {date}",
+    "dueOn": "échéance le {date}",
+    "unknownMember": "Adresse non disponible",
+    "fields": {
+      "email": "Adresse électronique de la personne",
+      "emailHint": "Par exemple celle de votre encadreur.",
+      "role": "Ce qu'elle pourra faire"
+    },
+    "roles": {
+      "supervisor": "Encadrement",
+      "viewer": "Lecture seule"
+    },
+    "roleChoices": {
+      "supervisor": "Encadrer : lire le projet (commentaires et décisions à venir)",
+      "viewer": "Lire seulement"
+    },
+    "roleHelp": {
+      "supervisor": "Vous lirez le projet et son texte. Vous ne pourrez rien y modifier.",
+      "viewer": "Vous lirez le projet et son texte. Vous ne pourrez rien y modifier."
+    },
+    "noticeInvited": "L'invitation est envoyée.",
+    "noticeInvitedNotSent": "L'invitation est créée, mais le courriel n'a pas pu partir. Annulez-la puis recommencez dans un instant.",
+    "noticeRevoked": "L'invitation est annulée.",
+    "noticeRemoved": "Cette personne ne suit plus votre projet.",
+    "noticeJoined": "Vous suivez maintenant ce projet.",
+    "noticeLeft": "Vous ne suivez plus ce projet.",
+    "invitationTitle": "Invitation à suivre un projet",
+    "invitationIntro": "{owner} vous invite à suivre le projet « {project} » ({role}).",
+    "invitationInvalid": "Cette invitation n'est pas valable pour le compte {email} : elle a peut-être expiré, été annulée ou déjà utilisée, ou elle est adressée à une autre adresse. Demandez-en une nouvelle à la personne qui vous a invité.",
+    "accept": "Accepter l'invitation",
+    "toShared": "Projets partagés avec moi",
+    "toMine": "Mes projets",
+    "sharedTitle": "Projets partagés avec moi",
+    "sharedIntro": "Les projets que d'autres vous ont invité à suivre. Vous les lisez ; vous n'y modifiez rien.",
+    "sharedEmpty": "Aucun projet n'est partagé avec vous.",
+    "sharedProjectTitle": "Projet partagé",
+    "loadFailed": "La liste n'a pas pu être chargée. Réessayez dans un instant.",
+    "readOnly": "Projet partagé avec vous ({role}) : lecture seule.",
+    "backToShared": "Retour aux projets partagés",
+    "facts": {
+      "problemStatement": "Problématique",
+      "mainQuestion": "Question principale",
+      "generalObjective": "Objectif général",
+      "methodology": "Méthodologie"
+    },
+    "documentEmpty": "Aucune section n'a encore été rédigée.",
+    "tooLarge": "Ce document est trop volumineux pour être affiché.",
+    "rateLimited": "Trop de lectures en peu de temps. Réessayez dans quelques minutes.",
+    "leaveHeading": "Ne plus suivre ce projet",
+    "leaveIntro": "Vous ne pourrez plus le lire. Seul son propriétaire pourra vous réinviter.",
+    "leaveConfirm": "Je ne veux plus suivre ce projet.",
+    "leave": "Quitter ce projet"
   }
 }

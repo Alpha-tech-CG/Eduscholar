@@ -47,6 +47,21 @@ Phase 3, un projet n'a d'autre lecteur que son propriétaire.
 | C-04 | Plan du mémoire : chapitres et sections rédigés en texte, citations liées aux sources (§6.9, version simple) | C-02 | fait — plan ordonné sur trois niveaux, texte simple, sources citées par section avec leurs pages, protection contre l'écrasement ; sans enregistrement automatique ni mise en forme riche |
 | C-05 | Export du projet (document imprimable en PDF, DOCX) ; export des données personnelles, bibliothèque comprise (D-22) | C-03, C-04 | fait — page imprimable (PDF par le navigateur), DOCX et Markdown sans dépendance, copie de ses données en JSON avec mot de passe redemandé et trace |
 
+## Phase 4 — Encadrement
+
+Découpée le 7 octobre 2026 d'après le cahier §6.11 et le modèle d'autorisation §5.3 et
+§5.4. Les tables d'origine du projet gardent leurs politiques (propriétaire seul) : un
+membre lit par des fonctions nommées qui revérifient son appartenance à chaque appel.
+
+| ID | Tâche | Dépend de | Statut |
+|---|---|---|---|
+| E-01 | Membres d'un projet et invitation par adresse : inviter, accepter sous l'adresse confirmée, lire le projet en lecture seule, retirer, quitter | C-04, D-27 | fait — accès complet seulement ; jeton à usage unique dont la base ne garde que l'empreinte ; courriel d'invitation |
+| E-02 | Commentaires par section : fil, réponses, résolution (lignes 14 à 17 de la matrice) | E-01 | à faire |
+| E-03 | Versions : instantané du document, soumission, décision de l'encadreur (acceptée, refusée, à corriger), historique immuable (lignes 11 à 13) | E-01 | à faire |
+| E-04 | Tâches et échéances (lignes 18 à 20) | E-01 | à faire |
+| E-05 | Notifications internes et par courriel : commentaire, décision, échéance proche (§6.12) | E-02, E-03, E-04 | à faire |
+| E-06 | Portée limitée à certaines sections ; invitation par lien avec confirmation du propriétaire | E-02 | à faire |
+
 ## Dette de sécurité à solder avant la production
 
 Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
@@ -88,7 +103,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 
 - Phase 2 — Bibliothèque : notes, import DOI/BibTeX/RIS, dédoublonnage, vérification des liens.
 - Phase 3 — Atelier de recherche : projet de mémoire, fiches de lecture, bibliographie, export.
-- Phase 4 — Encadrement : invitation, commentaires, versions, validations.
+- Phase 4 — Encadrement : découpée ci-dessus (E-01 à E-06).
 - Phase 5 — Internationalisation et mobile.
 - Phase 6 — Intelligence documentaire.
 

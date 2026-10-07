@@ -279,6 +279,25 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"project_invitations": {
+                  Row: {
+                    "accepted_by": string | null,"created_at": string,"created_by": string | null,"email": string,"expires_at": string,"full_access": boolean,"id": string,"project_id": string,"role": string,"status": string,"token_hash": string
+                  }
+                  Insert: {
+                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email": string,"expires_at": string,"full_access"?: boolean,"id"?: string,"project_id": string,"role": string,"status"?: string,"token_hash": string
+                  }
+                  Update: {
+                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email"?: string,"expires_at"?: string,"full_access"?: boolean,"id"?: string,"project_id"?: string,"role"?: string,"status"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_invitations_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"project_sources": {
                   Row: {
                     "accessed_on": string | null,"authors": (string)[],"container_title": string | null,"created_at": string,"doi": string | null,"id": string,"issue": string | null,"pages": string | null,"project_id": string,"publication_year": number | null,"publisher": string | null,"resource_id": string | null,"source_type": string,"title": string,"updated_at": string,"url": string | null,"volume": string | null
@@ -301,6 +320,25 @@ isOneToOne: false
       columns: ["resource_id"]
 isOneToOne: false
       referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"research_project_members": {
+                  Row: {
+                    "created_at": string,"full_access": boolean,"invited_by": string | null,"project_id": string,"role": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"full_access"?: boolean,"invited_by"?: string | null,"project_id": string,"role": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"full_access"?: boolean,"invited_by"?: string | null,"project_id"?: string,"role"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "research_project_members_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
       referencedColumns: ["id"]
     }
                   ]
@@ -530,7 +568,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "account_deletion_check":
+            "accept_project_invitation":
+{ Args: { "token": string }; Returns: string
+                           },
+"account_deletion_check":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "add_project_source":
@@ -599,8 +640,17 @@ isOneToOne: false
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
                            },
+"invitation_preview":
+{ Args: { "token": string }; Returns: Json
+                           },
+"invite_project_member":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
 "last_recovery_code_use":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"leave_project":
+{ Args: { "project_id": string }; Returns: undefined
                            },
 "log_personal_data_export":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -631,6 +681,9 @@ isOneToOne: false
 "my_submission_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
+"project_sharing":
+{ Args: { "project_id": string }; Returns: Json
+                           },
 "purge_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -642,11 +695,17 @@ isOneToOne: false
 "redeem_recovery_code":
 { Args: { "code": string }; Returns: boolean
                            },
+"remove_project_member":
+{ Args: { "project_id": string,"user_id": string }; Returns: undefined
+                           },
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
                            },
 "resolve_report":
 { Args: { "note"?: string,"report_id": string,"status": string }; Returns: undefined
+                           },
+"revoke_project_invitation":
+{ Args: { "invitation_id": string }; Returns: undefined
                            },
 "save_literature_note":
 { Args: { "payload": Json,"source_id": string }; Returns: undefined
@@ -667,6 +726,14 @@ isOneToOne: false
                            },
 "set_section_citation":
 { Args: { "pages"?: string,"present": boolean,"section_id": string,"source_id": string }; Returns: undefined
+                           },
+"shared_project_document":
+{ Args: { "project_id": string }; Returns: Json
+                           },
+"shared_projects":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "due_date": string,"id": string,"owner_email": string,"role": string,"status": string,"title": string,"updated_at": string
+            }[]
                            },
 "submit_resource":
 { Args: { "payload": Json }; Returns: string

@@ -79,6 +79,9 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006004100_personal_export_complete.sql` | Copie des données personnelles : événements du compte et projets supprimés en attente de purge |
 | `20261006004200_connector_gate.sql` | Sources externes : pause demandée par la source et plafond journalier, tenus en base |
 | `20261006004300_audit_retention.sql` | Conservation du journal d'audit : mécanisme dans la purge nocturne, inactif tant qu'aucune durée n'est posée |
+| `20261006004400_review_batch_hardening.sql` | Corrections de revue : liste fermée des événements du compte, exception de purge limitée au journal d'audit, réglage de conservation borné |
+| `20261006004500_project_sharing.sql` | Partage d'un projet : membres, invitations par adresse, lecture par un membre |
+| `20261006004600_project_sharing_hardening.sql` | Corrections de revue du partage : invitations annulées au retrait, plafond par destinataire, débit de lecture, purge des invitations closes |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -467,6 +470,38 @@ d'un jour sont purgées au fil de l'eau.
 
 `public.consume_rate_limit(clé, limite, fenêtre)` compte une tentative et dit si elle est
 autorisée. Elle est `security invoker` et n'est exécutable que par `service_role`.
+
+### `public.research_project_members` et `public.project_invitations`
+
+Partage d'un projet (E-01). `research_project_members` : `project_id`, `user_id`, `role`
+(`supervisor` ou `viewer` — il n'existe pas de ligne propriétaire), `full_access`,
+`invited_by`. `project_invitations` : `project_id`, `email` (en minuscules), `role`,
+`token_hash` (empreinte SHA-256 d'un jeton de 256 bits, qui n'est jamais conservé),
+`expires_at` (sept jours), `status`, `accepted_by`.
+
+- aucune lecture ni écriture directe, pour aucun rôle de l'API : tout passe par des
+  fonctions ;
+- propriétaire : `invite_project_member` (rend le jeton une seule fois, que l'application
+  envoie par courriel), `revoke_project_invitation`, `remove_project_member`,
+  `project_sharing` ;
+- personne invitée : `invitation_preview` et `accept_project_invitation` ne répondent que
+  si l'appelant est connecté sous l'adresse invitée, confirmée ; jeton inconnu, expiré,
+  révoqué, déjà utilisé ou destiné à quelqu'un d'autre donnent la même réponse vide ;
+- membre : `shared_projects`, `shared_project_document` (fiche, sections, sources,
+  citations ; jamais les fiches de lecture), `leave_project`. Les tables du projet lui
+  restent fermées : il ne lit que par ces fonctions, qui revérifient son appartenance —
+  un retrait prend effet à la requête suivante ;
+- plafonds : 20 invitations par jour et par compte, 3 par jour vers une même adresse
+  tous expéditeurs confondus (compteur sur l'empreinte de l'adresse), 10 en attente et
+  10 membres par projet ; 120 lectures du document par quart d'heure et par membre ;
+  verrou consultatif `project_sharing:<projet>` ;
+- retirer un membre annule les invitations encore en attente à son adresse ;
+- les invitations closes ou expirées depuis trente jours sont effacées chaque nuit
+  (tâche `eduscholar-invitations-purge`) : elles portent l'adresse de tiers ;
+- écarts voulus, plus stricts que la matrice du modèle d'autorisation : un membre ne lit
+  ni les fiches de lecture, ni la liste des autres membres ;
+- l'ouverture et la fermeture d'un partage sont inscrites au journal, au compte du
+  propriétaire (`project.shared`, `project.unshared`).
 
 ## Fonctions du schéma `private`
 

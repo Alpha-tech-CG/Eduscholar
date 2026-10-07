@@ -93,12 +93,22 @@ export async function waitForEmailLink(
   throw new Error(`Aucun courriel de type ${type} reçu pour ${email}`);
 }
 
+/** Attend l'invitation à suivre un projet, et rend son contenu et le chemin de son lien. */
+export async function waitForInvitation(email: string, nth = 0): Promise<{ html: string; path: string }> {
+  const html = await waitForEmailHtml(email, "Invitation à suivre un projet", nth);
+  const match = /href="[^"]*(\/[a-z]{2}\/invitations\/[0-9a-f]{64})"/.exec(html);
+  if (!match?.[1]) throw new Error(`Invitation sans lien pour ${email}`);
+  return { html, path: match[1] };
+}
+
 /** Attend un courriel dont l'objet contient le texte donné, et rend son contenu HTML. */
-export async function waitForEmailHtml(email: string, text: string): Promise<string> {
+export async function waitForEmailHtml(email: string, text: string, nth = 0): Promise<string> {
   const deadline = Date.now() + 20_000;
 
   while (Date.now() < deadline) {
-    const summary = (await messagesFor(email)).find(({ Subject }) => Subject.includes(text));
+    // Les messages sont rendus du plus récent au plus ancien : `nth` compte depuis le plus ancien.
+    const matching = (await messagesFor(email)).filter(({ Subject }) => Subject.includes(text)).reverse();
+    const summary = matching[nth];
     if (summary) {
       const message = await fetch(`${mailboxUrl}/api/v1/message/${summary.ID}`);
       const { HTML } = (await message.json()) as { HTML: string };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNotice, NOTICE_KINDS } from "@/lib/mail/notices";
+import { buildInvitation, buildNotice, NOTICE_KINDS } from "@/lib/mail/notices";
 import { transportOptions } from "@/lib/mail/transport";
 
 describe("avis de sécurité envoyés par l'application", () => {
@@ -44,5 +44,39 @@ describe("connexion au serveur d'envoi", () => {
 
   it("ne porte d'identifiants que s'ils sont fournis", () => {
     expect(transportOptions("smtp://127.0.0.1:1025").auth).toBeUndefined();
+  });
+});
+
+describe("invitation à suivre un projet", () => {
+  const link = `https://plateforme.exemple.invalid/fr/invitations/${"ab".repeat(32)}`;
+
+  it("porte un seul lien, celui de la plateforme, dans les deux langues", () => {
+    const { subject, text, html } = buildInvitation(link, "etudiante@exemple.invalid");
+    expect(subject).toContain("Invitation");
+    expect(text.split(link).length - 1).toBe(2);
+    expect(html.match(/href="/g)).toHaveLength(2);
+    expect(html.split(`href="${link}"`).length - 1).toBe(2);
+    expect(html).toContain("etudiante@exemple.invalid vous invite");
+    expect(html).not.toMatch(/<script|<img/i);
+  });
+
+  it("ne reprend pas une adresse façonnée pour passer pour un lien ou un autre message", () => {
+    for (const forged of [
+      'a"><b>x</b>@exemple.invalid',
+      "www.exemple.invalid/eduscholar@exemple.invalid",
+      "www.piege@exemple.invalid",
+      "cliquez ici@exemple.invalid",
+      "a%2Fb@exemple.invalid",
+    ]) {
+      const { html, text } = buildInvitation(link, forged);
+      expect(html, forged).not.toContain(forged.split("@")[0]);
+      expect(text, forged).toContain("Vous êtes invité");
+    }
+  });
+
+  it("se passe de l'adresse de la personne qui invite", () => {
+    const { text } = buildInvitation(link, null);
+    expect(text).toContain("Vous êtes invité");
+    expect(text).toContain("You are invited");
   });
 });
