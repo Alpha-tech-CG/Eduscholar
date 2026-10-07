@@ -208,7 +208,10 @@ test.describe("export d'un projet", () => {
     expect(data.research.sources).toHaveLength(2);
     expect(data.research.sections).toHaveLength(3);
     expect(data.research.section_citations).toEqual([expect.objectContaining({ pages: "p. 12-14" })]);
-    expect(data.not_included).toContain("deleted_projects_pending_purge");
+    expect(data.not_included).not.toContain("deleted_projects_pending_purge");
+    expect(data.version).toBe(2);
+    expect(Array.isArray(data.research.deleted_projects_pending_purge)).toBe(true);
+    expect(Array.isArray(data.account_events)).toBe(true);
     // Rien d'interne ni d'autrui : pas de colonne de propriété, pas de note de modération.
     const serialized = JSON.stringify(data);
     expect(serialized).not.toContain("owner_id");

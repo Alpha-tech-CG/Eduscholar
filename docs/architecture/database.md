@@ -76,6 +76,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006003800_second_factor_replay.sql` | Un code accepté interdit tout second code pendant 60 à 90 s ; attente lisible par le titulaire |
 | `20261006003900_suspension_closes_sessions.sql` | La suspension d'un compte ferme ses sessions |
 | `20261006004000_suspended_no_session.sql` | Un compte suspendu n'ouvre plus de session |
+| `20261006004100_personal_export_complete.sql` | Copie des données personnelles : événements du compte et projets supprimés en attente de purge |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -433,8 +434,10 @@ produit ; si une lecture échoue, rien n'est remis plutôt qu'un document incomp
 La copie des données personnelles (`/account/export`) est un fichier JSON au format
 `eduscholar-personal-data`, version 1 : profil, bibliothèque, projets avec sources, fiches
 de lecture, sections et citations, propositions au catalogue avec leur historique,
-signalements. Elle n'inclut ni les projets supprimés en attente de purge, ni le journal de
-sécurité du compte, ce que le fichier indique lui-même (`not_included`). Le mot de passe
+signalements, projets supprimés en attente de purge (`my_deleted_projects`) et événements
+du journal qui concernent le compte (`my_account_events` : date et nature, jamais
+l'auteur ni le détail). Ce qu'elle n'inclut pas est indiqué dans le fichier lui-même
+(`not_included`). Le mot de passe
 est redemandé et chaque copie laisse un événement `account.data_exported`.
 
 ### `private.rate_limit_buckets`

@@ -115,6 +115,56 @@ select throws_ok(
 );
 reset role;
 
+-- Événements du compte : ceux de l'appelant seulement, sans auteur ni détail.
+select tests.login('a0000000-0000-0000-0000-0000000027f1');
+select cmp_ok(
+  (select count(*) from public.my_account_events() where action = 'account.data_exported'), '>=', 1::bigint,
+  'A retrouve la trace de son propre export'
+);
+select is(
+  (select count(*) from public.my_account_events() e
+   where not exists (
+     select 1 from public.audit_logs a
+     where a.subject_user_id = 'a0000000-0000-0000-0000-0000000027f1'
+       and a.action = e.action and a.occurred_at = e.occurred_at)),
+  0::bigint, 'Rien qui ne concerne un autre compte'
+);
+reset role;
+select tests.login('b0000000-0000-0000-0000-0000000027f2');
+select is(
+  (select count(*) from public.my_account_events() where action = 'account.data_exported'),
+  0::bigint, 'B n''y lit pas l''export de A'
+);
+reset role;
+
+-- Projets supprimés en attente de purge : rendus à leur propriétaire seul.
+insert into public.research_projects (id, owner_id, title, deleted_at) values
+  ('27f00000-0000-0000-0000-0000000000d1', 'a0000000-0000-0000-0000-0000000027f1', 'Projet supprimé de A', now() - interval '2 days');
+insert into public.project_sources (id, project_id, title) values
+  ('27f00000-0000-0000-0000-0000000000d2', '27f00000-0000-0000-0000-0000000000d1', 'Source du projet supprimé');
+insert into public.thesis_sections (project_id, position, title, body) values
+  ('27f00000-0000-0000-0000-0000000000d1', 1, 'Section du projet supprimé', 'Texte encore à moi.');
+select tests.login('a0000000-0000-0000-0000-0000000027f1');
+select is(
+  (select count(*) from public.research_projects where id = '27f00000-0000-0000-0000-0000000000d1'),
+  0::bigint, 'Un projet supprimé n''est plus lisible par la voie ordinaire'
+);
+select is(
+  (select count(*) from public.my_deleted_projects() p where p ->> 'title' = 'Projet supprimé de A'
+     and p -> 'sources' -> 0 ->> 'title' = 'Source du projet supprimé'
+     and p -> 'sections' -> 0 ->> 'body' = 'Texte encore à moi.'
+     and not p ? 'owner_id'),
+  1::bigint, 'Mais il figure dans la copie de son propriétaire, avec ses sources et son texte'
+);
+reset role;
+select tests.login('b0000000-0000-0000-0000-0000000027f2');
+select is((select count(*) from public.my_deleted_projects()), 0::bigint, 'Pas dans celle d''un autre');
+reset role;
+select tests.login('e0000000-0000-0000-0000-0000000027f5');
+select is((select count(*) from public.my_deleted_projects()), 0::bigint, 'Un compte suspendu ne lit rien');
+select is((select count(*) from public.my_account_events()), 0::bigint, 'Ni ses événements');
+reset role;
+
 -- Compte à second facteur en session aal1 : aucun droit.
 select tests.login('d0000000-0000-0000-0000-0000000027f4', 'aal1');
 select throws_ok(

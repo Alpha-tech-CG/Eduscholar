@@ -611,6 +611,14 @@ isOneToOne: false
 "must_keep_second_factor":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"my_account_events":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "action": string,"category": string,"occurred_at": string
+            }[]
+                           },
+"my_deleted_projects":
+{ Args: Record<PropertyKey, never>; Returns: Json[]
+                           },
 "my_report_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },

@@ -65,6 +65,19 @@ async function readByIds(
   return rows;
 }
 
+/** Lit, page par page, ce qu'une fonction de la base rend pour l'appelant. */
+async function ownRows(supabase: Client, fn: "my_account_events" | "my_deleted_projects"): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  for (let from = 0; ; from += PAGE) {
+    if (from >= MAX_ROWS) throw new ExportError(fn);
+    const { data, error } = await supabase.rpc(fn).range(from, from + PAGE - 1);
+    if (error) throw new ExportError(fn);
+    rows.push(...((data ?? []) as unknown[]));
+    if ((data ?? []).length < PAGE) break;
+  }
+  return rows;
+}
+
 async function ownIds(supabase: Client, fn: "my_submission_ids" | "my_report_ids"): Promise<string[]> {
   const ids: string[] = [];
   for (let from = 0; ; from += PAGE) {
@@ -160,21 +173,33 @@ export async function buildPersonalDataExport(
       ["id"], "id", await ownIds(supabase, "my_report_ids"),
     );
 
+    // Projets supprimés en attente de purge, et événements du journal qui
+    // concernent le compte : la base les rend elle-même, pour l'appelant seul.
+    const deletedProjects = await ownRows(supabase, "my_deleted_projects");
+    const accountEvents = await ownRows(supabase, "my_account_events");
+
     return {
       format: "eduscholar-personal-data",
-      version: 1,
+      version: 2,
       exported_at: new Date().toISOString(),
       account: { id: user.id, email: user.email ?? null, created_at: user.created_at ?? null },
       profile: profile[0] ?? null,
       public_profile: publicProfile[0] ?? null,
       platform_roles: roles,
       library: { favorites, collections, collection_items: collectionItems },
-      research: { projects, sources, literature_notes: notes, sections, section_citations: citations },
+      research: {
+        projects,
+        sources,
+        literature_notes: notes,
+        sections,
+        section_citations: citations,
+        deleted_projects_pending_purge: deletedProjects,
+      },
+      // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
+      account_events: accountEvents,
       catalogue: { submissions, submission_history: submissionHistory, reports },
       // Ce que cette copie ne contient pas, pour qu'elle ne passe pas pour exhaustive.
       not_included: [
-        "deleted_projects_pending_purge",
-        "security_event_log",
         "rights_declaration_and_comments_sent_with_submissions",
         "organization_memberships",
       ],
