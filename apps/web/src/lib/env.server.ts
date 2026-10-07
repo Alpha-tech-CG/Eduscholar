@@ -27,8 +27,9 @@ const schema = z.object({
   CROSSREF_MAILTO: z.email().optional(),
   // Avis de sécurité envoyés par l'application (ADR-0009). Sans ces deux
   // valeurs, aucun avis ne part ; rien d'autre n'en dépend.
-  SMTP_URL: z.string().regex(/^smtps?:\/\/\S+$/).optional(),
-  MAIL_FROM: z.email().optional(),
+  // Une valeur mal formée est ignorée : l'application ne s'arrête pas pour elle.
+  SMTP_URL: z.string().regex(/^smtps?:\/\/\S+$/).optional().catch(undefined),
+  MAIL_FROM: z.email().optional().catch(undefined),
 });
 
 export type ServerEnv = z.infer<typeof schema>;

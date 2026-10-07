@@ -47,7 +47,10 @@ export async function importResourceByDoi(
     return { status: "error", error: "validation", values };
   }
 
-  if ((await checkAttempt("doi-import", user.id)) !== "allowed") {
+  if (
+    (await checkAttempt("doi-import", user.id)) !== "allowed" ||
+    (await checkAttempt("doi-import-day", user.id)) !== "allowed"
+  ) {
     return { status: "error", error: "rate_limited", values };
   }
 

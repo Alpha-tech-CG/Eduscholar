@@ -182,10 +182,14 @@ export async function setAccountStatus(
   // acceptée par la base ; elle n'est ni affichée ni journalisée.
   try {
     const target = await createServiceClient().auth.admin.getUserById(parsed.data.targetUser);
-    await sendAccountNotice(
-      target.data.user?.email,
-      parsed.data.suspended ? "account_suspended" : "account_restored",
-    );
+    // Seulement à une adresse confirmée : une adresse saisie par un tiers à
+    // l'inscription ne reçoit rien.
+    if (target.data.user?.email_confirmed_at) {
+      await sendAccountNotice(
+        target.data.user.email,
+        parsed.data.suspended ? "account_suspended" : "account_restored",
+      );
+    }
   } catch {
     // L'avis est un complément : la suspension est faite.
   }

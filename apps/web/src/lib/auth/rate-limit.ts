@@ -81,6 +81,11 @@ const RULES = {
   "doi-import": {
     account: { limit: 60, windowSeconds: 15 * MINUTE },
   },
+  // Part journalière d'un modérateur, nettement sous le plafond que la
+  // plateforme s'accorde auprès d'une source : un compte seul ne l'épuise pas.
+  "doi-import-day": {
+    account: { limit: 300, windowSeconds: 24 * HOUR },
+  },
   reauthentication: {
     ip: { limit: 20, windowSeconds: 15 * MINUTE },
     pair: { limit: 5, windowSeconds: 15 * MINUTE },

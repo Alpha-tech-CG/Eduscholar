@@ -295,6 +295,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   passe qu'un code vient d'être accepté ; onze codes faux envoyés au service ferment
   les sessions du titulaire (règle antérieure, voulue). Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 7 octobre 2026 — Copie des données, égards dus aux sources, avis par courriel,
+  conservation du journal (D-25, D-20, D-27, D-03) relus par l'agent sécurité : aucun
+  constat critique ou élevé, 3 moyens et 5 faibles, tous corrigés sauf un. Corrigés :
+  la copie des données révélait au titulaire qu'un administrateur avait cherché son
+  compte (liste fermée d'actions désormais) ; un seul modérateur pouvait épuiser le
+  plafond journalier d'une source (part de 300 imports par jour) ; l'envoi de courriel
+  pouvait retomber en clair (chiffrement exigé hors boîte locale) ; l'exception de
+  purge s'étendait à l'historique de modération ; réglage de conservation non borné ;
+  avis de suspension envoyé à une adresse non confirmée. Accepté : un administrateur
+  qui alterne suspension et rétablissement peut envoyer jusqu'à soixante avis par heure
+  à une même boîte. Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

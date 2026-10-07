@@ -169,11 +169,28 @@ select throws_ok(
 );
 select set_config('eduscholar.scheduled_purge', 'off', true);
 
--- Un réglage hors bornes n'efface rien.
-update private.platform_settings set value = '1'::jsonb where key = 'audit_retention_months';
-select is((private.run_scheduled_purges() ->> 'audit_rows')::integer, 0, 'Une durée trop courte est ignorée');
-update private.platform_settings set value = '"douze"'::jsonb where key = 'audit_retention_months';
-select is((private.run_scheduled_purges() ->> 'audit_rows')::integer, 0, 'Un réglage illisible est ignoré');
+-- Un réglage hors bornes ou illisible ne se pose pas.
+select throws_ok(
+  $$ update private.platform_settings set value = '1'::jsonb where key = 'audit_retention_months' $$,
+  '23514', null, 'Une durée trop courte est refusée'
+);
+select throws_ok(
+  $$ update private.platform_settings set value = '"douze"'::jsonb where key = 'audit_retention_months' $$,
+  '23514', null, 'Un réglage illisible aussi'
+);
+select throws_ok(
+  $$ update private.platform_settings set value = '99999999999999999999'::jsonb where key = 'audit_retention_months' $$,
+  '23514', null, 'Et un nombre démesuré'
+);
+
+-- L'exception de la purge ne vaut que pour le journal d'audit : l'historique
+-- de modération reste en ajout seul, même sous son marqueur.
+select set_config('eduscholar.scheduled_purge', 'audit', true);
+select throws_ok(
+  $$ delete from public.resource_status_history $$,
+  '42501', null, 'L''historique de modération ne s''efface pas'
+);
+select set_config('eduscholar.scheduled_purge', 'off', true);
 
 -- Douze mois : la ligne de treize mois part, celle de onze reste.
 update private.platform_settings set value = '12'::jsonb where key = 'audit_retention_months';
@@ -185,8 +202,9 @@ select results_eq(
 );
 select is(
   (select count(*) from public.audit_logs
-   where action = 'retention.purged' and occurred_at = now() and (metadata ->> 'audit_rows')::integer >= 1),
-  1::bigint, 'Le passage est inscrit au journal, avec le nombre de lignes effacées'
+   where action = 'retention.purged' and occurred_at = now() and (metadata ->> 'audit_rows')::integer >= 1
+     and metadata ->> 'audit_retention_months' = '12'),
+  1::bigint, 'Le passage est inscrit au journal, avec le nombre de lignes effacées et la durée appliquée'
 );
 
 -- Aucun rôle de l'API ne lit ni ne pose les réglages.

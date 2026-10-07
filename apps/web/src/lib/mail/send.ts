@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer from "nodemailer";
 import { serverEnv } from "@/lib/env.server";
 import { buildNotice, type NoticeKind } from "./notices";
+import { transportOptions } from "./transport";
 
 // Envoi des avis de sécurité de l'application (ADR-0009).
 //
@@ -20,15 +21,8 @@ export async function sendAccountNotice(to: string | null | undefined, kind: Not
   if (!to || !env.SMTP_URL || !env.MAIL_FROM) return false;
 
   try {
-    const server = new URL(env.SMTP_URL);
-    const secure = server.protocol === "smtps:";
     const transport = nodemailer.createTransport({
-      host: server.hostname,
-      port: Number(server.port) || (secure ? 465 : 587),
-      secure,
-      auth: server.username
-        ? { user: decodeURIComponent(server.username), pass: decodeURIComponent(server.password) }
-        : undefined,
+      ...transportOptions(env.SMTP_URL),
       connectionTimeout: TIMEOUT_MS,
       greetingTimeout: TIMEOUT_MS,
       socketTimeout: TIMEOUT_MS,

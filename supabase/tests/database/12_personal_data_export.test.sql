@@ -137,6 +137,23 @@ select is(
 );
 reset role;
 
+-- Liste fermée : une recherche de son compte par l'administration, ou une action
+-- inconnue, n'entrent pas dans les événements rendus au titulaire.
+insert into public.audit_logs (category, action, subject_user_id, target_type, target_id, metadata) values
+  ('platform', 'user.lookup', 'a0000000-0000-0000-0000-0000000027f1', 'account', 'x', '{}'),
+  ('security', 'action.future', 'a0000000-0000-0000-0000-0000000027f1', 'account', 'x', '{}'),
+  ('platform', 'account_status.insert', 'a0000000-0000-0000-0000-0000000027f1', 'account', 'x', '{}');
+select tests.login('a0000000-0000-0000-0000-0000000027f1');
+select is(
+  (select count(*) from public.my_account_events() where action in ('user.lookup', 'action.future')),
+  0::bigint, 'Ni la recherche de son compte ni une action hors liste ne lui sont rendues'
+);
+select is(
+  (select count(*) from public.my_account_events() where action = 'account_status.insert'),
+  1::bigint, 'Une suspension, si'
+);
+reset role;
+
 -- Projets supprimés en attente de purge : rendus à leur propriétaire seul.
 insert into public.research_projects (id, owner_id, title, deleted_at) values
   ('27f00000-0000-0000-0000-0000000000d1', 'a0000000-0000-0000-0000-0000000027f1', 'Projet supprimé de A', now() - interval '2 days');
@@ -155,6 +172,12 @@ select is(
      and p -> 'sections' -> 0 ->> 'body' = 'Texte encore à moi.'
      and not p ? 'owner_id'),
   1::bigint, 'Mais il figure dans la copie de son propriétaire, avec ses sources et son texte'
+);
+-- Les clés rendues sont figées : une colonne ajoutée plus tard doit être examinée ici.
+select is(
+  (select string_agg(k, ',' order by k) from public.my_deleted_projects() p, jsonb_object_keys(p) k),
+  'context,created_at,deleted_at,due_date,fieldwork,general_objective,hypotheses,id,main_question,methodology,outline,population_sample,problem_statement,program_code,secondary_questions,sections,sources,specific_objectives,status,supervisor_name,theoretical_framework,title,updated_at',
+  'La fiche d''un projet supprimé ne rend que les champs connus'
 );
 reset role;
 select tests.login('b0000000-0000-0000-0000-0000000027f2');
