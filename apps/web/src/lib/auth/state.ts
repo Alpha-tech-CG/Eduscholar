@@ -48,6 +48,8 @@ export type AuthErrorCode =
   | "unsupported_type"
   | "language_required"
   | "source_unavailable"
+  | "source_paused"
+  | "source_daily_limit"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";

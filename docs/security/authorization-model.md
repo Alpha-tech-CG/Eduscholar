@@ -565,6 +565,7 @@ et refuse le rejeu.
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
 | Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Ne lit rien, ne renvoie qu'un nombre ; sources, fiches de lecture, sections et citations partent en cascade. |
 | Purge nocturne (`private.run_scheduled_purges`) — **hors rôle serveur** : tâche pg_cron sous la session du propriétaire de la base | Exécutable par aucun rôle de l'API, rôle serveur compris ; efface les projets supprimés depuis trente jours et les comptes jamais confirmés depuis sept jours (ni rôle, ni organisation, ni suspension) |
+| Égards dus aux sources (`connector_gate`, `connector_pause`) | Appelées par le connecteur juste avant et juste après une requête vers la source, elle-même décidée par un modérateur vérifié ; ne lisent ni n'écrivent aucune donnée d'utilisateur |
 | Limitation de débit de l'authentification (`consume_rate_limit`) | Aucun : l'appel précède l'authentification. La fonction ne lit et n'écrit que des compteurs, sous des clés qui sont des empreintes. |
 
 Règles de `service_role` :

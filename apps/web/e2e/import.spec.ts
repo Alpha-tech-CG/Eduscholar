@@ -4,6 +4,8 @@ import {
   createConfirmedUser,
   makeModerator,
   signInThroughForm,
+  sql,
+  sqlValue,
   strongPassword,
   TEST_FACTOR_SECRET,
   uniqueEmail,
@@ -117,6 +119,19 @@ test.describe("import d'une ressource par DOI", () => {
       await importDoi(page, doi);
       await expect(alert(page), doi).toContainText("Rien n'a été importé");
       await expect(page).toHaveURL(/\/fr\/moderation\/import/);
+    }
+
+    // La source répond « trop de requêtes » : la pause qu'elle demande est
+    // posée pour toute la plateforme. Elle est levée aussitôt, pour ne pas
+    // retenir les imports des autres tests.
+    try {
+      await importDoi(page, "10.5555/e2e.trop-de-requetes");
+      await expect(alert(page)).toContainText("La source demande une pause");
+      expect(
+        sqlValue(`select count(*) from private.connector_pauses where source_name = 'crossref' and paused_until between now() + interval '100 seconds' and now() + interval '121 seconds'`),
+      ).toBe("1");
+    } finally {
+      sql(`delete from private.connector_pauses where source_name = 'crossref'`);
     }
 
     // Langue absente de la source : elle est demandée, puis reprise du formulaire.

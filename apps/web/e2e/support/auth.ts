@@ -148,6 +148,8 @@ export function resetTestRoles(): void {
   sql(
     `delete from private.account_status where user_id in (select id from auth.users where email like '%@test.invalid')`,
   );
+  // Une pause de source laissée par une exécution interrompue.
+  sql(`delete from private.connector_pauses`);
   // Les signalements ouverts des exécutions précédentes : la file de modération
   // n'en montre que cent, les plus anciens d'abord.
   sql(

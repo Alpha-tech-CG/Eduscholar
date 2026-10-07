@@ -44,6 +44,11 @@ createServer((request, response) => {
   const match = /^\/works\/(.+)$/.exec(url.pathname);
   const doi = match ? decodeURIComponent(match[1]).toLowerCase() : "";
 
+  if (doi === "10.5555/e2e.trop-de-requetes") {
+    response.writeHead(429, { "retry-after": "120", "content-type": "text/plain" }).end("trop de requêtes");
+    return;
+  }
+
   if (doi === "10.5555/e2e.redirection") {
     response.writeHead(302, { location: "http://127.0.0.1:1/interne" }).end();
     return;

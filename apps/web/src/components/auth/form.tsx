@@ -192,20 +192,23 @@ export function SelectField({
   const error = state.status === "error" ? state.fields?.[name] : undefined;
   // Après une erreur, la valeur saisie est reprise plutôt que la valeur d'origine.
   const submitted = state.status === "error" ? state.values?.[name] : undefined;
+  // Identifiant propre à ce champ : une page peut porter plusieurs formulaires
+  // ayant une liste du même nom (un par signalement, par exemple).
+  const id = `${name}-${useId()}`;
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={name} className="font-medium">
+      <label htmlFor={id} className="font-medium">
         {label}
       </label>
       <select
-        id={name}
+        id={id}
         name={name}
         required={required}
         key={submitted ?? defaultValue ?? ""}
         defaultValue={submitted ?? defaultValue ?? ""}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? `${name}-error` : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         className="rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700"
       >
         <option value="">{placeholder}</option>
@@ -216,7 +219,7 @@ export function SelectField({
         ))}
       </select>
       {error ? (
-        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+        <p id={`${id}-error`} className="text-sm text-red-800 dark:text-red-300">
           {t(`fieldErrors.${error}`)}
         </p>
       ) : null}

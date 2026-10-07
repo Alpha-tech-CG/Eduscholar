@@ -77,7 +77,11 @@ export async function importResourceByDoi(
         ? "doi_not_found"
         : result.reason === "unsupported_type"
           ? "unsupported_type"
-          : "source_unavailable";
+          : result.reason === "paused"
+            ? "source_paused"
+            : result.reason === "daily_limit"
+              ? "source_daily_limit"
+              : "source_unavailable";
     return { status: "error", error, values };
   }
   const { work } = result;

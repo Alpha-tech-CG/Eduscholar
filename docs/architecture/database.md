@@ -77,6 +77,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006003900_suspension_closes_sessions.sql` | La suspension d'un compte ferme ses sessions |
 | `20261006004000_suspended_no_session.sql` | Un compte suspendu n'ouvre plus de session |
 | `20261006004100_personal_export_complete.sql` | Copie des données personnelles : événements du compte et projets supprimés en attente de purge |
+| `20261006004200_connector_gate.sql` | Sources externes : pause demandée par la source et plafond journalier, tenus en base |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables

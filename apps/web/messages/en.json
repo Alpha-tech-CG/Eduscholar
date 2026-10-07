@@ -116,7 +116,9 @@
       "second_factor_missing": "This account has not turned on two-step verification: it cannot be given a role.",
       "user_not_found": "No account has this address.",
       "last_super_admin_recovery": "You are the last super administrator: two-step verification on this account cannot be lifted with a backup code. Follow the two-person administration procedure.",
-      "code_wait": "A code was just accepted for this account. For your security, wait a minute and a half, then enter the code your app shows at that moment."
+      "code_wait": "A code was just accepted for this account. For your security, wait a minute and a half, then enter the code your app shows at that moment.",
+      "source_paused": "The source has asked for a pause: too many requests were sent to it. Nothing was imported; try again in a few minutes.",
+      "source_daily_limit": "The platform has reached the number of imports it allows itself per day from this source. Try again tomorrow."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",

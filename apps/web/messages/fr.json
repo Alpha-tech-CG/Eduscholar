@@ -116,7 +116,9 @@
       "second_factor_missing": "Ce compte n'a pas activé la validation en deux étapes : il ne peut pas recevoir de rôle.",
       "user_not_found": "Aucun compte n'a cette adresse.",
       "last_super_admin_recovery": "Vous êtes le dernier super-administrateur : la validation en deux étapes de ce compte ne se lève pas par un code de secours. Suivez la procédure d'administration à deux personnes.",
-      "code_wait": "Un code vient d'être accepté pour ce compte. Par sécurité, patientez une minute et demie, puis saisissez le code que votre application affiche à ce moment-là."
+      "code_wait": "Un code vient d'être accepté pour ce compte. Par sécurité, patientez une minute et demie, puis saisissez le code que votre application affiche à ce moment-là.",
+      "source_paused": "La source demande une pause : trop de requêtes lui ont été adressées. Rien n'a été importé ; réessayez dans quelques minutes.",
+      "source_daily_limit": "Le nombre d'imports que la plateforme s'autorise par jour auprès de cette source est atteint. Réessayez demain."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",

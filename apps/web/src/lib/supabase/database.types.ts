@@ -563,6 +563,12 @@ isOneToOne: false
 "admin_set_role":
 { Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: undefined
                            },
+"connector_gate":
+{ Args: { "p_daily_limit": number,"p_source": string }; Returns: string
+                           },
+"connector_pause":
+{ Args: { "p_seconds": number,"p_source": string }; Returns: undefined
+                           },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },

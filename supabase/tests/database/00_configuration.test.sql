@@ -464,8 +464,12 @@ select is(
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.are_valid_tags(p_values text[])',
     'private.has_required_labels(p_labels jsonb)',
+    'private.connector_gate(p_source text, p_daily_limit integer)',
+    'private.connector_pause(p_source text, p_seconds integer)',
     'private.import_connector_resource(p_actor uuid, p jsonb)',
     'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
+    'public.connector_gate(p_source text, p_daily_limit integer)',
+    'public.connector_pause(p_source text, p_seconds integer)',
     'public.consume_rate_limit(p_key text, p_limit integer, p_window_seconds integer)',
     'public.import_connector_resource(actor_id uuid, payload jsonb)',
     'private.purge_deleted_projects()',
