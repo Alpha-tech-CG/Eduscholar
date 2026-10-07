@@ -20,6 +20,7 @@ export type AuthErrorCode =
   | "second_factor_required"
   | "last_org_admin"
   | "last_super_admin"
+  | "last_super_admin_recovery"
   // Administration
   | "recent_second_factor_required"
   | "own_account"

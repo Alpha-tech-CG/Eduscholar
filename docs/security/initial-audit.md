@@ -239,6 +239,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   et suspension, garde du dernier super-administrateur contournable. Écrite : la
   procédure du premier super-administrateur. Reste en dette : D-26. Ces corrections
   n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Codes de secours et notifications du second facteur (D-17, D-18)
+  relus par l'agent sécurité : aucun constat critique ou élevé ; la voie de secours
+  tient face à qui n'a que le mot de passe. 6 moyens et 7 faibles. Corrigés : levée sans
+  aucun signal au titulaire (avertissement à l'écran et fermeture des autres sessions ;
+  le courriel reste en dette D-27), rôle d'administrateur d'organisation récupérable
+  après levée puis réenrôlement, dernier super-administrateur neutralisable, génération
+  sans mot de passe et rachat en session `aal2`, codes survivant à un changement de
+  facteur, codes de dix signes attaquables hors ligne en cas de fuite. Ces corrections
+  n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

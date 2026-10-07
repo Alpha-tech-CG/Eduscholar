@@ -123,7 +123,9 @@ Délai de réponse : `[À COMPLÉTER selon la loi applicable]`.
 - Chiffrement des échanges et des données stockées.
 - Contrôle d'accès appliqué au niveau de la base de données elle-même.
 - Fichiers privés accessibles uniquement par des liens temporaires.
-- Second facteur d'authentification obligatoire pour les comptes à privilèges.
+- Second facteur d'authentification obligatoire pour les comptes à privilèges ; des
+  codes de secours, dont seule une empreinte est conservée, permettent de retrouver
+  l'accès à son compte.
 - Journal des actions sensibles, non modifiable.
 - Sauvegardes chiffrées, restauration testée.
 

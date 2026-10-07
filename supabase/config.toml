@@ -268,6 +268,18 @@ enabled = true
 subject = "EduScholar — Mot de passe modifié / Password changed"
 content_path = "./supabase/templates/password_changed_notification.html"
 
+# Le titulaire est prévenu quand la validation en deux étapes est activée ou
+# désactivée sur son compte : c'est le signe le plus net d'une prise de contrôle.
+[auth.email.notification.mfa_factor_enrolled]
+enabled = true
+subject = "EduScholar — Validation en deux étapes activée / Two-step verification turned on"
+content_path = "./supabase/templates/mfa_factor_enrolled_notification.html"
+
+[auth.email.notification.mfa_factor_unenrolled]
+enabled = true
+subject = "EduScholar — Validation en deux étapes désactivée / Two-step verification turned off"
+content_path = "./supabase/templates/mfa_factor_unenrolled_notification.html"
+
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
 enable_signup = false

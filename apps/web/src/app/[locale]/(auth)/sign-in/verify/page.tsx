@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthForm, TextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
-import { redirect } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/actions";
 import { nextAfterVerification } from "@/lib/auth/redirect";
 import { getSecondFactorState, needsSecondFactor } from "@/lib/auth/second-factor";
@@ -36,11 +36,18 @@ export default async function VerifySecondFactorPage({
       title={t("secondFactor.verifyTitle")}
       intro={t("secondFactor.verifyIntro")}
       footer={
-        <form action={signOut}>
-          <button type="submit" className="underline underline-offset-4">
-            {t("secondFactor.signOut")}
-          </button>
-        </form>
+        <div className="flex flex-col gap-3">
+          <p>
+            <Link href="/sign-in/recover" className="underline underline-offset-4">
+              {t("recoveryCodes.lostLink")}
+            </Link>
+          </p>
+          <form action={signOut}>
+            <button type="submit" className="underline underline-offset-4">
+              {t("secondFactor.signOut")}
+            </button>
+          </form>
+        </div>
       }
     >
       <dl className="flex flex-col gap-1">

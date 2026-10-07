@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+
+    <p>Bonjour,</p>
+    <p>La validation en deux étapes vient d'être <strong>désactivée</strong> sur votre compte EduScholar ({{ .Email }}). Il n'est plus protégé que par son mot de passe.</p>
+    <p>Si vous n'êtes pas à l'origine de ce changement, ouvrez <a href="{{ .SiteURL }}/forgot-password">la page « Mot de passe oublié »</a> pour choisir un nouveau mot de passe, puis réactivez la validation en deux étapes.</p>
+
+    <hr />
+
+    <p lang="en">Hello,</p>
+    <p lang="en">Two-step verification has just been <strong>turned off</strong> for your EduScholar account ({{ .Email }}). It is now protected by its password only.</p>
+    <p lang="en">If you did not make this change, open <a href="{{ .SiteURL }}/forgot-password">the “Forgot your password” page</a> to choose a new password, then turn two-step verification back on.</p>
+  </body>
+</html>

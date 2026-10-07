@@ -161,13 +161,13 @@ isOneToOne: true
                   ]
                 },"organization_members": {
                   Row: {
-                    "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"user_id": string
+                    "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"role_granted_at": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"invited_by"?: string | null,"organization_id": string,"role"?: string,"user_id": string
+                    "created_at"?: string,"invited_by"?: string | null,"organization_id": string,"role"?: string,"role_granted_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"invited_by"?: string | null,"organization_id"?: string,"role"?: string,"user_id"?: string
+                    "created_at"?: string,"invited_by"?: string | null,"organization_id"?: string,"role"?: string,"role_granted_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -584,8 +584,17 @@ isOneToOne: false
 "delete_thesis_section":
 { Args: { "section_id": string }; Returns: undefined
                            },
+"discard_recovery_codes":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"generate_recovery_codes":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
+                           },
+"last_recovery_code_use":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "log_personal_data_export":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -610,6 +619,14 @@ isOneToOne: false
                            },
 "purge_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"recovery_codes_status":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "generated_at": string,"remaining": number
+            }[]
+                           },
+"redeem_recovery_code":
+{ Args: { "code": string }; Returns: boolean
                            },
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string

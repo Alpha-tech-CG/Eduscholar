@@ -114,7 +114,8 @@
       "own_account": "You cannot act on your own account.",
       "account_suspended": "This account is suspended: it cannot be given a role.",
       "second_factor_missing": "This account has not turned on two-step verification: it cannot be given a role.",
-      "user_not_found": "No account has this address."
+      "user_not_found": "No account has this address.",
+      "last_super_admin_recovery": "You are the last super administrator: two-step verification on this account cannot be lifted with a backup code. Follow the two-person administration procedure."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -141,7 +142,7 @@
       "intro": "Two-step verification asks, in addition to your password, for a code from an authenticator app.",
       "stateEnabled": "Two-step verification: on",
       "stateDisabled": "Two-step verification: off",
-      "lossWarning": "If you lose access to your authenticator app, you will have to contact support to recover your account.",
+      "lossWarning": "Without your authenticator app, only a backup code will give you back access to your account: generate them as soon as you turn this on and keep them safe.",
       "enable": "Turn on two-step verification",
       "pending": "One moment…",
       "stepScan": "In your authenticator app, add an account by scanning this code, or by entering the key below.",
@@ -168,7 +169,35 @@
         "invalid_password": "Incorrect password."
       },
       "passwordLabel": "Current password",
-      "passwordHint": "Requested to confirm it is really you."
+      "passwordHint": "Requested to confirm it is really you.",
+      "disableHeading": "Turn off two-step verification"
+    },
+    "recoveryCodes": {
+      "heading": "Backup codes",
+      "intro": "If you lose your authenticator app, a backup code gives you back access to your account. Each code works only once.",
+      "remaining": "{count, plural, =0 {You have no backup codes.} one {You have # backup code left.} other {You have # backup codes left.}}",
+      "generate": "Generate my backup codes",
+      "regenerate": "Generate new codes",
+      "regenerateHint": "The current codes will stop working at once.",
+      "codeLabel": "Current verification code",
+      "codeHint": "The code currently shown by your authenticator app.",
+      "pending": "One moment…",
+      "generated": "Here are your ten backup codes. They will not be shown again.",
+      "keepSafe": "Copy or print them, and keep them safe, somewhere other than the phone that holds your authenticator app.",
+      "lostLink": "I no longer have access to my authenticator app",
+      "recoverTitle": "Use a backup code",
+      "recoverIntro": "Enter one of the backup codes you kept.",
+      "recoverEffect": "Two-step verification will be turned off for your account: turn it back on as soon as possible with your new device.",
+      "recoverRoles": "If you hold a moderation or administration role, it will have no effect until an administrator gives it to you again.",
+      "recoveryCode": "Backup code",
+      "recoveryCodeHint": "Sixteen characters, for example ABCD-EFGH-JKLM-NP23.",
+      "recoverSubmit": "Use this code",
+      "backToCode": "Back to entering the verification code",
+      "recoveredNotice": "Your backup code was accepted: two-step verification is turned off. Turn it back on now with your new device.",
+      "passwordLabel": "Current password",
+      "passwordHint": "It is asked again so that nobody else can obtain your codes from a session left open.",
+      "generatedOn": "Generated on {date}.",
+      "useWarning": "A backup code was used on this account on {date}: two-step verification was then turned off and your other sessions closed. If this was not you, change your password right away, then turn it back on."
     }
   },
   "Account": {
@@ -193,7 +222,8 @@
     "library": "My library",
     "projects": "My research projects",
     "exportData": "Download my data",
-    "administration": "Administration"
+    "administration": "Administration",
+    "recoveryUseWarning": "A backup code was recently used on your account, and two-step verification was turned off. If this was not you, change your password right away."
   },
   "Profile": {
     "title": "My profile",

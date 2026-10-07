@@ -489,7 +489,8 @@ Règles :
 - `security definer`, `stable`, `search_path` fixé, dans un schéma **non exposé** par l'API.
 - Aucun paramètre d'identité : elles lisent `auth.uid()`.
 - Toutes vérifient `is_account_active()`.
-- `has_platform_role`, et `has_org_role` pour `org_admin`, exigent une session `aal2`.
+- `has_platform_role`, et `has_org_role` pour `org_admin`, exigent une session `aal2`
+  et un second facteur antérieur à l'attribution du rôle.
   `has_platform_role` exige en plus que le facteur ait été vérifié avant l'attribution
   du rôle : un rôle accordé à un compte sans second facteur est sans effet, et un
   facteur enrôlé après coup par qui tiendrait le mot de passe ne l'active pas.
@@ -534,6 +535,8 @@ depuis le serveur) :
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
 | `admin_session`, `admin_find_user`, `admin_list_accounts`, `admin_set_role`, `admin_set_account_status` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; jamais sur son propre compte ni sur un compte de rang égal ou supérieur ; détail dans `administration.md` |
+| `recovery_codes_status`, `generate_recovery_codes`, `discard_recovery_codes`, `last_recovery_code_use` | Le titulaire, compte actif ; générer exige le second facteur présenté depuis moins de dix minutes |
+| `redeem_recovery_code` | Le titulaire, dans la session ouverte par le seul mot de passe d'un compte à second facteur ; refusée en session `aal2`, à un compte suspendu et au dernier super-administrateur effectif ; cinq essais erronés par quart d'heure |
 | `log_personal_data_export` | Le titulaire, compte actif ; écrit un événement de sécurité sans contenu, lisible de lui seul, avant la remise de la copie de ses données |
 | `add_thesis_section`, `update_thesis_section`, `move_thesis_section`, `delete_thesis_section`, `set_section_citation` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour la section ou le projet d'autrui, supprimés ou inexistants, avant tout examen de la requête ; une section ne cite qu'une source du même projet, et le retrait d'une citation ne révèle rien ; un texte modifié entre-temps n'est pas écrasé ; aucune ligne d'audit |
 | `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |
@@ -550,6 +553,7 @@ et refuse le rejeu.
 |---|---|
 | Émission des URL signées Storage | Ligne `files` visible sous la session de l'appelant, `scan_status` |
 | Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
+| Levée du second facteur après un code de secours (`auth.admin.mfa.deleteFactor`) | Code accepté par `redeem_recovery_code` sous la session du titulaire, juste avant ; l'identifiant vient de la session vérifiée |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
 | Création de notifications | Tâche système |

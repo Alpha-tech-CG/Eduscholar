@@ -4,6 +4,7 @@ import { Link, redirect } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 import { getAdminSession } from "@/lib/admin/queries";
+import { getLastRecoveryCodeUse } from "@/lib/auth/recovery-codes";
 import { isModerator } from "@/lib/catalogue/queries";
 import { getOwnProfile, getReferenceData, type Option } from "@/lib/profile/queries";
 
@@ -34,6 +35,7 @@ export default async function AccountPage({
   const { notice } = await searchParams;
   const moderator = await isModerator();
   const admin = (await getAdminSession()).rank >= 2;
+  const lastRecoveryUse = await getLastRecoveryCodeUse();
 
   const rows: Array<[string, string | null]> = [
     [t("email"), user.email ?? null],
@@ -70,6 +72,15 @@ export default async function AccountPage({
           </div>
         ))}
       </dl>
+
+      {lastRecoveryUse ? (
+        <p data-testid="recovery-use-warning" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">
+          {t("recoveryUseWarning")}{" "}
+          <Link href="/account/security" className="underline underline-offset-4">
+            {t("security")}
+          </Link>
+        </p>
+      ) : null}
 
       <p className="opacity-70">{t("privacy")}</p>
 

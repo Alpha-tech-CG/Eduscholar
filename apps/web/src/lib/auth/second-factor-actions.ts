@@ -141,6 +141,12 @@ export async function confirmSecondFactorEnrollment(
   const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId: factor.id, code });
   if (error) return isRefusedByHook(error) ? afterRefusedCode() : invalidCode;
 
+  // Le compte est désormais protégé : les autres sessions, ouvertes par le seul
+  // mot de passe, sont fermées, et d'éventuels anciens codes de secours abandonnés.
+  const verified = await createSessionClient();
+  await verified.auth.signOut({ scope: "others" });
+  await verified.rpc("discard_recovery_codes");
+
   const locale = await getLocale();
   return redirect({
     href: { pathname: "/account/security", query: { notice: "enabled" } },
@@ -208,6 +214,8 @@ export async function disableSecondFactor(
 
   const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
   if (error) return { status: "error", error: "unavailable" };
+  // Les codes de secours valaient pour ce second facteur.
+  await (await createSessionClient()).rpc("discard_recovery_codes");
 
   const locale = await getLocale();
   return redirect({

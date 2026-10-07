@@ -5,10 +5,12 @@ import {
   makeModerator,
   signInThroughForm,
   sql,
+  sqlValue,
   strongPassword,
   TEST_FACTOR_SECRET,
   uniqueEmail,
   waitForEmailLink,
+  waitForEmailSubject,
 } from "./support/auth";
 import { freshTotp } from "./support/totp";
 
@@ -106,6 +108,9 @@ test.describe("validation en deux étapes", () => {
       /\/fr\/account\/security\?notice=disabled/,
     );
     await expect(page.getByTestId("second-factor-state")).toContainText("désactivée");
+    // Le titulaire est prévenu par courriel de l'activation puis de la désactivation.
+    await waitForEmailSubject(email, "Validation en deux étapes activée");
+    await waitForEmailSubject(email, "Validation en deux étapes désactivée");
   });
 
   test("un code invalide n'active rien", async ({ page }) => {
@@ -263,6 +268,134 @@ test.describe("validation en deux étapes", () => {
     // La session a bien été refermée.
     await page.goto("/fr/account");
     await expect(page).toHaveURL(/\/fr\/sign-in/);
+  });
+
+  test("codes de secours : générés une fois, ils rendent l'accès sans l'application", async ({
+    page,
+  }) => {
+    const email = uniqueEmail("codes-secours");
+    const password = strongPassword();
+    const used = new Set<string>();
+    completeProfileDirectly(await createConfirmedUser(email, password));
+    await signInThroughForm(page, email, password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    await enableSecondFactor(page, used, password);
+
+    // Le titulaire est prévenu par courriel de l'activation.
+    await waitForEmailSubject(email, "Validation en deux étapes activée");
+
+    // --- Génération ----------------------------------------------------------
+    await page.goto("/fr/account/security");
+    await expect(page.getByTestId("recovery-codes-remaining")).toHaveText(
+      "Vous n'avez aucun code de secours.",
+    );
+    // Le mot de passe est redemandé ; le second facteur venant d'être présenté,
+    // aucun code de validation ne l'est.
+    const recovery = page.locator("section", { hasText: "Codes de secours" });
+    await recovery.getByLabel("Mot de passe actuel").fill("MauvaisMotDePasse1");
+    await page.getByRole("button", { name: "Générer mes codes de secours" }).click();
+    await expect(recovery.getByRole("alert")).toBeVisible();
+    await expect(page.getByTestId("recovery-codes")).toHaveCount(0);
+    await recovery.getByLabel("Mot de passe actuel").fill(password);
+    await page.getByRole("button", { name: "Générer mes codes de secours" }).click();
+    const list = page.getByTestId("recovery-codes").getByRole("listitem");
+    await expect(list).toHaveCount(10);
+    const codes = await list.allTextContents();
+    for (const code of codes) expect(code).toMatch(/^[A-HJ-NP-Z2-9]{4}(-[A-HJ-NP-Z2-9]{4}){3}$/);
+    expect(new Set(codes).size).toBe(10);
+
+    // Ils ne sont plus affichés ensuite ; seul leur nombre l'est.
+    await page.goto("/fr/account/security");
+    await expect(page.getByTestId("recovery-codes")).toHaveCount(0);
+    await expect(page.getByTestId("recovery-codes-remaining")).toContainText(
+      "Il vous reste 10 codes de secours.",
+    );
+    await expect(page.getByTestId("recovery-codes-remaining")).toContainText("Générés le");
+    for (const code of codes) await expect(page.getByRole("main")).not.toContainText(code);
+
+    // --- Connexion sans l'application ----------------------------------------
+    await page.goto("/fr/account");
+    await page.getByRole("button", { name: "Se déconnecter" }).click();
+    await signInThroughForm(page, email, password);
+    await expect(page).toHaveURL(/\/fr\/sign-in\/verify/);
+    await page.getByRole("link", { name: "Je n'ai plus accès à mon application d'authentification" }).click();
+    await expect(page).toHaveURL(/\/fr\/sign-in\/recover/);
+    await expect(page.getByRole("main")).toContainText(email);
+
+    // Code mal formé, puis code inventé : refus.
+    await page.getByLabel("Code de secours").fill("abc");
+    await page.getByRole("button", { name: "Utiliser ce code" }).click();
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("Code incorrect");
+    await page.getByLabel("Code de secours").fill("AAAA-AAAA-AAAA-AAAA");
+    await page.getByRole("button", { name: "Utiliser ce code" }).click();
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("Code incorrect");
+    // Toujours aucune page protégée.
+    await page.goto("/fr/account");
+    await expect(page).toHaveURL(/\/fr\/sign-in\/verify/);
+
+    // Un vrai code, saisi en minuscules et sans tiret.
+    await page.goto("/fr/sign-in/recover");
+    await page.getByLabel("Code de secours").fill((codes[3] ?? "").toLowerCase().replaceAll("-", ""));
+    await page.getByRole("button", { name: "Utiliser ce code" }).click();
+    await expect(page).toHaveURL(/\/fr\/account\/security\?notice=recovered/);
+    await expect(page.getByRole("main").getByRole("status")).toContainText(
+      "la validation en deux étapes est désactivée",
+    );
+    await expect(page.getByTestId("second-factor-state")).toContainText("désactivée");
+    // Le titulaire en est averti à l'écran, ici et sur la page de son compte.
+    await expect(page.getByTestId("recovery-use-warning")).toContainText(
+      "Un code de secours a été utilisé sur ce compte",
+    );
+    // Pas de courriel sur ce chemin : le service d'authentification ne prévient
+    // que d'une désactivation faite par le titulaire avec son code (dette D-27).
+    // L'usage du code de secours est inscrit au journal de sécurité, vérifié plus bas.
+
+    // Le compte est revenu à la connexion par mot de passe.
+    await page.goto("/fr/account");
+    await expect(page.getByTestId("account-email")).toHaveText(email);
+    await expect(page.getByTestId("recovery-use-warning")).toContainText(
+      "Un code de secours a été utilisé récemment",
+    );
+    // La page de secours ne sert plus à rien.
+    await page.goto("/fr/sign-in/recover");
+    await expect(page).toHaveURL(/\/fr\/account\/security/);
+
+    // Journal de sécurité : génération et usage y figurent.
+    const events = sqlValue(
+      `select string_agg(action, ',' order by occurred_at) from public.audit_logs where actor_id = (select id from auth.users where email = '${email}') and action like 'second_factor.%'`,
+    );
+    expect(events).toBe(
+      "second_factor.recovery_codes_generated,second_factor.recovery_code_used,second_factor.recovery_codes_discarded",
+    );
+
+    // Un autre code de la même série ne vaut plus : le second facteur auquel il
+    // était lié n'existe plus.
+    const leftovers = sqlValue(
+      `select count(*) from private.second_factor_recovery_codes c join auth.users u on u.id = c.user_id where u.email = '${email}' and exists (select 1 from auth.mfa_factors f where f.id = c.factor_id)`,
+    );
+    expect(leftovers).toBe("0");
+
+    // Réactivation : les anciens codes ne valent plus.
+    const secondUsed = new Set<string>();
+    await enableSecondFactor(page, secondUsed, password);
+    await page.goto("/fr/account/security");
+    await expect(page.getByTestId("recovery-codes-remaining")).toHaveText(
+      "Vous n'avez aucun code de secours.",
+    );
+  });
+
+  test("la page de secours exige une session ouverte par mot de passe", async ({ page }) => {
+    await page.goto("/fr/sign-in/recover");
+    await expect(page).toHaveURL(/\/fr\/sign-in$/);
+
+    // Compte sans validation en deux étapes : rien à lever.
+    const email = uniqueEmail("sans-deux-etapes");
+    const password = strongPassword();
+    await createConfirmedUser(email, password);
+    await signInThroughForm(page, email, password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    await page.goto("/fr/sign-in/recover");
+    await expect(page).toHaveURL(/\/fr\/account\/security/);
   });
 
   test("la page de sécurité exige une session", async ({ page }) => {

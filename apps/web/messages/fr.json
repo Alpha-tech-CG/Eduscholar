@@ -114,7 +114,8 @@
       "own_account": "Vous ne pouvez pas agir sur votre propre compte.",
       "account_suspended": "Ce compte est suspendu : il ne peut pas recevoir de rôle.",
       "second_factor_missing": "Ce compte n'a pas activé la validation en deux étapes : il ne peut pas recevoir de rôle.",
-      "user_not_found": "Aucun compte n'a cette adresse."
+      "user_not_found": "Aucun compte n'a cette adresse.",
+      "last_super_admin_recovery": "Vous êtes le dernier super-administrateur : la validation en deux étapes de ce compte ne se lève pas par un code de secours. Suivez la procédure d'administration à deux personnes."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -141,7 +142,7 @@
       "intro": "La validation en deux étapes demande, en plus du mot de passe, un code fourni par une application d'authentification.",
       "stateEnabled": "Validation en deux étapes : activée",
       "stateDisabled": "Validation en deux étapes : désactivée",
-      "lossWarning": "Si vous perdez l'accès à votre application d'authentification, vous devrez contacter l'assistance pour récupérer votre compte.",
+      "lossWarning": "Sans votre application d'authentification, seul un code de secours vous rendra l'accès à votre compte : générez-les dès l'activation et conservez-les à l'abri.",
       "enable": "Activer la validation en deux étapes",
       "pending": "Un instant…",
       "stepScan": "Dans votre application d'authentification, ajoutez un compte en scannant ce code, ou en saisissant la clé ci-dessous.",
@@ -168,7 +169,35 @@
         "invalid_password": "Mot de passe incorrect."
       },
       "passwordLabel": "Mot de passe actuel",
-      "passwordHint": "Demandé pour confirmer que c'est bien vous."
+      "passwordHint": "Demandé pour confirmer que c'est bien vous.",
+      "disableHeading": "Désactiver la validation en deux étapes"
+    },
+    "recoveryCodes": {
+      "heading": "Codes de secours",
+      "intro": "Si vous perdez votre application d'authentification, un code de secours vous rend l'accès à votre compte. Chaque code ne sert qu'une fois.",
+      "remaining": "{count, plural, =0 {Vous n'avez aucun code de secours.} one {Il vous reste # code de secours.} other {Il vous reste # codes de secours.}}",
+      "generate": "Générer mes codes de secours",
+      "regenerate": "Générer de nouveaux codes",
+      "regenerateHint": "Les codes actuels cesseront aussitôt de valoir.",
+      "codeLabel": "Code de validation actuel",
+      "codeHint": "Le code affiché en ce moment par votre application d'authentification.",
+      "pending": "Un instant…",
+      "generated": "Voici vos dix codes de secours. Ils ne seront plus affichés.",
+      "keepSafe": "Recopiez-les ou imprimez-les, et gardez-les à l'abri, ailleurs que sur le téléphone qui porte votre application d'authentification.",
+      "lostLink": "Je n'ai plus accès à mon application d'authentification",
+      "recoverTitle": "Utiliser un code de secours",
+      "recoverIntro": "Saisissez l'un des codes de secours que vous avez conservés.",
+      "recoverEffect": "La validation en deux étapes sera désactivée sur votre compte : réactivez-la dès que possible avec votre nouvel appareil.",
+      "recoverRoles": "Si vous détenez un rôle de modération ou d'administration, il restera sans effet jusqu'à ce qu'un administrateur vous le réattribue.",
+      "recoveryCode": "Code de secours",
+      "recoveryCodeHint": "Seize signes, par exemple ABCD-EFGH-JKLM-NP23.",
+      "recoverSubmit": "Utiliser ce code",
+      "backToCode": "Revenir à la saisie du code de validation",
+      "recoveredNotice": "Votre code de secours est accepté : la validation en deux étapes est désactivée. Réactivez-la maintenant avec votre nouvel appareil.",
+      "passwordLabel": "Mot de passe actuel",
+      "passwordHint": "Il est redemandé pour que personne d'autre n'obtienne vos codes depuis une session restée ouverte.",
+      "generatedOn": "Générés le {date}.",
+      "useWarning": "Un code de secours a été utilisé sur ce compte le {date} : la validation en deux étapes a alors été désactivée et vos autres sessions fermées. Si ce n'était pas vous, changez de mot de passe sans attendre, puis réactivez-la."
     }
   },
   "Account": {
@@ -193,7 +222,8 @@
     "library": "Ma bibliothèque",
     "projects": "Mes projets de recherche",
     "exportData": "Télécharger mes données",
-    "administration": "Administration"
+    "administration": "Administration",
+    "recoveryUseWarning": "Un code de secours a été utilisé récemment sur votre compte, et la validation en deux étapes a été désactivée. Si ce n'était pas vous, changez de mot de passe sans attendre."
   },
   "Profile": {
     "title": "Mon profil",

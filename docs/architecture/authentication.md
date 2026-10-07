@@ -140,12 +140,42 @@ droits n'existent que dans une session où le second facteur a été vérifié.
 
 Limites connues :
 
-- aucun code de secours : la perte de l'application d'authentification demande une
-  intervention de l'assistance (dette D-17) ;
 - qui connaît le mot de passe d'un compte peut, par onze codes erronés, fermer ses
-  sessions et bloquer son second facteur un quart d'heure : une gêne, pas un accès ;
-- aucun courriel ne prévient de l'activation ou de la désactivation du second facteur
-  (dette D-18).
+  sessions et bloquer son second facteur un quart d'heure, et par cinq codes de secours
+  erronés bloquer la voie de secours pour la même durée : une gêne, pas un accès ;
+- l'usage d'un code de secours ne déclenche pas de courriel (dette D-27) : le titulaire
+  en est averti à l'écran et par la fermeture de ses autres sessions.
+
+#### Codes de secours
+
+Dix codes à usage unique, de seize signes, générés depuis « Sécurité du compte » et
+affichés une seule fois. La base n'en garde que l'empreinte.
+
+- **Générer** : mot de passe redemandé, second facteur présenté depuis moins de dix
+  minutes. Générer à nouveau remplace les codes précédents.
+- **Utiliser** : depuis la saisie du code à la connexion, lien « Je n'ai plus accès à
+  mon application ». Le code s'utilise dans la session ouverte par le mot de passe —
+  jamais dans une session qui a présenté le second facteur, qui dispose de la
+  désactivation normale. Cinq essais erronés par quart d'heure et par compte, comptés
+  en base.
+- **Effet** : la validation en deux étapes est levée, les autres sessions du compte sont
+  fermées, et un avertissement reste affiché trente jours sur le compte. Le titulaire en
+  réactive une avec son nouvel appareil.
+- **Lien au facteur** : un code ne vaut que pour le second facteur pour lequel il a été
+  généré. Retirer ou remplacer ce facteur emporte ses codes.
+- **Rôles** : après une levée, un rôle de plateforme ou d'administrateur d'organisation
+  reste sans effet tant qu'il n'a pas été réattribué — le second facteur doit être
+  antérieur au rôle. Le dernier super-administrateur effectif ne peut pas utiliser de
+  code de secours : voir `docs/security/administration.md`.
+- **Journal de sécurité** : génération, usage, abandon de codes et blocage après cinq
+  essais erronés.
+
+#### Courriels de notification
+
+Le service d'authentification prévient le titulaire quand la validation en deux étapes
+est activée, et quand il la désactive lui-même avec son code. À l'activation, les autres
+sessions du compte sont fermées. Les deux notifications sont déclarées dans
+`supabase/config.toml` : elles sont à reproduire sur chaque projet hébergé.
 
 ### Profil exigé à la première connexion
 
@@ -192,8 +222,7 @@ Les deux derniers ont besoin de l'instance Supabase locale (`npm run db:start`).
 
 Voir la dette de sécurité du backlog : CAPTCHA et mots de passe compromis (D-09),
 changement de mot de passe par appel direct (D-10), purge des comptes non confirmés
-(D-12), codes de secours du second facteur (D-17), courriel de notification du second
-facteur (D-18).
+(D-12), courriel après l'usage d'un code de secours (D-27).
 
 Risques résiduels connus :
 

@@ -66,6 +66,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002700_personal_data_export.sql` | Appuis de l'export des données personnelles : identifiants de ses signalements, trace de l'export |
 | `20261006002800_administration.sql` | Administration des rôles et des comptes sous la session de l'administrateur ; retrait de l'écriture de `service_role` sur les rôles |
 | `20261006002900_administration_hardening.sql` | Corrections de la revue de sécurité : rétablissement selon le rang, opérations toujours tracées, limites en base, garde du dernier super-administrateur |
+| `20261006003000_recovery_codes.sql` | Codes de secours de la validation en deux étapes |
+| `20261006003100_recovery_codes_hardening.sql` | Corrections de la revue de sécurité : codes de seize signes liés au facteur, usage en session `aal1` seulement, dernier super-administrateur, antériorité du facteur pour `org_admin` |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -245,6 +247,19 @@ L'API renvoie 100 lignes au plus par réponse : la liste des pays se lit en troi
 `licenses`, `resource_types`, `resources`, `resource_internal`, `resource_status_history`,
 `resource_reports` : voir [catalogue.md](catalogue.md) pour le cycle de vie, les
 fonctions et les règles de lecture.
+
+### `private.second_factor_recovery_codes` et `private.recovery_code_attempts`
+
+Codes de secours du second facteur : `user_id`, `code_hash` (empreinte SHA-256 liée au
+compte ; le code lui-même, seize signes soit quatre-vingts bits, n'est jamais conservé),
+`factor_id` (second facteur pour lequel le code vaut), `used_at`. Compteur d'essais
+erronés par compte et par fenêtre de quinze minutes. Aucun accès utilisateur ni serveur :
+tout passe par les fonctions `generate_recovery_codes`, `redeem_recovery_code`,
+`discard_recovery_codes`, `recovery_codes_status` et `last_recovery_code_use`.
+
+`organization_members.role_granted_at` : date d'attribution du rôle, renouvelée par
+déclencheur quand le rôle change. Le rôle `org_admin` n'a d'effet que si un second facteur
+vérifié lui est antérieur.
 
 ### `private.second_factor_attempts`
 

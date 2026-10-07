@@ -44,8 +44,9 @@ applicatif n'attribue un rôle hors de ces fonctions.
    cherche le compte par son adresse et attribue le rôle.
 3. La personne se reconnecte et saisit son code : ses nouveaux droits sont actifs.
 
-Si la personne remplace plus tard son second facteur, son rôle devient sans effet : un
-administrateur le réattribue, ce qui renouvelle sa date.
+Si la personne remplace plus tard son second facteur — ou le lève par un code de
+secours —, son rôle devient sans effet : un administrateur le réattribue, ce qui
+renouvelle sa date.
 
 ## Le premier super-administrateur
 
@@ -70,8 +71,9 @@ sur la base (propriétaire `postgres`) :
 
 Désignez **au moins deux** super-administrateurs : la base refuse que le dernier
 super-administrateur effectif (non suspendu, second facteur antérieur au rôle) supprime
-son compte ou perde son rôle. S'il n'en reste aucun utilisable, la même procédure à deux
-personnes s'applique.
+son compte, perde son rôle ou lève son second facteur par un code de secours. S'il perd
+son application d'authentification, ou s'il n'en reste aucun utilisable, la même
+procédure à deux personnes s'applique.
 
 ## Limites connues
 

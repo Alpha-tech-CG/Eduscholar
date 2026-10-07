@@ -134,6 +134,8 @@ Détail dans `docs/security/initial-audit.md`.
   du mémoire (page imprimable, DOCX, Markdown) et copie de ses données.
 - Administration : rôles et suspensions par l'écran `/admin`, sous la session de
   l'administrateur (dette D-01, D-02 et D-16 soldée pour les rôles de plateforme).
+- Validation en deux étapes : codes de secours, et courriels à l'activation et à la
+  désactivation (dette D-17 et D-18).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
