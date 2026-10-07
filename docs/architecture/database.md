@@ -70,6 +70,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006003100_recovery_codes_hardening.sql` | Corrections de la revue de sécurité : codes de seize signes liés au facteur, usage en session `aal1` seulement, dernier super-administrateur, antériorité du facteur pour `org_admin` |
 | `20261006003200_scheduled_purges.sql` | Purge nocturne par pg_cron : projets supprimés depuis trente jours, comptes jamais confirmés depuis sept jours |
 | `20261006003300_scheduled_purges_hardening.sql` | Corrections de la revue de sécurité : pas de ligne d'audit par compte purgé, comptes suspendus et courriels récents épargnés, propriétaire de la tâche vérifié |
+| `20261006003400_section_autosave.sql` | Enregistrement automatique : la modification d'une section rend sa date de version ; limite de débit par compte |
+| `20261006003500_section_autosave_hardening.sql` | Corrections de la revue de sécurité : clé de compteur en empreinte, purge des compteurs, ordre des verrous, forme jugée avant le décompte |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -320,6 +322,8 @@ migration, et la migration appliquée sous le rôle `postgres` — elle échoue 
 l'exécution se vérifie dans `cron.job_run_details`. Un échec de la tâche ne
 déclenche aucune alerte à ce jour.
 
+Le même passage efface les compteurs de débit de plus de deux jours.
+
 Les tables enfants d'un projet contrôlent l'accès par `private.my_project_ids()`, jamais
 par une colonne recopiée, et portent `on delete cascade` vers le projet.
 
@@ -384,6 +388,11 @@ contrainte différée pour permettre l'échange de deux rangs), `level` (1 à 3)
 Règles :
 
 - lecture par RLS (`my_project_ids`, `my_section_ids`) ; écriture par fonctions seulement ;
+- `update_thesis_section` rend la nouvelle date de modification, que l'éditeur présente à
+  l'enregistrement suivant (enregistrement automatique) ; deux cents enregistrements par
+  dix minutes et par compte, comptés en base (`private.consume_user_quota`, clé en
+  empreinte comme les autres compteurs). Seuls les enregistrements aboutis sont comptés :
+  un refus (conflit, plafond de texte) annule son propre décompte, et n'écrit rien ;
 - `update_thesis_section` refuse d'écraser un texte modifié depuis sa lecture
   (`expected_updated_at`, code `conflict`) ; l'application fournit toujours cette date ;
 - plafonds : 60 sections par projet, 200 sections créées par jour et par compte, 100

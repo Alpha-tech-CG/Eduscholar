@@ -4,15 +4,15 @@ import { notFound } from "next/navigation";
 import { AuthForm, CheckboxField, OptionalTextField, SelectField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { Link } from "@/i18n/navigation";
+import { SectionEditor } from "@/components/projects/section-editor";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 import {
   citeSource,
   deleteSection,
   removeCitation,
-  updateSection,
 } from "@/lib/projects/section-actions";
 import { getCitations, getSection } from "@/lib/projects/section-queries";
-import { countWords, SECTION_BODY_MAX, SECTION_LEVELS } from "@/lib/projects/section-schemas";
+import { SECTION_LEVELS } from "@/lib/projects/section-schemas";
 import { getAllSources } from "@/lib/projects/source-queries";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -38,8 +38,9 @@ export default async function ProjectSectionPage({
   const section = await getSection(id, sectionId);
   if (!section) notFound();
 
-  const [t, citations, sources, { notice }] = await Promise.all([
+  const [t, tAuth, citations, sources, { notice }] = await Promise.all([
     getTranslations("Projects.outline"),
+    getTranslations("Auth"),
     getCitations(section.id),
     getAllSources(section.projectId),
     searchParams,
@@ -80,37 +81,63 @@ export default async function ProjectSectionPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("writeHeading")}</h2>
-        <p className="text-sm opacity-80" data-testid="word-count">
-          {t("words", { count: countWords(section.body) })}
-        </p>
-        <AuthForm action={updateSection} submitLabel={t("save")} pendingLabel={t("pending")}>
-          <input type="hidden" name="projectId" value={section.projectId} />
-          <input type="hidden" name="sectionId" value={section.id} />
-          <input type="hidden" name="updatedAt" value={section.updatedAt} />
-          <OptionalTextField
-            name="title"
-            label={t("fields.title")}
-            maxLength={300}
-            defaultValue={section.title}
-            required
-          />
-          <SelectField
-            name="level"
-            label={t("fields.level")}
-            placeholder={t("choose")}
-            options={SECTION_LEVELS.map((level) => ({ value: level, label: t(`levels.${level}`) }))}
-            defaultValue={String(section.level)}
-            required
-          />
-          <OptionalTextField
-            name="body"
-            label={t("fields.body")}
-            hint={t("fields.bodyHint")}
-            maxLength={SECTION_BODY_MAX}
-            rows={18}
-            defaultValue={section.body ?? ""}
-          />
-        </AuthForm>
+        <SectionEditor
+          projectId={section.projectId}
+          sectionId={section.id}
+          initial={{
+            title: section.title,
+            level: String(section.level),
+            body: section.body ?? "",
+            updatedAt: section.updatedAt,
+          }}
+          labels={{
+            title: t("fields.title"),
+            level: t("fields.level"),
+            choose: t("choose"),
+            levels: SECTION_LEVELS.map((level) => ({ value: level, label: t(`levels.${level}`) })),
+            body: t("fields.body"),
+            bodyHint: t("fields.bodyHint"),
+            save: t("save"),
+            pending: t("pending"),
+            words: {
+              zero: t("words", { count: 0 }),
+              one: t("words", { count: 1 }),
+              other: t.raw("wordsMany") as string,
+            },
+            status: {
+              unsaved: t("autosave.unsaved"),
+              saving: t("autosave.saving"),
+              savedAt: t.raw("autosave.savedAt") as string,
+              retrying: t("autosave.retrying"),
+            },
+            errors: {
+              validation: tAuth("errors.validation"),
+              rate_limited: t("autosave.rateLimited"),
+              limit_reached: t("autosave.limitReached"),
+              session_expired: t("autosave.sessionExpired"),
+              not_found: t("autosave.notFound"),
+              forbidden: t("autosave.forbidden"),
+              unavailable: t("autosave.unavailable"),
+            },
+            fieldErrors: {
+              required: tAuth("fieldErrors.required"),
+              too_long: tAuth("fieldErrors.too_long"),
+              invalid_choice: tAuth("fieldErrors.invalid_choice"),
+            },
+            leave: t("autosave.leave"),
+            conflict: {
+              heading: t("conflict.heading"),
+              intro: t("conflict.intro"),
+              theirTitle: t("conflict.theirTitle"),
+              theirLevel: t("conflict.theirLevel"),
+              theirs: t("conflict.theirs"),
+              keepMine: t("conflict.keepMine"),
+              takeTheirs: t("conflict.takeTheirs"),
+              gone: t("conflict.gone"),
+              reload: tAuth("errors.conflict"),
+            },
+          }}
+        />
       </section>
 
       <section className="flex flex-col gap-3">

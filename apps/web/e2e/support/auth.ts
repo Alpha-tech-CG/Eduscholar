@@ -150,6 +150,19 @@ export function resetTestRoles(): void {
   );
 }
 
+/**
+ * Les limites d'essais se comptent par fenêtres fixes d'un quart d'heure. Un
+ * test qui compte des essais attend, s'il commence trop près de la fin d'une
+ * fenêtre, que la suivante s'ouvre : ses essais tombent alors tous dans la même.
+ */
+export async function awayFromWindowBoundary(marginSeconds = 60): Promise<void> {
+  const windowMs = 15 * 60 * 1000;
+  const remaining = windowMs - (Date.now() % windowMs);
+  if (remaining < marginSeconds * 1000) {
+    await new Promise((resolve) => setTimeout(resolve, remaining + 1000));
+  }
+}
+
 export function resetRateLimits(): void {
   execFileSync(
     "docker",

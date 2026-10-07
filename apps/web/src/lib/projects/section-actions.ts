@@ -4,11 +4,11 @@ import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { getFullySignedInUser } from "@/lib/auth/session";
-import type { AuthFormState } from "@/lib/auth/state";
+import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
 import { createSessionClient } from "@/lib/supabase/server";
-import { citationSchema, newSectionSchema, sectionSchema } from "./section-schemas";
-import { sourceFieldErrors } from "./source-schemas";
+import { citationSchema, countWords, newSectionSchema, sectionSchema } from "./section-schemas";
+import { sourceFieldErrors, type SourceFieldErrorCode } from "./source-schemas";
 
 // Actions du plan du mémoire. Chacune appelle une fonction nommée de la base,
 // sous la session de l'utilisateur : la base vérifie que la section est la
@@ -113,6 +113,89 @@ export async function updateSection(
     },
     locale,
   });
+}
+
+export type SectionSaveResult =
+  | { status: "saved"; updatedAt: string; words: number }
+  | { status: "error"; error: AuthErrorCode; fields?: Record<string, SourceFieldErrorCode> };
+
+const draftSchema = z.object({
+  projectId: z.uuid(),
+  sectionId: z.uuid(),
+  title: z.string().max(400),
+  level: z.string().max(2),
+  body: z.string().max(40000),
+  updatedAt: z.iso.datetime({ offset: true }),
+});
+
+/**
+ * Enregistre la section sans quitter la page : enregistrement automatique, ou
+ * bouton d'enregistrement quand le script de la page est chargé. Mêmes règles
+ * que `updateSection` ; la réponse porte la nouvelle date de version, que
+ * l'éditeur présente à l'enregistrement suivant.
+ */
+export async function saveSectionDraft(input: unknown): Promise<SectionSaveResult> {
+  if (!(await getFullySignedInUser())) return { status: "error", error: "session_expired" };
+
+  const draft = draftSchema.safeParse(input);
+  if (!draft.success) return { status: "error", error: "validation" };
+  const body = draft.data.body.replace(/\r\n?/g, "\n");
+  const parsed = sectionSchema.safeParse({ title: draft.data.title, level: draft.data.level, body });
+  if (!parsed.success) {
+    return { status: "error", error: "validation", fields: sourceFieldErrors(parsed.error) };
+  }
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase.rpc("update_thesis_section", {
+    section_id: draft.data.sectionId,
+    payload: {
+      title: parsed.data.title,
+      level: parsed.data.level,
+      body: parsed.data.body ?? "",
+      expected_updated_at: draft.data.updatedAt,
+    },
+  });
+  if (error) return { status: "error", error: catalogueErrorCode(error) };
+  if (typeof data !== "string") return { status: "error", error: "unavailable" };
+
+  return { status: "saved", updatedAt: data, words: countWords(parsed.data.body ?? null) };
+}
+
+export type SectionVersion = { title: string; level: string; body: string; updatedAt: string };
+export type SectionVersionResult =
+  | { status: "found"; version: SectionVersion }
+  | { status: "gone" }
+  | { status: "error"; error: "session_expired" | "unavailable" };
+
+/**
+ * La version enregistrée d'une section, pour sortir d'un conflit sans recharger
+ * la page. « gone » : la section n'existe plus, ou n'est pas celle de
+ * l'utilisateur — même réponse. Une lecture qui échoue n'est jamais présentée
+ * comme une suppression.
+ */
+export async function loadSectionVersion(input: unknown): Promise<SectionVersionResult> {
+  if (!(await getFullySignedInUser())) return { status: "error", error: "session_expired" };
+  const target = z.object({ projectId: z.uuid(), sectionId: z.uuid() }).safeParse(input);
+  if (!target.success) return { status: "gone" };
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase
+    .from("thesis_sections")
+    .select("title, level, body, updated_at")
+    .eq("id", target.data.sectionId)
+    .eq("project_id", target.data.projectId)
+    .maybeSingle();
+  if (error) return { status: "error", error: "unavailable" };
+  if (!data) return { status: "gone" };
+  return {
+    status: "found",
+    version: {
+      title: data.title,
+      level: String(data.level),
+      body: data.body ?? "",
+      updatedAt: data.updated_at,
+    },
+  };
 }
 
 export async function moveSection(

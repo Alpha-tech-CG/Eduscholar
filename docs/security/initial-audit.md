@@ -259,6 +259,18 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   neutre, tests incomplets. Accepté : les deux purges partagent une transaction (un
   test de configuration interdit la clé étrangère qui la bloquerait). Ces corrections
   n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Enregistrement automatique de la rédaction (D-24) : limite de débit
+  des enregistrements tenue en base, par compte ; un conflit ne s'écrase que par un
+  geste explicite de l'utilisateur. Relu par l'agent sécurité : aucun constat critique
+  ou élevé, 1 moyen et 11 faibles. Corrigés : texte perdu en quittant la page par un
+  lien ou un autre formulaire avant l'enregistrement, choix perdu en silence dans un
+  conflit, lecture échouée présentée comme une suppression, titre et niveau de l'autre
+  version non montrés, interblocage possible entre enregistrement et ajout de section,
+  compteurs jamais purgés, identifiant du compte en clair dans la clé du compteur,
+  refus définitif retenté sans fin, tests qui ne prouvaient pas leur énoncé. Accepté :
+  la limite ne compte que les enregistrements aboutis, et une fenêtre fixe laisse passer
+  jusqu'à 400 enregistrements à cheval sur deux fenêtres. Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 

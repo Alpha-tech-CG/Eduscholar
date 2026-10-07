@@ -931,6 +931,18 @@ describe("catalogue, par appel direct à l'API", () => {
       payload: { body: "Texte privé du mémoire." },
     });
     expect(written.error).toBeNull();
+    // La modification rend la date de version, celle que la lecture montre ensuite.
+    const read = await fatou.client.from("thesis_sections").select("updated_at").eq("id", sectionId).single();
+    expect(new Date(written.data as string).getTime()).toBe(new Date(read.data?.updated_at ?? 0).getTime());
+    // Le compteur de débit n'est pas appelable par l'API, quel que soit le rôle.
+    for (const client of [fatou.client, anonymous, admin]) {
+      const direct = await client.rpc("consume_user_quota" as never, {
+        p_action: "section-save",
+        p_limit: 1,
+        p_window_seconds: 600,
+      } as never);
+      expect(direct.error).not.toBeNull();
+    }
     const source = await fatou.client.rpc("add_project_source", {
       project_id: projectId,
       payload: { title: `Source citée ${run}` },

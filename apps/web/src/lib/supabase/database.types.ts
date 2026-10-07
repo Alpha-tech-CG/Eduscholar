@@ -667,7 +667,7 @@ isOneToOne: false
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined
                            },
 "update_thesis_section":
-{ Args: { "payload": Json,"section_id": string }; Returns: undefined
+{ Args: { "payload": Json,"section_id": string }; Returns: string
                            },
 "withdraw_submission":
 { Args: { "resource_id": string }; Returns: undefined

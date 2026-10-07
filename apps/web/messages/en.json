@@ -822,10 +822,34 @@
         "title": "Section title",
         "level": "Heading level",
         "body": "Section text",
-        "bodyHint": "Plain text, 30,000 characters at most. Leave an empty line between two paragraphs. Save regularly: there is no autosave yet.",
+        "bodyHint": "Plain text, 30,000 characters at most. Leave an empty line between two paragraphs. The text saves by itself while you write.",
         "source": "Source to cite",
         "pages": "Pages cited",
         "pagesHint": "For example pp. 12-14."
+      },
+      "wordsMany": "{count} words",
+      "autosave": {
+        "unsaved": "Unsaved changes.",
+        "saving": "Saving…",
+        "savedAt": "Saved at {time}.",
+        "retrying": "Another attempt will follow shortly; your text stays on screen.",
+        "rateLimited": "Too many saves in a short time.",
+        "limitReached": "You have reached the amount of text allowed for your account. Shorten or delete some text to save.",
+        "sessionExpired": "Your session has expired: the text is no longer being saved. Copy it, then sign in again in another tab and save again.",
+        "notFound": "This section no longer exists: the text cannot be saved. Copy it before leaving the page.",
+        "unavailable": "The save did not go through.",
+        "forbidden": "Your account can no longer save text. Copy your text before leaving the page.",
+        "leave": "Your text could not be saved. Leave the page anyway? Unsaved changes will be lost."
+      },
+      "conflict": {
+        "heading": "This section was changed elsewhere.",
+        "intro": "Another tab or device saved it since you opened it. What you typed is still in the form below, and nothing was overwritten. Choose which version to keep: title, level and text.",
+        "theirs": "Text saved elsewhere",
+        "keepMine": "Keep my version",
+        "takeTheirs": "Use the saved version",
+        "gone": "It was deleted from another tab or device. Copy your text if you want to keep it.",
+        "theirTitle": "Title saved elsewhere",
+        "theirLevel": "Level saved elsewhere"
       }
     },
     "document": {

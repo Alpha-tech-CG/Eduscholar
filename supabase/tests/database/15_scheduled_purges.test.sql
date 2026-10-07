@@ -42,6 +42,11 @@ insert into public.research_projects (id, owner_id, title, deleted_at) values
 insert into public.project_sources (project_id, title) values
   ('32000000-0000-0000-0000-0000000000a1', 'Source d''un projet purgé');
 
+-- Compteurs de débit : un ancien, un récent.
+insert into private.rate_limit_buckets (bucket_key, window_start, hits) values
+  ('purge-test:ancien', now() - interval '3 days', 1),
+  ('purge-test:recent', now() - interval '1 hour', 1);
+
 -- ---------------------------------------------------------------------------
 -- Qui peut lancer la purge
 -- ---------------------------------------------------------------------------
@@ -109,6 +114,12 @@ select is(
      and (metadata ->> 'unconfirmed_accounts')::integer >= 1
      and metadata::text not like '%test.invalid%'),
   1::bigint, 'Le passage est inscrit au journal : des nombres, aucun identifiant'
+);
+
+select results_eq(
+  $$ select bucket_key from private.rate_limit_buckets where bucket_key like 'purge-test:%' $$,
+  $$ values ('purge-test:recent') $$,
+  'Les compteurs de débit de plus de deux jours sont effacés'
 );
 
 -- Un second passage n'a plus rien à effacer et n'écrit rien.

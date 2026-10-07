@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
+  awayFromWindowBoundary,
   completeProfileDirectly,
   createConfirmedUser,
   makeModerator,
@@ -201,6 +202,7 @@ test.describe("validation en deux étapes", () => {
   test("l'application limite les essais de code avant même le blocage en base", async ({
     page,
   }) => {
+    await awayFromWindowBoundary();
     const email = uniqueEmail("essais-bornes");
     const password = strongPassword();
     const used = new Set<string>();
@@ -273,6 +275,7 @@ test.describe("validation en deux étapes", () => {
   test("codes de secours : générés une fois, ils rendent l'accès sans l'application", async ({
     page,
   }) => {
+    await awayFromWindowBoundary();
     const email = uniqueEmail("codes-secours");
     const password = strongPassword();
     const used = new Set<string>();

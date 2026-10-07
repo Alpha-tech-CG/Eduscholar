@@ -822,10 +822,34 @@
         "title": "Titre de la section",
         "level": "Niveau de titre",
         "body": "Texte de la section",
-        "bodyHint": "Texte simple, 30 000 caractères au plus. Laissez une ligne vide entre deux paragraphes. Enregistrez régulièrement : il n'y a pas encore d'enregistrement automatique.",
+        "bodyHint": "Texte simple, 30 000 caractères au plus. Laissez une ligne vide entre deux paragraphes. Le texte s'enregistre tout seul pendant que vous écrivez.",
         "source": "Source à citer",
         "pages": "Pages citées",
         "pagesHint": "Par exemple p. 12-14."
+      },
+      "wordsMany": "{count} mots",
+      "autosave": {
+        "unsaved": "Modifications non enregistrées.",
+        "saving": "Enregistrement…",
+        "savedAt": "Enregistré à {time}.",
+        "retrying": "Un nouvel essai aura lieu dans un instant ; votre texte reste à l'écran.",
+        "rateLimited": "Trop d'enregistrements en peu de temps.",
+        "limitReached": "Vous avez atteint la quantité de texte autorisée pour votre compte. Raccourcissez ou supprimez du texte pour enregistrer.",
+        "sessionExpired": "Votre session a expiré : le texte n'est plus enregistré. Copiez-le, puis reconnectez-vous dans un autre onglet et enregistrez à nouveau.",
+        "notFound": "Cette section n'existe plus : le texte ne peut pas être enregistré. Copiez-le avant de quitter la page.",
+        "unavailable": "L'enregistrement n'a pas abouti.",
+        "forbidden": "Votre compte ne peut plus enregistrer de texte. Copiez votre texte avant de quitter la page.",
+        "leave": "Votre texte n'a pas pu être enregistré. Quitter la page quand même ? Les modifications non enregistrées seront perdues."
+      },
+      "conflict": {
+        "heading": "Cette section a été modifiée ailleurs.",
+        "intro": "Un autre onglet ou un autre appareil l'a enregistrée depuis que vous l'avez ouverte. Votre saisie est toujours dans le formulaire ci-dessous, et rien n'a été écrasé. Choisissez la version à garder : titre, niveau et texte.",
+        "theirs": "Texte enregistré ailleurs",
+        "keepMine": "Garder ma version",
+        "takeTheirs": "Reprendre la version enregistrée",
+        "gone": "Elle a été supprimée depuis un autre onglet ou un autre appareil. Copiez votre texte si vous voulez le conserver.",
+        "theirTitle": "Titre enregistré ailleurs",
+        "theirLevel": "Niveau enregistré ailleurs"
       }
     },
     "document": {

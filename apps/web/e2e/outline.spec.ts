@@ -5,12 +5,12 @@ import {
   createConfirmedUser,
   signInThroughForm,
   sql,
+  sqlValue,
   strongPassword,
   uniqueEmail,
 } from "./support/auth";
 
 const alert = (page: Page) => page.getByRole("main").getByRole("alert");
-const status = (page: Page) => page.getByRole("main").getByRole("status");
 
 async function signInOnboarded(page: Page, label: string): Promise<string> {
   const email = uniqueEmail(label);
@@ -92,28 +92,80 @@ test.describe("plan du mémoire", () => {
 
     // --- Rédaction -----------------------------------------------------------
     await page.goto(stateUrl);
+    const body = page.getByLabel("Texte de la section");
+    const saveStatus = page.getByTestId("save-status");
+    const sectionId = stateUrl.split("/").pop();
+    const stored = () => sqlValue(`select coalesce(body, '') from public.thesis_sections where id = '${sectionId}'`);
     await expect(page.getByTestId("word-count")).toHaveText("Aucun mot");
     const text = "Les réseaux profonds dominent.\n\n<script>alert(1)</script> reste du texte.";
-    await page.getByLabel("Texte de la section").fill(text);
+    await body.fill(text);
+    // Le compte de mots suit la saisie, avant tout enregistrement.
+    await expect(page.getByTestId("word-count")).toHaveText("11 mots");
+    await expect(saveStatus).toHaveText("Modifications non enregistrées.");
     await page.getByRole("button", { name: "Enregistrer la section" }).click();
-    await expect(page).toHaveURL(/notice=saved/);
-    await expect(status(page)).toContainText("La section est enregistrée");
-    await expect(page.getByLabel("Texte de la section")).toHaveValue(text);
+    // L'enregistrement ne quitte pas la page.
+    await expect(saveStatus).toContainText("Enregistré à");
+    await expect(page).not.toHaveURL(/notice=saved/);
+    expect(stored()).toBe(text);
+    await page.reload();
+    await expect(body).toHaveValue(text);
     await expect(page.getByTestId("word-count")).toHaveText("11 mots");
 
+    // --- Enregistrement automatique : sans cliquer ----------------------------
+    await body.fill("Texte enregistré tout seul.");
+    await expect(saveStatus).toContainText("Enregistré à", { timeout: 20_000 });
+    expect(stored()).toBe("Texte enregistré tout seul.");
+    // Un second enregistrement s'enchaîne sans faux conflit : la version suit.
+    await body.fill("Texte enregistré tout seul, puis repris.");
+    await expect(saveStatus).toHaveText("Modifications non enregistrées.");
+    await expect(saveStatus).toContainText("Enregistré à", { timeout: 20_000 });
+    expect(stored()).toBe("Texte enregistré tout seul, puis repris.");
+
     // --- Conflit : la section change ailleurs pendant la saisie --------------
-    await page.getByLabel("Texte de la section").fill("Version de cet onglet.");
-    const sectionId = stateUrl.split("/").pop();
+    const conflict = page.getByTestId("conflict");
     sql(`update public.thesis_sections set body = 'Version d''un autre appareil.' where id = '${sectionId}'`);
+    await body.fill("Version de cet onglet.");
     await page.getByRole("button", { name: "Enregistrer la section" }).click();
-    await expect(alert(page)).toContainText("modifiée ailleurs");
-    // Rien n'est écrasé en base, et la saisie n'est pas perdue à l'écran.
-    await expect(page.getByLabel("Texte de la section")).toHaveValue("Version de cet onglet.");
-    await page.reload();
-    await expect(page.getByLabel("Texte de la section")).toHaveValue("Version d'un autre appareil.");
+    await expect(conflict).toContainText("modifiée ailleurs");
+    // Rien n'est écrasé en base, la saisie reste à l'écran, l'autre version est montrée.
+    expect(stored()).toBe("Version d'un autre appareil.");
+    await expect(body).toHaveValue("Version de cet onglet.");
+    await expect(page.getByLabel("Texte enregistré ailleurs")).toHaveValue("Version d'un autre appareil.");
+    await expect(page.getByTestId("conflict-title")).toHaveText("État de l'art");
+    // Tant que le choix n'est pas fait, rien ne s'enregistre : l'attente dépasse
+    // l'intervalle entre deux enregistrements automatiques.
+    await body.fill("Version de cet onglet, complétée.");
+    await page.waitForTimeout(13_000);
+    expect(stored()).toBe("Version d'un autre appareil.");
+    // Revenir au texte de l'autre version puis au sien ne fait pas perdre le choix.
+    await body.fill("Version d'un autre appareil.");
+    await body.fill("Version de cet onglet, complétée.");
+    // Garder sa version : enregistrée sans recharger la page.
+    await page.getByRole("button", { name: "Garder ma version" }).click();
+    await expect(conflict).toHaveCount(0);
+    await expect(saveStatus).toContainText("Enregistré à");
+    expect(stored()).toBe("Version de cet onglet, complétée.");
+
+    // Second conflit : reprendre la version enregistrée ailleurs.
+    sql(`update public.thesis_sections set body = 'Version reprise.' where id = '${sectionId}'`);
+    await body.fill("Brouillon abandonné.");
+    await page.getByRole("button", { name: "Enregistrer la section" }).click();
+    await expect(conflict).toContainText("modifiée ailleurs");
+    await page.getByRole("button", { name: "Reprendre la version enregistrée" }).click();
+    await expect(conflict).toHaveCount(0);
+    await expect(body).toHaveValue("Version reprise.");
+    expect(stored()).toBe("Version reprise.");
+
+    // --- Quitter la page : le texte en cours est enregistré d'abord -----------
+    await body.fill("Texte saisi juste avant de partir.");
+    await page.getByRole("link", { name: "Retour au plan" }).click();
+    await expect(page).toHaveURL(new RegExp(`${outline}$`));
+    expect(stored()).toBe("Texte saisi juste avant de partir.");
+    await page.goto(stateUrl);
+    await expect(body).toHaveValue("Texte saisi juste avant de partir.");
 
     // --- Déplacer une section ailleurs ne provoque pas de faux conflit --------
-    await page.getByLabel("Texte de la section").fill("Premier paragraphe.\n\nSecond paragraphe.");
+    await body.fill("Premier paragraphe.\r\n\r\nSecond paragraphe.");
     {
       const context = await browser.newContext({
         storageState: await page.context().storageState(),
@@ -126,11 +178,37 @@ test.describe("plan du mémoire", () => {
       await context.close();
     }
     await page.getByRole("button", { name: "Enregistrer la section" }).click();
-    await expect(page).toHaveURL(/notice=saved/);
+    await expect(saveStatus).toContainText("Enregistré à");
+    await expect(conflict).toHaveCount(0);
     // Stocké avec des sauts de ligne simples.
-    await expect(page.getByLabel("Texte de la section")).toHaveValue(
-      "Premier paragraphe.\n\nSecond paragraphe.",
-    );
+    expect(stored()).toBe("Premier paragraphe.\n\nSecond paragraphe.");
+
+    // --- Titre vide : refusé, signalé sur le champ, texte conservé ------------
+    await page.getByLabel("Titre de la section").fill("");
+    await page.getByRole("button", { name: "Enregistrer la section" }).click();
+    await expect(alert(page)).toContainText("Certains champs sont à corriger.");
+    await expect(page.getByLabel("Titre de la section")).toHaveAttribute("aria-invalid", "true");
+    // Revenu au titre enregistré : plus rien à corriger ni à envoyer.
+    await page.getByLabel("Titre de la section").fill("État de l'art");
+    await expect(alert(page)).toHaveCount(0);
+    await expect(page.getByLabel("Titre de la section")).not.toHaveAttribute("aria-invalid", "true");
+
+    // --- Débit : au-delà de la limite, refus annoncé et texte conservé --------
+    sql(`insert into private.rate_limit_buckets (bucket_key, window_start, hits)
+         values ('section-save:user:' || left(encode(sha256(convert_to('section-save:${ownerId}', 'UTF8')), 'hex'), 40), to_timestamp(floor(extract(epoch from clock_timestamp()) / 600) * 600), 200)
+         on conflict (bucket_key, window_start) do update set hits = 200`);
+    await body.fill("Texte refusé pour l'instant.");
+    await page.getByRole("button", { name: "Enregistrer la section" }).click();
+    await expect(alert(page)).toContainText("Trop d'enregistrements en peu de temps.");
+    await expect(body).toHaveValue("Texte refusé pour l'instant.");
+    expect(stored()).toBe("Premier paragraphe.\n\nSecond paragraphe.");
+    sql(`delete from private.rate_limit_buckets where bucket_key = 'section-save:user:' || left(encode(sha256(convert_to('section-save:${ownerId}', 'UTF8')), 'hex'), 40)`);
+    await page.getByRole("button", { name: "Enregistrer la section" }).click();
+    await expect(saveStatus).toContainText("Enregistré à");
+    await body.fill("Premier paragraphe.\n\nSecond paragraphe.");
+    await page.getByRole("button", { name: "Enregistrer la section" }).click();
+    await expect(saveStatus).toContainText("Enregistré à");
+    await page.reload();
 
     // --- Sources citées ------------------------------------------------------
     await expect(page.getByRole("heading", { name: "Sources citées (0)" })).toBeVisible();

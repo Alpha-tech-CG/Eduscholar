@@ -481,7 +481,9 @@ Fonctions d'appui de l'administration : `has_recent_second_factor` (lue par l'é
 `require_admin`, `highest_role_rank`, `effective_super_admin_count` (internes).
 
 Fonctions internes, exécutables par aucun rôle de l'API : `require_own_project`,
-`require_own_source`, `require_own_section`, `check_source_payload`, `check_daily_source_quota`, `clean_line`,
+`require_own_source`, `require_own_section`, `check_source_payload`, `check_daily_source_quota`,
+`consume_user_quota` (débit par compte, appelée par `update_thesis_section` : 200
+enregistrements par dix minutes), `clean_line`,
 `nfc_text_array`, `is_saveable_resource`, `require_library_user`.
 
 Règles :

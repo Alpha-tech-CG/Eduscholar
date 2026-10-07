@@ -371,6 +371,81 @@ select throws_ok(
 );
 reset role;
 
+-- Enregistrement automatique : la fonction rend la nouvelle date de modification.
+create function tests.save_key(p_user uuid) returns text language sql as $$
+  select 'section-save:user:' || left(encode(sha256(convert_to('section-save:' || p_user::text, 'UTF8')), 'hex'), 40)
+$$;
+-- Porte le compteur du compte à la valeur donnée, dans la fenêtre courante et la suivante.
+create function tests.set_saves(p_user uuid, p_hits integer) returns void language sql as $$
+  insert into private.rate_limit_buckets (bucket_key, window_start, hits)
+  select tests.save_key(p_user), to_timestamp((floor(extract(epoch from clock_timestamp()) / 600) + g) * 600), p_hits
+  from generate_series(0, 1) g
+  on conflict (bucket_key, window_start) do update set hits = excluded.hits
+$$;
+create function tests.saves(p_user uuid) returns integer language sql as $$
+  select coalesce(max(hits), 0) from private.rate_limit_buckets where bucket_key = tests.save_key(p_user)
+$$;
+
+select tests.set_saves('b0000000-0000-0000-0000-0000000025e2', 10);
+select tests.login('b0000000-0000-0000-0000-0000000025e2');
+create temporary table returned_version as
+select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"title": "Titre daté"}') as updated_at;
+reset role;
+select is(
+  (select updated_at from returned_version),
+  (select s.updated_at from public.thesis_sections s where s.id = (select id from tests.ids where label = 'b1')),
+  'La modification rend la date de version de la section'
+);
+select is(tests.saves('b0000000-0000-0000-0000-0000000025e2'), 11, 'Un enregistrement abouti est compté');
+select is(
+  (select count(*) from private.rate_limit_buckets where bucket_key like '%0000-0000%'),
+  0::bigint, 'Aucune clé de compteur ne porte un identifiant de compte'
+);
+
+-- Débit : deux cents enregistrements par dix minutes et par compte.
+select tests.set_saves('b0000000-0000-0000-0000-0000000025e2', 199);
+select tests.login('b0000000-0000-0000-0000-0000000025e2');
+select lives_ok(
+  $$ select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"title": "Deux centième"}') $$,
+  'Le deux centième enregistrement passe'
+);
+select throws_ok(
+  $$ select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"title": "De trop"}') $$,
+  'P0001', 'rate_limited', 'Le suivant est refusé'
+);
+-- La forme de la requête est jugée avant le décompte.
+select throws_ok(
+  $$ select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"level": "9"}') $$,
+  '22023', 'invalid_payload', 'À la limite, une requête invalide reste dite invalide'
+);
+select throws_ok(
+  $$ select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"expected_updated_at": "x"}') $$,
+  '22023', 'invalid_payload', 'Une date de version mal formée aussi'
+);
+reset role;
+select is(
+  (select title from public.thesis_sections where id = (select id from tests.ids where label = 'b1')),
+  'Deux centième', 'Un refus n''écrit rien'
+);
+
+-- La section d'un autre : la propriété est jugée avant le décompte, même pour
+-- un compte qui a épuisé le sien.
+select tests.set_saves('a0000000-0000-0000-0000-0000000025e1', 200);
+select tests.login('a0000000-0000-0000-0000-0000000025e1');
+select throws_ok(
+  $$ select public.update_thesis_section((select id from tests.ids where label = 'b1'), '{"title": "Piraté"}') $$,
+  'P0001', 'not_found', 'Un compte à sa limite reçoit la même réponse pour la section d''autrui'
+);
+reset role;
+
+-- Le compteur n'est exécutable par aucun rôle de l'API.
+select is(
+  (select count(*) from unnest(array['anon', 'authenticated', 'service_role']) r
+   where has_function_privilege(r, 'private.consume_user_quota(text, integer, integer)', 'execute')),
+  0::bigint, 'Aucun rôle de l''API n''appelle le compteur directement'
+);
+select tests.set_saves('b0000000-0000-0000-0000-0000000025e2', 1);
+
 -- Compte suspendu : ni lecture, ni écriture.
 insert into private.account_status (user_id, status, changed_by)
 values ('b0000000-0000-0000-0000-0000000025e2', 'suspended', 'd0000000-0000-0000-0000-0000000025e4');
