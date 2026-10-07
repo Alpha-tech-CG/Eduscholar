@@ -43,6 +43,7 @@ export type AuthErrorCode =
   | "limit_reached"
   | "conflict"
   | "duplicate_name"
+  | "nothing_to_submit"
   // Import par connecteur
   | "doi_not_found"
   | "unsupported_type"

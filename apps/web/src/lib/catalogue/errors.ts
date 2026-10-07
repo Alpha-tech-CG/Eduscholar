@@ -31,6 +31,8 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
       return message;
     case "invalid_date":
       return "validation";
+    case "nothing_to_submit":
+      return message;
     case "recent_second_factor_required":
     case "own_account":
     case "account_suspended":

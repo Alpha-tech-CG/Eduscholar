@@ -297,6 +297,135 @@ test.describe("partage d'un projet avec un encadreur", () => {
     await expect(page.getByTestId("thread")).not.toContainText(supervisor.email);
   });
 
+  test("versions : l'étudiante soumet, l'encadreur décide, l'historique reste", async ({
+    page,
+    browser,
+  }) => {
+    const owner = await createMember("versions-etudiante");
+    const supervisor = await createMember("versions-encadreur");
+    const viewer = await createMember("versions-lecteur");
+    const { projectId, sectionId, token } = seedProject(owner.id);
+    sql(`
+      insert into public.research_project_members (project_id, user_id, role) values
+        ('${projectId}', '${supervisor.id}', 'supervisor'),
+        ('${projectId}', '${viewer.id}', 'viewer')
+    `);
+
+    // --- L'étudiante soumet une première version -------------------------------
+    await signInThroughForm(page, owner.email, owner.password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    await page.goto(`/fr/projects/${projectId}`);
+    await page.getByRole("link", { name: "Versions soumises à l'encadreur" }).click();
+    await expect(page).toHaveURL(new RegExp(`/fr/projects/${projectId}/versions$`));
+    await expect(page.getByRole("main")).toContainText("Aucune version n'a encore été soumise.");
+
+    await page.getByRole("button", { name: "Soumettre cette version" }).click();
+    await expect(alert(page)).toHaveText("Certains champs sont à corriger.");
+    await page.getByLabel("Intitulé (facultatif)").fill("Premier jet");
+    await page.getByLabel(/Mot d.accompagnement/).fill(`Merci de relire ${token}.`);
+    await page.getByLabel(/Je soumets mon document/).check();
+    await page.getByRole("button", { name: "Soumettre cette version" }).click();
+    await expect(page).toHaveURL(/notice=submitted$/);
+    await expect(status(page)).toHaveText("La version est soumise.");
+    const first = page.getByTestId("version");
+    await expect(first).toContainText("Version 1 · Premier jet");
+    await expect(first.getByTestId("version-status")).toHaveText("En attente de décision");
+
+    // Elle continue d'écrire : la version soumise ne bouge pas.
+    sql(`update public.thesis_sections set body = 'Texte repris ${token}.' where id = '${sectionId}'`);
+    await first.getByRole("link").click();
+    await expect(page.getByTestId("document")).toContainText(`Texte du mémoire ${token}.`);
+    await expect(page.getByTestId("document")).not.toContainText("Texte repris");
+    await expect(page.getByTestId("version-changes")).toContainText("C'est la première version soumise.");
+    // Elle ne décide pas de sa propre version.
+    await expect(page.getByRole("button", { name: "Enregistrer la décision" })).toHaveCount(0);
+
+    // --- L'encadreur lit et demande des corrections ------------------------------
+    const guide = await openSession(browser, supervisor);
+    await guide.page.goto(`/fr/shared/${projectId}`);
+    await guide.page.getByRole("link", { name: "Versions soumises et décisions" }).click();
+    await expect(guide.page.getByTestId("version")).toContainText(`Merci de relire ${token}.`);
+    await guide.page.getByTestId("version").getByRole("link").click();
+    await expect(guide.page.getByTestId("document")).toContainText(`Texte du mémoire ${token}.`);
+
+    await guide.page.getByLabel("Votre décision").selectOption({ label: "Corrections demandées" });
+    await guide.page.getByRole("button", { name: "Enregistrer la décision" }).click();
+    await expect(alert(guide.page)).toContainText("Un motif est nécessaire");
+    await guide.page.getByLabel("Votre décision").selectOption({ label: "Corrections demandées" });
+    await guide.page.getByLabel("Votre commentaire").fill(`Précisez la problématique ${token}.`);
+    await guide.page.getByRole("button", { name: "Enregistrer la décision" }).click();
+    await expect(guide.page).toHaveURL(/notice=decided$/);
+    await expect(status(guide.page)).toHaveText("Votre décision est enregistrée.");
+
+    // --- L'étudiante lit la décision, corrige, soumet à nouveau -------------------
+    await page.goto(`/fr/projects/${projectId}/versions`);
+    await expect(page.getByTestId("version-status")).toHaveText("Corrections demandées");
+    await expect(page.getByTestId("decision")).toContainText(`Précisez la problématique ${token}.`);
+    await expect(page.getByTestId("decision")).toContainText(supervisor.email);
+
+    await page.getByLabel(/Je soumets mon document/).check();
+    await page.getByRole("button", { name: "Soumettre cette version" }).click();
+    await expect(page).toHaveURL(/notice=submitted$/);
+    await expect(page.getByTestId("version")).toHaveCount(2);
+    await page.getByTestId("version").first().getByRole("link").click();
+    await expect(page.getByTestId("document")).toContainText(`Texte repris ${token}.`);
+    await expect(page.getByTestId("version-changes")).toContainText("Sections modifiées : Introduction");
+
+    // --- L'encadreur accepte la seconde ; l'historique de la première reste --------
+    await guide.page.goto(`/fr/shared/${projectId}/versions`);
+    await guide.page.getByTestId("version").first().getByRole("link").click();
+    await guide.page.getByLabel("Votre décision").selectOption({ label: "Acceptée" });
+    await guide.page.getByRole("button", { name: "Enregistrer la décision" }).click();
+    await expect(guide.page).toHaveURL(/notice=decided$/);
+    await guide.page.goto(`/fr/shared/${projectId}/versions`);
+    await expect(guide.page.getByTestId("version-status")).toHaveText(["Acceptée", "Corrections demandées"]);
+    await expect(guide.page.getByTestId("decision").first()).toContainText("par vous");
+    await guide.close();
+
+    // --- Le lecteur simple lit versions et décisions, sans décider -----------------
+    const reader = await openSession(browser, viewer);
+    await reader.page.goto(`/fr/shared/${projectId}/versions`);
+    await expect(reader.page.getByTestId("version")).toHaveCount(2);
+    await expect(reader.page.getByTestId("decision").first()).toContainText("par l'encadreur");
+    await expect(reader.page.getByRole("main")).not.toContainText(supervisor.email);
+    await reader.page.getByTestId("version").first().getByRole("link").click();
+    await expect(reader.page.getByTestId("document")).toContainText(`Texte repris ${token}.`);
+    await expect(reader.page.getByRole("button", { name: "Enregistrer la décision" })).toHaveCount(0);
+    // La page de version du propriétaire lui reste introuvable.
+    const versionId = reader.page.url().split("/").pop() ?? "";
+    expect((await reader.page.goto(`/fr/projects/${projectId}/versions/${versionId}`))?.status()).toBe(404);
+    expect((await reader.page.goto(`/fr/projects/${projectId}/versions`))?.status()).toBe(404);
+    await reader.close();
+
+    // --- L'étudiante efface le contenu de la première version, soumise par erreur ---
+    await page.goto(`/fr/projects/${projectId}/versions`);
+    await page.getByTestId("version").last().getByRole("link").click();
+    await expect(page.getByTestId("document")).toContainText(`Texte du mémoire ${token}.`);
+    await page.getByRole("button", { name: "Effacer le contenu" }).click();
+    await expect(alert(page)).toHaveText("Certains champs sont à corriger.");
+    await page.getByLabel("J'efface définitivement le contenu de cette version.").check();
+    await page.getByRole("button", { name: "Effacer le contenu" }).click();
+    await expect(page).toHaveURL(/notice=erased$/);
+    await expect(page.getByTestId("version-erased")).toBeVisible();
+    await expect(page.getByTestId("document")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Effacer le contenu" })).toHaveCount(0);
+    // Le document et le mot d'accompagnement ne sont plus en base ; la trace et la décision restent.
+    expect(
+      sqlValue(
+        `select count(*) from public.thesis_versions where project_id = '${projectId}' and number = 1 and (snapshot::text like '%${token}%' or note is not null)`,
+      ),
+    ).toBe("0");
+    await page.goto(`/fr/projects/${projectId}/versions`);
+    await expect(page.getByTestId("version").last()).toContainText("contenu effacé par son auteur");
+    await expect(page.getByTestId("version").last().getByTestId("decision")).toContainText(
+      `Précisez la problématique ${token}.`,
+    );
+
+    // Hors de cet effacement voulu, rien ne modifie ni ne supprime une version ou une décision.
+    expect(sqlValue(`select count(*) from public.thesis_versions where project_id = '${projectId}'`)).toBe("2");
+    expect(sqlValue(`select count(*) from public.version_decisions where project_id = '${projectId}'`)).toBe("2");
+  });
+
   test("les pages de partage exigent une session", async ({ page }) => {
     for (const path of ["/fr/shared", `/fr/shared/${randomUUID()}`, `/fr/projects/${randomUUID()}/sharing`]) {
       await page.goto(path);

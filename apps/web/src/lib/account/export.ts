@@ -68,7 +68,12 @@ async function readByIds(
 /** Lit, page par page, ce qu'une fonction de la base rend pour l'appelant. */
 async function ownRows(
   supabase: Client,
-  fn: "my_account_events" | "my_deleted_projects" | "my_project_comments",
+  fn:
+    | "my_account_events"
+    | "my_deleted_projects"
+    | "my_project_comments"
+    | "my_thesis_versions"
+    | "my_version_decisions",
 ): Promise<unknown[]> {
   const rows: unknown[] = [];
   for (let from = 0; ; from += PAGE) {
@@ -182,6 +187,10 @@ export async function buildPersonalDataExport(
     const accountEvents = await ownRows(supabase, "my_account_events");
     // Commentaires écrits par le titulaire, sur ses projets ou ceux qu'il suit.
     const projectComments = await ownRows(supabase, "my_project_comments");
+    // Versions soumises (sans leur document, lisible dans l'application) et
+    // décisions rendues sur les projets des autres.
+    const submittedVersions = await ownRows(supabase, "my_thesis_versions");
+    const versionDecisions = await ownRows(supabase, "my_version_decisions");
 
     return {
       format: "eduscholar-personal-data",
@@ -200,12 +209,15 @@ export async function buildPersonalDataExport(
         section_citations: citations,
         deleted_projects_pending_purge: deletedProjects,
         comments_written: projectComments,
+        submitted_versions: submittedVersions,
+        version_decisions_given: versionDecisions,
       },
       // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
       account_events: accountEvents,
       catalogue: { submissions, submission_history: submissionHistory, reports },
       // Ce que cette copie ne contient pas, pour qu'elle ne passe pas pour exhaustive.
       not_included: [
+        "documents_of_submitted_versions",
         "rights_declaration_and_comments_sent_with_submissions",
         "organization_memberships",
       ],

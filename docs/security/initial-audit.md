@@ -328,6 +328,18 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   plus supprimer son compte (corrigé, avec tests de non-régression). À arbitrer : le
   texte des commentaires d'un compte supprimé reste dans le projet d'autrui. Ces
   corrections n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Versions soumises et décisions (E-03) relues par l'agent sécurité :
+  aucun constat critique ou élevé, cloisonnement et immuabilité conformes ; 4 moyens et
+  6 faibles. Corrigés : la liste des versions décompressait tous les instantanés et
+  n'avait pas de limite de débit ; les versions échappaient à tout plafond de stockage
+  (3 Mo par version, 60 Mo par compte) ; la lecture chargeait le document avant
+  d'autoriser et transportait la version précédente entière (empreintes désormais) ;
+  la copie des données ignorait versions et décisions ; aucune voie d'effacement d'une
+  version soumise par erreur ; immuabilité tenue par la seule absence de droits
+  (déclencheur de garde ajouté) ; adresse d'un encadreur retiré encore rendue. Accepté :
+  les fenêtres fixes laissent passer le double d'un plafond à cheval sur deux fenêtres ;
+  un quota de lecture dépassé s'affiche comme « introuvable ». Ces corrections n'ont pas
+  fait l'objet d'une seconde revue.
 
 ## Suivi
 

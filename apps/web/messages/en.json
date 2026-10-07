@@ -118,7 +118,8 @@
       "last_super_admin_recovery": "You are the last super administrator: two-step verification on this account cannot be lifted with a backup code. Follow the two-person administration procedure.",
       "code_wait": "A code was just accepted for this account. For your security, wait a minute and a half, then enter the code your app shows at that moment.",
       "source_paused": "The source has asked for a pause: too many requests were sent to it. Nothing was imported; try again in a few minutes.",
-      "source_daily_limit": "The platform has reached the number of imports it allows itself per day from this source. Try again tomorrow."
+      "source_daily_limit": "The platform has reached the number of imports it allows itself per day from this source. Try again tomorrow.",
+      "nothing_to_submit": "Your project has no section yet: there is nothing to submit."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -884,7 +885,8 @@
       "heading": "Sharing",
       "intro": "Invite your supervisor to read your project. Without an invitation, only you can read it.",
       "manage": "Manage sharing",
-      "toShared": "Projects shared with me"
+      "toShared": "Projects shared with me",
+      "versions": "Versions submitted to the supervisor"
     }
   },
   "DataExport": {
@@ -1022,7 +1024,8 @@
     "leave": "Leave this project",
     "sectionsHeading": "Sections",
     "sectionsIntro": "Open a section to read it and comment on it.",
-    "openThreads": "{count, plural, one {# open thread} other {# open threads}}"
+    "openThreads": "{count, plural, one {# open thread} other {# open threads}}",
+    "toVersions": "Submitted versions and decisions"
   },
   "Comments": {
     "sectionTitle": "Section of a shared project",
@@ -1065,5 +1068,69 @@
     "noticeDeleted": "The comment has been deleted.",
     "noticeResolved": "The thread is closed.",
     "noticeReopened": "The thread has been reopened."
+  },
+  "Versions": {
+    "title": "Submitted versions",
+    "versionTitle": "Submitted version",
+    "intro": "Project: {project}. A submitted version is a snapshot of your document, sent to your supervisor. It no longer changes afterwards.",
+    "sharedIntroSupervisor": "The versions the student has submitted to you. Open one to read it and give your decision.",
+    "sharedIntroViewer": "The submitted versions of this project, and the decisions given.",
+    "backToProject": "Back to the project",
+    "backToShared": "Back to the shared project",
+    "backToVersions": "All versions",
+    "listHeading": "{count, plural, =0 {No submitted version} one {# submitted version} other {# submitted versions}}",
+    "empty": "No version has been submitted yet.",
+    "versionName": "Version {number}",
+    "separator": " · ",
+    "listSeparator": "; ",
+    "submittedOn": "submitted on {date}",
+    "sections": "{count, plural, one {# section} other {# sections}}",
+    "words": "{count, plural, =0 {no words} one {# word} other {# words}}",
+    "awaiting": "Awaiting a decision",
+    "decisions": {
+      "accepted": "Accepted",
+      "changes_requested": "Changes requested",
+      "rejected": "Rejected"
+    },
+    "byYou": "by you",
+    "bySupervisor": "by the supervisor",
+    "noteHeading": "Note from the student",
+    "changes": {
+      "heading": "Since the previous version",
+      "first": "This is the first submitted version.",
+      "none": "No section has changed.",
+      "added": "Sections added:",
+      "modified": "Sections changed:",
+      "removed": "Sections removed:",
+      "erased": "This version's content has been erased."
+    },
+    "documentEmpty": "This version contains no section.",
+    "tooLarge": "This version is too large to display.",
+    "submitHeading": "Submit a version",
+    "submitIntro": "Your current document — outline, text, cited sources — is frozen as it is and made readable to your supervisor. Your reading notes are not part of it. You then keep writing freely.",
+    "submit": "Submit this version",
+    "submitConfirm": "I submit my document as it is today; this version can no longer be changed or withdrawn.",
+    "pending": "One moment…",
+    "choose": "Choose…",
+    "fields": {
+      "label": "Label (optional)",
+      "labelHint": "For example “Chapter 1 revised”.",
+      "note": "Accompanying note (optional) — read by your supervisor and by anyone following this project",
+      "decision": "Your decision",
+      "comment": "Your comment",
+      "commentHint": "Required to request changes or to reject."
+    },
+    "noticeSubmitted": "The version has been submitted.",
+    "decideHeading": "Give a decision",
+    "decideIntro": "Your decision is added to this version's history; it cannot be changed afterwards. You can give a new one.",
+    "decide": "Save the decision",
+    "noticeDecided": "Your decision has been saved.",
+    "erasedBadge": "content erased by its author",
+    "erasedNotice": "The content of this version was erased by its author. The record of the submission and the decisions given remain.",
+    "eraseHeading": "Erase this version's content",
+    "eraseIntro": "If this version contains something that should not have been submitted, you can erase its document, your accompanying note and its label. The record of the submission and your supervisor's decisions remain. This is permanent.",
+    "eraseConfirm": "I permanently erase the content of this version.",
+    "erase": "Erase the content",
+    "noticeErased": "This version's content has been erased."
   }
 }

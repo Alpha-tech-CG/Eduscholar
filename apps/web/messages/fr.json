@@ -118,7 +118,8 @@
       "last_super_admin_recovery": "Vous êtes le dernier super-administrateur : la validation en deux étapes de ce compte ne se lève pas par un code de secours. Suivez la procédure d'administration à deux personnes.",
       "code_wait": "Un code vient d'être accepté pour ce compte. Par sécurité, patientez une minute et demie, puis saisissez le code que votre application affiche à ce moment-là.",
       "source_paused": "La source demande une pause : trop de requêtes lui ont été adressées. Rien n'a été importé ; réessayez dans quelques minutes.",
-      "source_daily_limit": "Le nombre d'imports que la plateforme s'autorise par jour auprès de cette source est atteint. Réessayez demain."
+      "source_daily_limit": "Le nombre d'imports que la plateforme s'autorise par jour auprès de cette source est atteint. Réessayez demain.",
+      "nothing_to_submit": "Votre projet n'a encore aucune section : il n'y a rien à soumettre."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -884,7 +885,8 @@
       "heading": "Partage",
       "intro": "Invitez votre encadreur à lire votre projet. Sans invitation, vous seul le lisez.",
       "manage": "Gérer le partage",
-      "toShared": "Projets partagés avec moi"
+      "toShared": "Projets partagés avec moi",
+      "versions": "Versions soumises à l'encadreur"
     }
   },
   "DataExport": {
@@ -1022,7 +1024,8 @@
     "leave": "Quitter ce projet",
     "sectionsHeading": "Sections",
     "sectionsIntro": "Ouvrez une section pour la lire et la commenter.",
-    "openThreads": "{count, plural, one {# fil ouvert} other {# fils ouverts}}"
+    "openThreads": "{count, plural, one {# fil ouvert} other {# fils ouverts}}",
+    "toVersions": "Versions soumises et décisions"
   },
   "Comments": {
     "sectionTitle": "Section d'un projet partagé",
@@ -1065,5 +1068,69 @@
     "noticeDeleted": "Le commentaire est supprimé.",
     "noticeResolved": "Le fil est clos.",
     "noticeReopened": "Le fil est rouvert."
+  },
+  "Versions": {
+    "title": "Versions soumises",
+    "versionTitle": "Version soumise",
+    "intro": "Projet : {project}. Une version soumise est une photographie de votre document, envoyée à votre encadreur. Elle ne change plus ensuite.",
+    "sharedIntroSupervisor": "Les versions que l'étudiant vous a soumises. Ouvrez-en une pour la lire et rendre votre décision.",
+    "sharedIntroViewer": "Les versions soumises de ce projet, et les décisions rendues.",
+    "backToProject": "Retour au projet",
+    "backToShared": "Retour au projet partagé",
+    "backToVersions": "Toutes les versions",
+    "listHeading": "{count, plural, =0 {Aucune version soumise} one {# version soumise} other {# versions soumises}}",
+    "empty": "Aucune version n'a encore été soumise.",
+    "versionName": "Version {number}",
+    "separator": " · ",
+    "listSeparator": " ; ",
+    "submittedOn": "soumise le {date}",
+    "sections": "{count, plural, one {# section} other {# sections}}",
+    "words": "{count, plural, =0 {aucun mot} one {# mot} other {# mots}}",
+    "awaiting": "En attente de décision",
+    "decisions": {
+      "accepted": "Acceptée",
+      "changes_requested": "Corrections demandées",
+      "rejected": "Refusée"
+    },
+    "byYou": "par vous",
+    "bySupervisor": "par l'encadreur",
+    "noteHeading": "Mot de l'étudiant",
+    "changes": {
+      "heading": "Depuis la version précédente",
+      "first": "C'est la première version soumise.",
+      "none": "Aucune section n'a changé.",
+      "added": "Sections ajoutées :",
+      "modified": "Sections modifiées :",
+      "removed": "Sections retirées :",
+      "erased": "Le contenu de cette version a été effacé."
+    },
+    "documentEmpty": "Cette version ne contient aucune section.",
+    "tooLarge": "Cette version est trop volumineuse pour être affichée.",
+    "submitHeading": "Soumettre une version",
+    "submitIntro": "Votre document actuel — plan, texte, sources citées — est figé tel quel et rendu lisible à votre encadreur. Vos fiches de lecture n'en font pas partie. Vous continuez ensuite à écrire librement.",
+    "submit": "Soumettre cette version",
+    "submitConfirm": "Je soumets mon document tel qu'il est aujourd'hui ; cette version ne pourra plus être modifiée ni retirée.",
+    "pending": "Un instant…",
+    "choose": "Choisir…",
+    "fields": {
+      "label": "Intitulé (facultatif)",
+      "labelHint": "Par exemple « Chapitre 1 relu ».",
+      "note": "Mot d'accompagnement (facultatif) — lu par votre encadreur et par toute personne qui suit ce projet",
+      "decision": "Votre décision",
+      "comment": "Votre commentaire",
+      "commentHint": "Obligatoire pour demander des corrections ou refuser."
+    },
+    "noticeSubmitted": "La version est soumise.",
+    "decideHeading": "Rendre une décision",
+    "decideIntro": "Votre décision s'ajoute à l'historique de cette version ; elle ne se modifie pas ensuite. Vous pouvez en rendre une nouvelle.",
+    "decide": "Enregistrer la décision",
+    "noticeDecided": "Votre décision est enregistrée.",
+    "erasedBadge": "contenu effacé par son auteur",
+    "erasedNotice": "Le contenu de cette version a été effacé par son auteur. La trace de la soumission et les décisions rendues restent.",
+    "eraseHeading": "Effacer le contenu de cette version",
+    "eraseIntro": "Si cette version contient quelque chose qui n'aurait pas dû être soumis, vous pouvez en effacer le document, votre mot d'accompagnement et son intitulé. La trace de la soumission et les décisions de votre encadreur restent. C'est définitif.",
+    "eraseConfirm": "J'efface définitivement le contenu de cette version.",
+    "erase": "Effacer le contenu",
+    "noticeErased": "Le contenu de cette version est effacé."
   }
 }

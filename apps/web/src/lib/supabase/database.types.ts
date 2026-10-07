@@ -593,6 +593,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"thesis_versions": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"erased_at": string | null,"id": string,"label": string | null,"note": string | null,"number": number,"project_id": string,"section_count": number,"size_bytes": number,"snapshot": NonNullable<Json>,"word_count": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"erased_at"?: string | null,"id"?: string,"label"?: string | null,"note"?: string | null,"number": number,"project_id": string,"section_count"?: number,"size_bytes"?: number,"snapshot": NonNullable<Json>,"word_count"?: number
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"erased_at"?: string | null,"id"?: string,"label"?: string | null,"note"?: string | null,"number"?: number,"project_id"?: string,"section_count"?: number,"size_bytes"?: number,"snapshot"?: NonNullable<Json>,"word_count"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "thesis_versions_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"version_decisions": {
+                  Row: {
+                    "comment": string | null,"decided_at": string,"decided_by": string | null,"decision": string,"id": string,"project_id": string,"version_id": string
+                  }
+                  Insert: {
+                    "comment"?: string | null,"decided_at"?: string,"decided_by"?: string | null,"decision": string,"id"?: string,"project_id": string,"version_id": string
+                  }
+                  Update: {
+                    "comment"?: string | null,"decided_at"?: string,"decided_by"?: string | null,"decision"?: string,"id"?: string,"project_id"?: string,"version_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "version_decisions_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "version_decisions_version_id_fkey"
+      columns: ["version_id"]
+isOneToOne: false
+      referencedRelation: "thesis_versions"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -653,6 +697,9 @@ isOneToOne: false
 "create_project":
 { Args: { "payload": Json }; Returns: string
                            },
+"decide_thesis_version":
+{ Args: { "payload": Json,"version_id": string }; Returns: undefined
+                           },
 "delete_collection":
 { Args: { "collection_id": string }; Returns: undefined
                            },
@@ -670,6 +717,9 @@ isOneToOne: false
                            },
 "discard_recovery_codes":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"erase_thesis_version":
+{ Args: { "version_id": string }; Returns: undefined
                            },
 "generate_recovery_codes":
 { Args: Record<PropertyKey, never>; Returns: string[]
@@ -723,10 +773,26 @@ isOneToOne: false
 "my_submission_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
+"my_thesis_versions":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"erased_at": string,"id": string,"label": string,"note": string,"number": number,"project_id": string,"section_count": number,"word_count": number
+            }[]
+                           },
+"my_version_decisions":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "comment": string,"decided_at": string,"decision": string,"project_id": string,"version_id": string
+            }[]
+                           },
 "project_comments":
 { Args: { "project_id": string }; Returns: Json
                            },
 "project_sharing":
+{ Args: { "project_id": string }; Returns: Json
+                           },
+"project_version":
+{ Args: { "version_id": string }; Returns: Json
+                           },
+"project_versions":
 { Args: { "project_id": string }; Returns: Json
                            },
 "purge_deleted_projects":
@@ -785,6 +851,9 @@ isOneToOne: false
                            },
 "submit_resource":
 { Args: { "payload": Json }; Returns: string
+                           },
+"submit_thesis_version":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
                            },
 "update_collection":
 { Args: { "collection_id": string,"description"?: string,"name": string }; Returns: undefined

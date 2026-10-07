@@ -548,6 +548,10 @@ depuis le serveur) :
 | `update_project_comment`, `delete_project_comment` | L'auteur du commentaire, tant qu'il est propriétaire ou `supervisor` du projet |
 | `project_comments` | Le propriétaire et tout membre à accès complet, lecteur compris |
 | `my_project_comments` | Le titulaire : ses propres commentaires, pour la copie de ses données |
+| `submit_thesis_version`, `erase_thesis_version` | Le propriétaire du projet, compte actif au profil complété |
+| `decide_thesis_version` | Un membre `supervisor` à accès complet ; jamais le propriétaire |
+| `project_versions`, `project_version` | Le propriétaire et tout membre à accès complet |
+| `my_thesis_versions`, `my_version_decisions` | Le titulaire : ses versions soumises et les décisions qu'il a rendues, pour la copie de ses données |
 | `log_personal_data_export` | Le titulaire, compte actif ; écrit un événement de sécurité sans contenu, lisible de lui seul, avant la remise de la copie de ses données |
 | `add_thesis_section`, `update_thesis_section`, `move_thesis_section`, `delete_thesis_section`, `set_section_citation` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour la section ou le projet d'autrui, supprimés ou inexistants, avant tout examen de la requête ; une section ne cite qu'une source du même projet, et le retrait d'une citation ne révèle rien ; un texte modifié entre-temps n'est pas écrasé ; aucune ligne d'audit |
 | `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |

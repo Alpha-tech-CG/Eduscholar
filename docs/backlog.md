@@ -57,7 +57,7 @@ membre lit par des fonctions nommées qui revérifient son appartenance à chaqu
 |---|---|---|---|
 | E-01 | Membres d'un projet et invitation par adresse : inviter, accepter sous l'adresse confirmée, lire le projet en lecture seule, retirer, quitter | C-04, D-27 | fait — accès complet seulement ; jeton à usage unique dont la base ne garde que l'empreinte ; courriel d'invitation |
 | E-02 | Commentaires par section : fil, réponses, résolution (lignes 14 à 17 de la matrice) | E-01 | fait — commentaire avec passage cité, un niveau de réponses, clôture et réouverture par le propriétaire ou l'encadreur ; le lecteur simple lit sans écrire |
-| E-03 | Versions : instantané du document, soumission, décision de l'encadreur (acceptée, refusée, à corriger), historique immuable (lignes 11 à 13) | E-01 | à faire |
+| E-03 | Versions : instantané du document, soumission, décision de l'encadreur (acceptée, refusée, à corriger), historique immuable (lignes 11 à 13) | E-01 | fait — version figée à la soumission, décisions en historique, sections ajoutées, modifiées ou retirées depuis la version précédente ; le propriétaire peut effacer le contenu d'une version soumise par erreur |
 | E-04 | Tâches et échéances (lignes 18 à 20) | E-01 | à faire |
 | E-05 | Notifications internes et par courriel : commentaire, décision, échéance proche (§6.12) | E-02, E-03, E-04 | à faire |
 | E-06 | Portée limitée à certaines sections ; invitation par lien avec confirmation du propriétaire | E-02 | à faire |

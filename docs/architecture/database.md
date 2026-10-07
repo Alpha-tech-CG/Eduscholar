@@ -85,6 +85,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006004700_project_comments.sql` | Commentaires sur les sections d'un projet partagé |
 | `20261006004800_sharing_account_deletion.sql` | Les colonnes « qui a invité, écrit, clos » perdent leur clé étrangère : elles faisaient échouer la suppression d'un compte |
 | `20261006004900_project_comments_hardening.sql` | Corrections de revue des commentaires : plafonds par auteur, rôle exigé pour modifier, fil clos fermé aux réponses, adresse rendue au seul propriétaire, identifiant retiré à la suppression d'un compte |
+| `20261006005000_thesis_versions.sql` | Versions soumises et décisions de l'encadreur |
+| `20261006005100_thesis_versions_hardening.sql` | Corrections de revue des versions : tailles bornées, lecture autorisée avant chargement, garde d'immuabilité, effacement du contenu d'une version, copie des données |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -535,6 +537,31 @@ recopié, 400 caractères, une ligne), `edited_at`, `deleted_at`, `resolved_at`,
   commentaires restent dans le suivi de l'étudiant, sans identifiant de leur auteur ;
 - écart voulu, plus strict que le modèle : un membre à portée limitée ne lit ni n'écrit
   de commentaire tant que la portée par section n'existe pas (E-06).
+
+### `public.thesis_versions` et `public.version_decisions`
+
+Versions soumises et décisions de l'encadreur (E-03). `thesis_versions` : `project_id`,
+`number` (suite par projet), `label`, `note`, `snapshot` (le document tel qu'il était :
+titre, sections, sources, citations — jamais les fiches de lecture), `word_count`,
+`section_count`, `size_bytes`, `erased_at`. `version_decisions` : `version_id`,
+`decision` (`accepted`, `changes_requested`, `rejected`), `comment` (obligatoire sauf
+pour accepter), `decided_by`, `decided_at`.
+
+- aucune lecture ni écriture directe ; `submit_thesis_version` : le propriétaire ;
+  `decide_thesis_version` : l'encadreur seul, ni le propriétaire ni un lecteur ;
+  `project_versions` et `project_version` : propriétaire et membres à accès complet ;
+- historique en ajout seul : un déclencheur refuse toute modification, même au
+  propriétaire de la base. Deux exceptions : le retrait de l'identifiant d'un compte
+  supprimé, et `erase_thesis_version`, par laquelle le propriétaire efface le contenu
+  d'une version soumise par erreur — la trace de la soumission et les décisions
+  restent, l'effacement est journalisé (`project.version_erased`) ;
+- la lecture d'une version autorise avant de charger, et ne rend de la version
+  précédente que l'empreinte de ses sections : assez pour dire ce qui a changé ;
+- plafonds : 5 soumissions par jour et par compte, 30 versions par projet, 3 Mo par
+  version et 60 Mo pour l'ensemble des versions d'un compte ; 50 décisions par jour et
+  20 par version ; 120 lectures de liste et 60 lectures de version par quart d'heure ;
+- l'adresse de l'encadreur n'est rendue qu'au propriétaire, et tant que cet encadreur
+  est membre du projet.
 
 ## Fonctions du schéma `private`
 
