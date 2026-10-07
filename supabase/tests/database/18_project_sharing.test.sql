@@ -451,5 +451,25 @@ select is(
   0::bigint, 'La suppression d''un compte efface ses appartenances'
 );
 
+-- Le propriétaire supprime son compte alors que son projet a des invitations et
+-- un membre qu'il a lui-même invités. (Régression : la suppression butait sur
+-- les colonnes « qui a invité ».)
+select set_config('request.jwt.claims', '', true);
+insert into public.research_project_members (project_id, user_id, role, invited_by) values
+  ('45000000-0000-0000-0000-0000000000a2', 'b0000000-0000-0000-0000-000000004503', 'viewer', 'a0000000-0000-0000-0000-000000004501');
+select cmp_ok(
+  (select count(*) from public.project_invitations where created_by = 'a0000000-0000-0000-0000-000000004501'),
+  '>=', 1::bigint, 'Le propriétaire a des invitations à son nom'
+);
+select lives_ok(
+  $$ delete from auth.users where id = 'a0000000-0000-0000-0000-000000004501' $$,
+  'Le propriétaire d''un projet partagé supprime son compte'
+);
+select is(
+  (select count(*) from public.research_project_members m join public.project_invitations i on true
+   where m.project_id::text like '45000000-0000-0000-0000-0000000000a_' or i.project_id::text like '45000000-0000-0000-0000-0000000000a_'),
+  0::bigint, 'Membres et invitations partent avec ses projets'
+);
+
 select * from finish();
 rollback;

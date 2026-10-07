@@ -854,7 +854,12 @@
         "gone": "It was deleted from another tab or device. Copy your text if you want to keep it.",
         "theirTitle": "Title saved elsewhere",
         "theirLevel": "Level saved elsewhere"
-      }
+      },
+      "commented": "The comment has been posted.",
+      "replied": "The reply has been posted.",
+      "commentDeleted": "The comment has been deleted.",
+      "threadResolved": "The thread is closed.",
+      "threadReopened": "The thread has been reopened."
     },
     "document": {
       "open": "View and export the thesis",
@@ -1014,6 +1019,51 @@
     "leaveHeading": "Stop following this project",
     "leaveIntro": "You will no longer be able to read it. Only its owner can invite you again.",
     "leaveConfirm": "I no longer want to follow this project.",
-    "leave": "Leave this project"
+    "leave": "Leave this project",
+    "sectionsHeading": "Sections",
+    "sectionsIntro": "Open a section to read it and comment on it.",
+    "openThreads": "{count, plural, one {# open thread} other {# open threads}}"
+  },
+  "Comments": {
+    "sectionTitle": "Section of a shared project",
+    "sharedIntro": "Project: {project}. You are reading this section; your remarks go in comments.",
+    "backToProject": "Back to the shared project",
+    "textHeading": "Section text",
+    "textEmpty": "This section has no text yet.",
+    "heading": "Comments ({count})",
+    "open": "{count, plural, =0 {All threads are closed.} one {# open thread.} other {# open threads.}}",
+    "empty": "No comment on this section.",
+    "emptyReadOnly": "No comment on this section. You read this project without being able to comment.",
+    "you": "You",
+    "author": "{role} ({email})",
+    "formerMember": "Former project member",
+    "roles": {
+      "owner": "Project author",
+      "supervisor": "Supervision",
+      "viewer": "Read only"
+    },
+    "separator": " · ",
+    "edited": "edited",
+    "deleted": "Comment removed by its author.",
+    "resolvedBadge": "Thread closed",
+    "quoteLabel": "Passage indicated by the comment's author: ",
+    "reply": "Reply",
+    "resolve": "Close this thread",
+    "reopen": "Reopen this thread",
+    "delete": "Delete my comment",
+    "add": "Post the comment",
+    "pending": "One moment…",
+    "newHeading": "New comment",
+    "fields": {
+      "body": "Your comment",
+      "reply": "Your reply",
+      "quote": "Passage concerned (optional)",
+      "quoteHint": "Copy the sentence your remark is about: it will stay readable even if the text changes."
+    },
+    "noticeCommented": "The comment has been posted.",
+    "noticeReplied": "The reply has been posted.",
+    "noticeDeleted": "The comment has been deleted.",
+    "noticeResolved": "The thread is closed.",
+    "noticeReopened": "The thread has been reopened."
   }
 }

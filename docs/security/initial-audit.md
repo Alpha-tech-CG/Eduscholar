@@ -317,6 +317,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   propriétaire voit l'adresse actuelle du compte d'un membre ; la réponse « courriel non
   parti » peut refléter le refus d'une boîte par le relais. Ces corrections n'ont pas
   fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Commentaires sur un projet partagé (E-02) relus par l'agent
+  sécurité : aucun constat critique ou élevé, cloisonnement conforme, pas d'injection ni
+  de redirection ouverte ; 2 moyens et 6 faibles. Corrigés : un encadreur pouvait
+  saturer le projet et priver l'étudiant de la parole (plafonds par auteur) ; un
+  identifiant de compte supprimé restait sur ses commentaires (mis à vide désormais) ;
+  un membre redevenu lecteur modifiait encore ses commentaires ; un fil clos recevait
+  des réponses par appel direct ; l'adresse des membres était rendue entre membres.
+  Défaut trouvé en vérifiant le lot : le propriétaire d'un projet partagé ne pouvait
+  plus supprimer son compte (corrigé, avec tests de non-régression). À arbitrer : le
+  texte des commentaires d'un compte supprimé reste dans le projet d'autrui. Ces
+  corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

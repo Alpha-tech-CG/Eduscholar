@@ -82,6 +82,9 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006004400_review_batch_hardening.sql` | Corrections de revue : liste fermée des événements du compte, exception de purge limitée au journal d'audit, réglage de conservation borné |
 | `20261006004500_project_sharing.sql` | Partage d'un projet : membres, invitations par adresse, lecture par un membre |
 | `20261006004600_project_sharing_hardening.sql` | Corrections de revue du partage : invitations annulées au retrait, plafond par destinataire, débit de lecture, purge des invitations closes |
+| `20261006004700_project_comments.sql` | Commentaires sur les sections d'un projet partagé |
+| `20261006004800_sharing_account_deletion.sql` | Les colonnes « qui a invité, écrit, clos » perdent leur clé étrangère : elles faisaient échouer la suppression d'un compte |
+| `20261006004900_project_comments_hardening.sql` | Corrections de revue des commentaires : plafonds par auteur, rôle exigé pour modifier, fil clos fermé aux réponses, adresse rendue au seul propriétaire, identifiant retiré à la suppression d'un compte |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -502,6 +505,36 @@ Partage d'un projet (E-01). `research_project_members` : `project_id`, `user_id`
   ni les fiches de lecture, ni la liste des autres membres ;
 - l'ouverture et la fermeture d'un partage sont inscrites au journal, au compte du
   propriétaire (`project.shared`, `project.unshared`).
+
+### `public.project_comments`
+
+Commentaires sur les sections d'un projet partagé (E-02) : `project_id`, `section_id`
+(toujours renseignée), `parent_id` (réponse à un commentaire de premier niveau ; un seul
+niveau), `author_id`, `body` (2 000 caractères, texte simple), `quote` (passage visé,
+recopié, 400 caractères, une ligne), `edited_at`, `deleted_at`, `resolved_at`,
+`resolved_by`.
+
+- aucune lecture ni écriture directe ; `private.project_role` dit la place de l'appelant
+  dans le projet (`owner`, `supervisor`, `viewer`) ou refuse — même réponse pour un
+  projet inexistant, supprimé ou fermé à l'appelant ;
+- `add_project_comment` : propriétaire et encadreur ; `update_project_comment` et
+  `delete_project_comment` : l'auteur, tant qu'il est propriétaire ou encadreur ;
+  `resolve_project_thread` : propriétaire et encadreur ; `project_comments` : tous les
+  membres, lecteur compris ;
+- un commentaire auquel on a répondu, supprimé par son auteur, garde sa place dans le
+  fil sans son texte ; un fil clos ne reçoit plus de réponse ;
+- l'adresse d'un auteur n'est rendue qu'au propriétaire (pour ses membres) ; les membres
+  voient la place de chacun, et l'adresse du propriétaire, qu'ils connaissent déjà ;
+- plafonds : 200 commentaires par jour et par compte ; par projet, 300 pour le
+  propriétaire, 150 par membre et 300 pour l'ensemble des membres — un membre ne peut
+  pas priver le propriétaire de la parole ;
+- `author_id`, `resolved_by`, et les colonnes « qui a invité » du partage sont de
+  simples identifiants, sans clé étrangère (une mise à vide en cascade faisait échouer
+  la suppression du compte du propriétaire). À la suppression d'un compte, un
+  déclencheur sur `auth.users` les met à vide dans les projets d'autrui : les
+  commentaires restent dans le suivi de l'étudiant, sans identifiant de leur auteur ;
+- écart voulu, plus strict que le modèle : un membre à portée limitée ne lit ni n'écrit
+  de commentaire tant que la portée par section n'existe pas (E-06).
 
 ## Fonctions du schéma `private`
 

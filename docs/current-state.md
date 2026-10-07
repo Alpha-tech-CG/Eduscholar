@@ -148,6 +148,7 @@ Détail dans `docs/security/initial-audit.md`.
   utilisé, codes générés, compte suspendu ou rétabli.
 - Phase 4 commencée : un projet se partage avec un encadreur, par invitation à son
   adresse ; il le lit sans rien y modifier (E-01).
+- L'encadreur commente les sections ; l'étudiant répond et clôt les fils (E-02).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

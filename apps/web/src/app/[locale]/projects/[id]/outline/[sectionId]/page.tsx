@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { AuthForm, CheckboxField, OptionalTextField, SelectField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { Link } from "@/i18n/navigation";
+import { CommentThreads } from "@/components/projects/comment-threads";
 import { SectionEditor } from "@/components/projects/section-editor";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 import {
@@ -11,6 +12,7 @@ import {
   deleteSection,
   removeCitation,
 } from "@/lib/projects/section-actions";
+import { getProjectComments } from "@/lib/projects/comment-queries";
 import { getCitations, getSection } from "@/lib/projects/section-queries";
 import { SECTION_LEVELS } from "@/lib/projects/section-schemas";
 import { getAllSources } from "@/lib/projects/source-queries";
@@ -25,6 +27,11 @@ const NOTICES = {
   saved: "saved",
   cited: "cited",
   "citation-removed": "citationRemoved",
+  commented: "commented",
+  replied: "replied",
+  "comment-deleted": "commentDeleted",
+  resolved: "threadResolved",
+  reopened: "threadReopened",
 } as const;
 
 export default async function ProjectSectionPage({
@@ -38,9 +45,10 @@ export default async function ProjectSectionPage({
   const section = await getSection(id, sectionId);
   if (!section) notFound();
 
-  const [t, tAuth, citations, sources, { notice }] = await Promise.all([
+  const [t, tAuth, comments, citations, sources, { notice }] = await Promise.all([
     getTranslations("Projects.outline"),
     getTranslations("Auth"),
+    getProjectComments(section.projectId),
     getCitations(section.id),
     getAllSources(section.projectId),
     searchParams,
@@ -213,6 +221,16 @@ export default async function ProjectSectionPage({
           </AuthForm>
         ) : null}
       </section>
+
+      {comments ? (
+        <CommentThreads
+          scope="owner"
+          projectId={section.projectId}
+          sectionId={section.id}
+          role={comments.role}
+          threads={comments.bySection.get(section.id) ?? []}
+        />
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("deleteHeading")}</h2>

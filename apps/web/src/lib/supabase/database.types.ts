@@ -279,6 +279,37 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"project_comments": {
+                  Row: {
+                    "author_id": string | null,"body": string | null,"created_at": string,"deleted_at": string | null,"edited_at": string | null,"id": string,"parent_id": string | null,"project_id": string,"quote": string | null,"resolved_at": string | null,"resolved_by": string | null,"section_id": string
+                  }
+                  Insert: {
+                    "author_id"?: string | null,"body"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"id"?: string,"parent_id"?: string | null,"project_id": string,"quote"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"section_id": string
+                  }
+                  Update: {
+                    "author_id"?: string | null,"body"?: string | null,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"id"?: string,"parent_id"?: string | null,"project_id"?: string,"quote"?: string | null,"resolved_at"?: string | null,"resolved_by"?: string | null,"section_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_comments_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "project_comments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "project_comments_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "project_comments_section_id_fkey"
+      columns: ["section_id"]
+isOneToOne: false
+      referencedRelation: "thesis_sections"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"project_invitations": {
                   Row: {
                     "accepted_by": string | null,"created_at": string,"created_by": string | null,"email": string,"expires_at": string,"full_access": boolean,"id": string,"project_id": string,"role": string,"status": string,"token_hash": string
@@ -574,6 +605,9 @@ isOneToOne: false
 "account_deletion_check":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"add_project_comment":
+{ Args: { "payload": Json,"section_id": string }; Returns: string
+                           },
 "add_project_source":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
@@ -625,6 +659,9 @@ isOneToOne: false
 "delete_project":
 { Args: { "project_id": string }; Returns: undefined
                            },
+"delete_project_comment":
+{ Args: { "comment_id": string }; Returns: undefined
+                           },
 "delete_project_source":
 { Args: { "source_id": string }; Returns: undefined
                            },
@@ -675,11 +712,19 @@ isOneToOne: false
 "my_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: Json[]
                            },
+"my_project_comments":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "body": string,"created_at": string,"id": string,"project_id": string,"quote": string,"section_id": string
+            }[]
+                           },
 "my_report_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
 "my_submission_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"project_comments":
+{ Args: { "project_id": string }; Returns: Json
                            },
 "project_sharing":
 { Args: { "project_id": string }; Returns: Json
@@ -700,6 +745,9 @@ isOneToOne: false
                            },
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
+                           },
+"resolve_project_thread":
+{ Args: { "comment_id": string,"resolved": boolean }; Returns: undefined
                            },
 "resolve_report":
 { Args: { "note"?: string,"report_id": string,"status": string }; Returns: undefined
@@ -743,6 +791,9 @@ isOneToOne: false
                            },
 "update_project":
 { Args: { "payload": Json,"project_id": string }; Returns: undefined
+                           },
+"update_project_comment":
+{ Args: { "comment_id": string,"payload": Json }; Returns: undefined
                            },
 "update_project_source":
 { Args: { "payload": Json,"source_id": string }; Returns: undefined

@@ -36,6 +36,7 @@ async function openSession(browser: Browser, member: Member) {
 function seedProject(ownerId: string) {
   const projectId = randomUUID();
   const sourceId = randomUUID();
+  const sectionId = randomUUID();
   const token = `partage${Date.now()}${Math.round(Math.random() * 1e6)}`;
   sql(`
     insert into public.research_projects (id, owner_id, title, problem_statement)
@@ -43,10 +44,10 @@ function seedProject(ownerId: string) {
     insert into public.project_sources (id, project_id, source_type, title, authors, publication_year)
       values ('${sourceId}', '${projectId}', 'article', 'Source ${token}', array['Diop, Awa'], 2021);
     insert into public.literature_notes (source_id, problem) values ('${sourceId}', 'Fiche privée ${token}');
-    insert into public.thesis_sections (project_id, position, level, title, body)
-      values ('${projectId}', 1, 1, 'Introduction', 'Texte du mémoire ${token}.')
+    insert into public.thesis_sections (id, project_id, position, level, title, body)
+      values ('${sectionId}', '${projectId}', 1, 1, 'Introduction', 'Texte du mémoire ${token}.')
   `);
-  return { projectId, token };
+  return { projectId, sectionId, token };
 }
 
 test.describe("partage d'un projet avec un encadreur", () => {
@@ -190,6 +191,110 @@ test.describe("partage d'un projet avec un encadreur", () => {
     await expect(page.getByRole("main")).toContainText("Votre projet est privé");
 
     await invited.close();
+  });
+
+  test("commentaires : l'encadreur commente, l'étudiante répond et clôt, le lecteur lit", async ({
+    page,
+    browser,
+  }) => {
+    const owner = await createMember("commentaires-etudiante");
+    const supervisor = await createMember("commentaires-encadreur");
+    const viewer = await createMember("commentaires-lecteur");
+    const { projectId, sectionId, token } = seedProject(owner.id);
+    sql(`
+      insert into public.research_project_members (project_id, user_id, role) values
+        ('${projectId}', '${supervisor.id}', 'supervisor'),
+        ('${projectId}', '${viewer.id}', 'viewer')
+    `);
+    const ownerSection = `/fr/projects/${projectId}/outline/${sectionId}`;
+    const sharedSection = `/fr/shared/${projectId}/sections/${sectionId}`;
+
+    // --- L'encadreur ouvre la section et commente un passage --------------------
+    const guide = await openSession(browser, supervisor);
+    await guide.page.goto(`/fr/shared/${projectId}`);
+    await guide.page.getByTestId("shared-section").getByRole("link").click();
+    await expect(guide.page).toHaveURL(new RegExp(`${sharedSection}$`));
+    await expect(guide.page.getByTestId("section-text")).toContainText(`Texte du mémoire ${token}.`);
+    await expect(guide.page.getByRole("main")).toContainText("Aucun commentaire sur cette section.");
+
+    await guide.page.getByRole("button", { name: "Publier le commentaire" }).click();
+    await expect(alert(guide.page)).toHaveText("Certains champs sont à corriger.");
+
+    const remark = `Précisez <img src=x onerror="document.title='piege'"> la question ${token}.`;
+    await guide.page.getByLabel("Passage visé (facultatif)").fill(`Texte du mémoire ${token}.`);
+    await guide.page.getByLabel("Votre commentaire").fill(remark);
+    await guide.page.getByRole("button", { name: "Publier le commentaire" }).click();
+    await expect(guide.page).toHaveURL(/notice=commented/);
+    const guideThread = guide.page.getByTestId("thread");
+    await expect(guideThread).toContainText(remark);
+    await expect(guideThread).toContainText("Vous");
+    await expect(guideThread.locator("blockquote")).toContainText(`Texte du mémoire ${token}.`);
+    // Le texte est affiché tel quel, jamais interprété.
+    await expect(guide.page.locator("#comments img")).toHaveCount(0);
+    expect(await guide.page.title()).not.toBe("piege");
+
+    // --- L'étudiante le lit sur sa page de rédaction, répond, puis clôt ----------
+    await signInThroughForm(page, owner.email, owner.password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    await page.goto(ownerSection);
+    const thread = page.getByTestId("thread");
+    await expect(thread).toContainText(remark);
+    await expect(thread).toContainText(`Encadrement (${supervisor.email})`);
+    await expect(page.getByTestId("open-threads")).toHaveText("1 fil ouvert.");
+    // Elle ne supprime pas le commentaire de son encadreur.
+    await expect(thread.getByRole("button", { name: "Supprimer mon commentaire" })).toHaveCount(0);
+
+    await thread.getByLabel("Votre réponse").fill(`C'est précisé ${token}.`);
+    await thread.getByRole("button", { name: "Répondre" }).click();
+    await expect(page).toHaveURL(/notice=replied/);
+    await expect(page.getByTestId("reply")).toContainText(`C'est précisé ${token}.`);
+
+    await page.getByTestId("thread").getByRole("button", { name: "Clore ce fil" }).click();
+    await expect(page).toHaveURL(/notice=resolved/);
+    await expect(page.getByTestId("thread")).toHaveAttribute("data-resolved", "true");
+    await expect(page.getByTestId("open-threads")).toHaveText("Tous les fils sont clos.");
+    // Un fil clos ne reçoit plus de réponse tant qu'il n'est pas rouvert.
+    await expect(page.getByTestId("thread").getByRole("button", { name: "Répondre" })).toHaveCount(0);
+
+    // --- Le lecteur simple lit les commentaires, sans pouvoir en écrire -----------
+    const reader = await openSession(browser, viewer);
+    await reader.page.goto(sharedSection);
+    await expect(reader.page.getByTestId("thread")).toContainText(remark);
+    await expect(reader.page.getByTestId("reply")).toContainText(`Auteur du projet (${owner.email})`);
+    for (const name of ["Publier le commentaire", "Répondre", "Clore ce fil", "Rouvrir ce fil"]) {
+      await expect(reader.page.getByRole("button", { name })).toHaveCount(0);
+    }
+    await reader.close();
+
+    // --- L'encadreur rouvre le fil, puis retire son commentaire --------------------
+    await guide.page.goto(sharedSection);
+    await expect(guide.page.getByTestId("thread")).toContainText("Fil clos");
+    await guide.page.getByRole("button", { name: "Rouvrir ce fil" }).click();
+    await expect(guide.page).toHaveURL(/notice=reopened/);
+    await expect(guide.page.getByTestId("thread")).toHaveAttribute("data-resolved", "false");
+    await guide.page.getByTestId("thread").getByRole("button", { name: "Supprimer mon commentaire" }).click();
+    await expect(guide.page).toHaveURL(/notice=comment-deleted/);
+    // On lui avait répondu : sa place reste dans le fil, sans son texte ni le passage cité.
+    await expect(guide.page.getByTestId("thread")).toContainText("Commentaire retiré par son auteur.");
+    await expect(guide.page.getByTestId("thread").locator("blockquote")).toHaveCount(0);
+    await expect(guide.page.getByTestId("reply")).toContainText(`C'est précisé ${token}.`);
+    expect(sqlValue(`select count(*) from public.project_comments where project_id = '${projectId}' and body like '%onerror%'`)).toBe("0");
+
+    // --- Retiré du projet, l'encadreur ne voit plus rien --------------------------
+    await page.goto(`/fr/projects/${projectId}/sharing`);
+    await page
+      .getByTestId("member")
+      .filter({ hasText: supervisor.email })
+      .getByRole("button", { name: "Retirer cette personne" })
+      .click();
+    await expect(page).toHaveURL(/notice=removed$/);
+    expect((await guide.page.goto(sharedSection))?.status()).toBe(404);
+    await guide.close();
+
+    // Son ancien commentaire reste dans le fil de l'étudiante, sans adresse.
+    await page.goto(ownerSection);
+    await expect(page.getByTestId("thread")).toContainText("Ancien membre du projet");
+    await expect(page.getByTestId("thread")).not.toContainText(supervisor.email);
   });
 
   test("les pages de partage exigent une session", async ({ page }) => {

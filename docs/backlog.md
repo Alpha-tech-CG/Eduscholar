@@ -56,7 +56,7 @@ membre lit par des fonctions nommées qui revérifient son appartenance à chaqu
 | ID | Tâche | Dépend de | Statut |
 |---|---|---|---|
 | E-01 | Membres d'un projet et invitation par adresse : inviter, accepter sous l'adresse confirmée, lire le projet en lecture seule, retirer, quitter | C-04, D-27 | fait — accès complet seulement ; jeton à usage unique dont la base ne garde que l'empreinte ; courriel d'invitation |
-| E-02 | Commentaires par section : fil, réponses, résolution (lignes 14 à 17 de la matrice) | E-01 | à faire |
+| E-02 | Commentaires par section : fil, réponses, résolution (lignes 14 à 17 de la matrice) | E-01 | fait — commentaire avec passage cité, un niveau de réponses, clôture et réouverture par le propriétaire ou l'encadreur ; le lecteur simple lit sans écrire |
 | E-03 | Versions : instantané du document, soumission, décision de l'encadreur (acceptée, refusée, à corriger), historique immuable (lignes 11 à 13) | E-01 | à faire |
 | E-04 | Tâches et échéances (lignes 18 à 20) | E-01 | à faire |
 | E-05 | Notifications internes et par courriel : commentaire, décision, échéance proche (§6.12) | E-02, E-03, E-04 | à faire |
@@ -126,6 +126,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | Dépôt distant | Créer le dépôt GitHub : première exécution de la CI, protection de `main`, `CODEOWNERS` |
 | `.env.example` | Le créer à la main en B-09, ou autoriser les agents à écrire ce seul fichier |
 | Entité et contact | Entité juridique responsable et adresse de contact, à porter dans les politiques |
+| Commentaires d'un compte supprimé | Par défaut : ils restent dans le projet de l'étudiant, sans l'identifiant de leur auteur. À confirmer par le juriste, ou à remplacer par l'effacement de leur texte |
 
 ## Couverture des critères d'acceptation du MVP (cahier §20)
 

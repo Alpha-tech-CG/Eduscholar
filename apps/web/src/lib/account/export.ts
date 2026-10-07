@@ -66,7 +66,10 @@ async function readByIds(
 }
 
 /** Lit, page par page, ce qu'une fonction de la base rend pour l'appelant. */
-async function ownRows(supabase: Client, fn: "my_account_events" | "my_deleted_projects"): Promise<unknown[]> {
+async function ownRows(
+  supabase: Client,
+  fn: "my_account_events" | "my_deleted_projects" | "my_project_comments",
+): Promise<unknown[]> {
   const rows: unknown[] = [];
   for (let from = 0; ; from += PAGE) {
     if (from >= MAX_ROWS) throw new ExportError(fn);
@@ -177,6 +180,8 @@ export async function buildPersonalDataExport(
     // concernent le compte : la base les rend elle-même, pour l'appelant seul.
     const deletedProjects = await ownRows(supabase, "my_deleted_projects");
     const accountEvents = await ownRows(supabase, "my_account_events");
+    // Commentaires écrits par le titulaire, sur ses projets ou ceux qu'il suit.
+    const projectComments = await ownRows(supabase, "my_project_comments");
 
     return {
       format: "eduscholar-personal-data",
@@ -194,6 +199,7 @@ export async function buildPersonalDataExport(
         sections,
         section_citations: citations,
         deleted_projects_pending_purge: deletedProjects,
+        comments_written: projectComments,
       },
       // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
       account_events: accountEvents,

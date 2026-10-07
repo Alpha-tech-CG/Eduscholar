@@ -854,7 +854,12 @@
         "gone": "Elle a été supprimée depuis un autre onglet ou un autre appareil. Copiez votre texte si vous voulez le conserver.",
         "theirTitle": "Titre enregistré ailleurs",
         "theirLevel": "Niveau enregistré ailleurs"
-      }
+      },
+      "commented": "Le commentaire est publié.",
+      "replied": "La réponse est publiée.",
+      "commentDeleted": "Le commentaire est supprimé.",
+      "threadResolved": "Le fil est clos.",
+      "threadReopened": "Le fil est rouvert."
     },
     "document": {
       "open": "Voir et exporter le mémoire",
@@ -1014,6 +1019,51 @@
     "leaveHeading": "Ne plus suivre ce projet",
     "leaveIntro": "Vous ne pourrez plus le lire. Seul son propriétaire pourra vous réinviter.",
     "leaveConfirm": "Je ne veux plus suivre ce projet.",
-    "leave": "Quitter ce projet"
+    "leave": "Quitter ce projet",
+    "sectionsHeading": "Sections",
+    "sectionsIntro": "Ouvrez une section pour la lire et la commenter.",
+    "openThreads": "{count, plural, one {# fil ouvert} other {# fils ouverts}}"
+  },
+  "Comments": {
+    "sectionTitle": "Section d'un projet partagé",
+    "sharedIntro": "Projet : {project}. Vous lisez cette section ; vos remarques se font en commentaire.",
+    "backToProject": "Retour au projet partagé",
+    "textHeading": "Texte de la section",
+    "textEmpty": "Cette section n'a pas encore de texte.",
+    "heading": "Commentaires ({count})",
+    "open": "{count, plural, =0 {Tous les fils sont clos.} one {# fil ouvert.} other {# fils ouverts.}}",
+    "empty": "Aucun commentaire sur cette section.",
+    "emptyReadOnly": "Aucun commentaire sur cette section. Vous lisez ce projet sans pouvoir le commenter.",
+    "you": "Vous",
+    "author": "{role} ({email})",
+    "formerMember": "Ancien membre du projet",
+    "roles": {
+      "owner": "Auteur du projet",
+      "supervisor": "Encadrement",
+      "viewer": "Lecture seule"
+    },
+    "separator": " · ",
+    "edited": "modifié",
+    "deleted": "Commentaire retiré par son auteur.",
+    "resolvedBadge": "Fil clos",
+    "quoteLabel": "Passage indiqué par l'auteur du commentaire : ",
+    "reply": "Répondre",
+    "resolve": "Clore ce fil",
+    "reopen": "Rouvrir ce fil",
+    "delete": "Supprimer mon commentaire",
+    "add": "Publier le commentaire",
+    "pending": "Un instant…",
+    "newHeading": "Nouveau commentaire",
+    "fields": {
+      "body": "Votre commentaire",
+      "reply": "Votre réponse",
+      "quote": "Passage visé (facultatif)",
+      "quoteHint": "Recopiez la phrase que vise votre remarque : elle restera lisible même si le texte change."
+    },
+    "noticeCommented": "Le commentaire est publié.",
+    "noticeReplied": "La réponse est publiée.",
+    "noticeDeleted": "Le commentaire est supprimé.",
+    "noticeResolved": "Le fil est clos.",
+    "noticeReopened": "Le fil est rouvert."
   }
 }

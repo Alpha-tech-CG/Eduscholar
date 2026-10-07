@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 import { documentLocale } from "@/lib/projects/document-loader";
+import { getProjectComments, openThreadCounts } from "@/lib/projects/comment-queries";
 import { leaveProject } from "@/lib/projects/sharing-actions";
 import { loadSharedDocument } from "@/lib/projects/sharing-queries";
 
@@ -51,6 +52,10 @@ export default async function SharedProjectPage({
   if (loaded.status === "not_found") notFound();
   const { project } = loaded;
 
+  const comments = await getProjectComments(id);
+  const openThreads = comments ? openThreadCounts(comments) : new Map<string, number>();
+  const sections = loaded.status === "ok" ? loaded.document.sections : [];
+
   const facts: Array<[string, string | null]> = [
     [t("facts.problemStatement"), project.facts.problemStatement],
     [t("facts.mainQuestion"), project.facts.mainQuestion],
@@ -78,6 +83,29 @@ export default async function SharedProjectPage({
             </section>
           ) : null,
         )}
+        {sections.length > 0 ? (
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">{t("sectionsHeading")}</h2>
+            <p className="text-sm opacity-80">{t("sectionsIntro")}</p>
+            <ul className="flex flex-col gap-1">
+              {sections.map((section) => (
+                <li key={section.id} data-testid="shared-section" className={["", "ps-6", "ps-12"][section.level - 1]}>
+                  <Link
+                    href={`/shared/${id}/sections/${section.id}`}
+                    className="underline underline-offset-4"
+                  >
+                    {section.number} {section.title}
+                  </Link>
+                  {(openThreads.get(section.id) ?? 0) > 0 ? (
+                    <span className="ms-2 text-sm opacity-80">
+                      {t("openThreads", { count: openThreads.get(section.id) ?? 0 })}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         <p>
           <Link href="/shared" className="underline underline-offset-4">
             {t("backToShared")}
