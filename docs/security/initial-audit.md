@@ -248,6 +248,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   sans mot de passe et rachat en session `aal2`, codes survivant à un changement de
   facteur, codes de dix signes attaquables hors ligne en cas de fuite. Ces corrections
   n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Purge planifiée et modèles de courriel inutilisés (D-12, D-13,
+  D-23) : purge nocturne en base, exécutable par aucun rôle de l'API ; les parcours du
+  service que l'application n'utilise pas envoient un message sans lien ni code. Les
+  deux réglages sont à reproduire sur chaque projet hébergé. Relu par l'agent sécurité :
+  aucun constat critique ou élevé, 2 moyens et 6 faibles. Corrigés : ligne d'audit
+  permanente par compte purgé (un tiers faisait grossir le journal), tâche pouvant
+  échouer sans bruit sous un autre rôle, compte suspendu purgé avec sa suspension, lien
+  de confirmation invalidé en cours de validité, adresse répétée dans le message
+  neutre, tests incomplets. Accepté : les deux purges partagent une transaction (un
+  test de configuration interdit la clé étrangère qui la bloquerait). Ces corrections
+  n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

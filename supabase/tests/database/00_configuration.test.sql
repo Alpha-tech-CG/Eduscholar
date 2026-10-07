@@ -552,5 +552,15 @@ select isnt_empty(
   'Une fonction SECURITY DEFINER sans search_path vide est détectée'
 );
 
+-- La purge des comptes jamais confirmés efface des lignes de auth.users : une
+-- clé étrangère sans cascade ni mise à null la bloquerait tout entière.
+select is(
+  (select count(*) from pg_constraint
+   where contype = 'f' and confrelid = 'auth.users'::regclass
+     and connamespace in ('public'::regnamespace, 'private'::regnamespace)
+     and confdeltype not in ('c', 'n')),
+  0::bigint, 'Toute clé étrangère vers auth.users suit la suppression du compte'
+);
+
 select * from finish();
 rollback;

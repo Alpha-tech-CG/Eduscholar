@@ -68,6 +68,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002900_administration_hardening.sql` | Corrections de la revue de sécurité : rétablissement selon le rang, opérations toujours tracées, limites en base, garde du dernier super-administrateur |
 | `20261006003000_recovery_codes.sql` | Codes de secours de la validation en deux étapes |
 | `20261006003100_recovery_codes_hardening.sql` | Corrections de la revue de sécurité : codes de seize signes liés au facteur, usage en session `aal1` seulement, dernier super-administrateur, antériorité du facteur pour `org_admin` |
+| `20261006003200_scheduled_purges.sql` | Purge nocturne par pg_cron : projets supprimés depuis trente jours, comptes jamais confirmés depuis sept jours |
+| `20261006003300_scheduled_purges_hardening.sql` | Corrections de la revue de sécurité : pas de ligne d'audit par compte purgé, comptes suspendus et courriels récents épargnés, propriétaire de la tâche vérifié |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -294,8 +296,29 @@ propriétaire ; ni la modération, ni l'administration, ni le rôle serveur ne l
 Index : `(owner_id)` sur les projets non supprimés. Lecture par RLS ; écriture par
 `create_project`, `update_project` (seuls les champs présents sont écrits ; une fiche
 modifiée entre-temps n'est pas écrasée) et `delete_project`. Plafonds : 20 projets, 20
-créations par jour. `purge_deleted_projects()`, réservée au rôle serveur, efface les
-projets supprimés depuis plus de trente jours : **elle doit être planifiée** (dette D-23).
+créations par jour.
+
+### Purges planifiées
+
+`private.run_scheduled_purges()` est appelée chaque nuit à 3 h 17 (UTC) par pg_cron
+(tâche `eduscholar-purges`). Elle efface :
+
+- les projets supprimés depuis plus de trente jours, avec leurs sources, fiches de
+  lecture, sections et citations ;
+- les comptes dont l'adresse n'a jamais été confirmée, qui ne se sont jamais connectés,
+  créés depuis plus de sept jours, sans rôle de plateforme, ni appartenance à une
+  organisation, ni suspension, et à qui aucun courriel n'a été envoyé dans l'heure.
+
+Elle refuse toute session qui n'est pas celle du propriétaire de la base : aucun rôle de
+l'API ne peut la lancer. Un passage qui efface quelque chose écrit une ligne d'audit
+`retention.purged` — des nombres, aucun identifiant ; c'est sa seule trace au journal :
+le compte purgé n'y laisse pas de ligne `account.deleted`. `purge_deleted_projects()` reste
+disponible au rôle serveur.
+
+Sur un projet hébergé, l'extension pg_cron doit être activée avant d'appliquer la
+migration, et la migration appliquée sous le rôle `postgres` — elle échoue sinon ;
+l'exécution se vérifie dans `cron.job_run_details`. Un échec de la tâche ne
+déclenche aucune alerte à ce jour.
 
 Les tables enfants d'un projet contrôlent l'accès par `private.my_project_ids()`, jamais
 par une colonne recopiée, et portent `on delete cascade` vers le projet.

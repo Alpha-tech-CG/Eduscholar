@@ -221,14 +221,23 @@ Les deux derniers ont besoin de l'instance Supabase locale (`npm run db:start`).
 ## Ce qui reste à faire
 
 Voir la dette de sécurité du backlog : CAPTCHA et mots de passe compromis (D-09),
-changement de mot de passe par appel direct (D-10), purge des comptes non confirmés
-(D-12), courriel après l'usage d'un code de secours (D-27).
+changement de mot de passe par appel direct (D-10), courriel après l'usage d'un code de
+secours (D-27).
 
 Risques résiduels connus :
 
 - par appel direct à l'API d'authentification, la limite par compte de l'application ne
   s'applique pas : seules valent les limites par adresse IP du service, d'où D-09 ;
-- les points d'entrée de connexion par lien magique et par code restent ouverts côté
-  service ; l'application ne les utilise pas ;
+- les points d'entrée du service que l'application n'utilise pas (lien magique et code
+  par courriel, changement d'adresse, invitation, réauthentification) restent
+  appelables, mais leur courriel ne contient ni lien ni code : la demande ne mène à
+  rien. Ces modèles sont déclarés dans `supabase/config.toml`
+  (`supabase/templates/unused_flow.html`) et sont **à reproduire sur chaque projet
+  hébergé** — sans eux, le service envoie ses modèles par défaut, dont les liens
+  agissent ;
+- ces appels envoient tout de même un courriel à l'adresse visée : seule la limite
+  d'envoi du service borne cette gêne, d'où D-09 ;
+- un compte dont l'adresse n'est jamais confirmée est effacé après sept jours par la
+  purge nocturne ; d'ici là, il retient l'adresse (voir M-57) ;
 - un attaquant réparti peut atteindre la limite par compte et gêner une connexion ; le
   CAPTCHA remplacera ce refus.

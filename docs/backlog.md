@@ -41,7 +41,7 @@ Phase 3, un projet n'a d'autre lecteur que son propriétaire.
 
 | ID | Tâche | Dépend de | Statut |
 |---|---|---|---|
-| C-01 | Projet de recherche privé : fiche du projet (cahier §6.7), création, modification, suppression logique | B-11 | fait — fiche complète, strictement privée, purge à trente jours écrite mais non planifiée (D-23) |
+| C-01 | Projet de recherche privé : fiche du projet (cahier §6.7), création, modification, suppression logique | B-11 | fait — fiche complète, strictement privée, purge à trente jours planifiée chaque nuit |
 | C-02 | Sources du projet, saisies ou reprises du catalogue ; fiche de lecture par source ; matrice de littérature (§6.8) | C-01, B-16 | fait — sources saisies ou reprises d'une fiche publiée, fiche de lecture, matrice ; rien n'est inventé ni complété |
 | C-03 | Bibliographie de base (APA) construite à partir des seules sources du projet ; références incomplètes et doublons signalés (§6.10) | C-02 | fait — APA 7e édition en français ou en anglais, signalements, texte à copier ; autres styles et import BibTeX/RIS non faits |
 | C-04 | Plan du mémoire : chapitres et sections rédigés en texte, citations liées aux sources (§6.9, version simple) | C-02 | fait — plan ordonné sur trois niveaux, texte simple, sources citées par section avec leurs pages, protection contre l'écrasement ; sans enregistrement automatique ni mise en forme riche |
@@ -64,8 +64,8 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-09 | Authentification : CAPTCHA, contrôle des mots de passe compromis, alerte de nouvelle connexion, journalisation des événements de sécurité (échecs, limites atteintes). Sans CAPTCHA, un appel direct à l'API d'authentification n'est limité que par adresse IP. | Avant l'ouverture publique |
 | D-10 | Exiger le mot de passe actuel pour un changement fait par appel direct à l'API d'authentification avec une session ordinaire (réglage du service à vérifier sur le projet hébergé) | À la création du projet de staging |
 | D-11 | Enregistrer la déclaration d'âge en base et l'exiger à la première connexion, quel que soit le chemin d'inscription | fait en B-11 |
-| D-12 | Purger les comptes jamais confirmés | Avant l'ouverture publique |
-| D-13 | Neutraliser ou personnaliser les modèles de courriel non utilisés (lien magique, changement d'adresse, invitation), dont les liens agissent par simple chargement | Avant l'ouverture publique |
+| D-12 | Purger les comptes jamais confirmés | fait — effacés après sept jours par la purge nocturne (jamais connectés, sans rôle ni organisation) |
+| D-13 | Neutraliser ou personnaliser les modèles de courriel non utilisés (lien magique, changement d'adresse, invitation, réauthentification) | fait en local — un même message sans lien ni code ; **à reproduire sur chaque projet hébergé** (modèles de courriel du tableau de bord) |
 | D-14 | Suppression de son compte par l'utilisateur, avec le cas du dernier administrateur d'une organisation | fait en B-11 ; le transfert d'administration reste à construire (D-04) |
 | D-15 | Requêtes imbriquées coûteuses par l'API (un utilisateur connecté peut encore en lancer sur les référentiels, jusqu'au délai de 8 secondes) : limitation de débit devant l'API, mesure de charge | Avant l'ouverture publique, avec D-09 |
 | D-17 | Second facteur : codes de secours | fait — dix codes à usage unique, levée du second facteur depuis la connexion |
@@ -75,7 +75,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-20 | Connecteurs : pause après une réponse `429` en respectant `Retry-After` ; plafond journalier de requêtes par source ; signaler sur la fiche les champs modifiés après import | Avant l'import en lot ou OpenAlex |
 | D-21 | Recherche : l'index plein texte n'est pas utilisé sous RLS (47 ms pour 50 000 fiches). Avant 200 000 fiches ou au-delà de 300 ms : fonction de recherche dédiée (ADR à écrire), compteur estimé, classement par pertinence. Étendre D-15 à la table des ressources. Fixer la durée de conservation des journaux d'accès, qui contiennent les mots cherchés. | Avant l'import en lot |
 | D-22 | Bibliothèque : inclure favoris et collections dans l'export des données personnelles | fait en C-05 |
-| D-23 | Planifier `purge_deleted_projects()` (tâche quotidienne avec le rôle serveur) et vérifier son exécution — elle efface aussi les sources et les fiches de lecture ; même traitement pour les futures données à durée de conservation | À la création du projet de staging |
+| D-23 | Planifier la purge des données à durée de conservation et vérifier son exécution | fait en local — `private.run_scheduled_purges()` chaque nuit par pg_cron ; **sur chaque projet hébergé : activer pg_cron avant la migration, puis vérifier `cron.job_run_details`** ; aucune alerte si la tâche échoue (à relier à la supervision, D-08) |
 | D-24 | Rédaction : enregistrement automatique et sortie de conflit sans rechargement ; limite de débit sur les enregistrements (réécriture répétée d'un gros texte) ; historique des versions (Phase 4) | Avant l'ouverture publique |
 | D-25 | Exports : tâche différée ou réponse en flux pour un gros compte (durée et taille de réponse de l'hébergeur) ; inclure dans la copie des données le journal de sécurité du compte et les projets supprimés en attente de purge ; courriel de notification après un export | Avant l'ouverture publique |
 | D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ou de perdre son rôle ; second facteur exigé pour supprimer un compte qui en a un | fait |

@@ -90,6 +90,7 @@ Propositions, à confirmer.
 | Donnée | Durée proposée |
 |---|---|
 | Compte et profil | Tant que le compte existe |
+| Compte dont l'adresse n'a jamais été confirmée | 7 jours après l'inscription |
 | Travaux et bibliothèque | Tant que le compte existe ; un projet supprimé est purgé après 30 jours |
 | Compte inactif | Avertissement après 24 mois, suppression 3 mois plus tard `[À CONFIRMER]` |
 | Journal de sécurité | 12 mois `[À CONFIRMER selon les obligations légales]` |

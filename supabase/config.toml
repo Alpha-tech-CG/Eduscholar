@@ -260,6 +260,28 @@ content_path = "./supabase/templates/confirmation.html"
 subject = "EduScholar — Nouveau mot de passe / New password"
 content_path = "./supabase/templates/recovery.html"
 
+# Parcours que l'application n'utilise pas : lien magique et code par courriel,
+# invitation, changement d'adresse, ré-authentification. Leurs modèles par
+# défaut portent un lien ou un code qui agit sans mot de passe. Ils sont
+# remplacés par un message sans lien ni code : ces parcours, qu'un appel direct
+# au service d'authentification peut encore déclencher, ne mènent plus à rien.
+# Pour en ouvrir un, écrire son modèle et une décision d'architecture.
+[auth.email.template.magic_link]
+subject = "EduScholar — Demande sans effet / Request with no effect"
+content_path = "./supabase/templates/unused_flow.html"
+
+[auth.email.template.invite]
+subject = "EduScholar — Demande sans effet / Request with no effect"
+content_path = "./supabase/templates/unused_flow.html"
+
+[auth.email.template.email_change]
+subject = "EduScholar — Demande sans effet / Request with no effect"
+content_path = "./supabase/templates/unused_flow.html"
+
+[auth.email.template.reauthentication]
+subject = "EduScholar — Demande sans effet / Request with no effect"
+content_path = "./supabase/templates/unused_flow.html"
+
 # Uncomment to customize notification email template
 # Le titulaire est prévenu de tout changement de mot de passe, y compris fait
 # par un appel direct à l'API avec une session restée ouverte.

@@ -93,6 +93,23 @@ export async function waitForEmailLink(
   throw new Error(`Aucun courriel de type ${type} reçu pour ${email}`);
 }
 
+/** Attend un courriel dont l'objet contient le texte donné, et rend son contenu HTML. */
+export async function waitForEmailHtml(email: string, text: string): Promise<string> {
+  const deadline = Date.now() + 20_000;
+
+  while (Date.now() < deadline) {
+    const summary = (await messagesFor(email)).find(({ Subject }) => Subject.includes(text));
+    if (summary) {
+      const message = await fetch(`${mailboxUrl}/api/v1/message/${summary.ID}`);
+      const { HTML } = (await message.json()) as { HTML: string };
+      return HTML;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Aucun courriel « ${text} » reçu pour ${email}`);
+}
+
 /** Attend un courriel dont l'objet contient le texte donné. */
 export async function waitForEmailSubject(email: string, text: string): Promise<void> {
   const deadline = Date.now() + 20_000;
