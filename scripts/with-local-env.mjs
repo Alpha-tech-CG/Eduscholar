@@ -54,6 +54,10 @@ const env = {
   APP_URL: process.env.APP_URL ?? "http://localhost:3000",
   // Boîte de réception locale, utilisée par les tests de bout en bout.
   MAILPIT_URL: local.MAILPIT_URL ?? local.INBUCKET_URL ?? "",
+  // Avis de sécurité de l'application : remis à la même boîte locale (port
+  // « smtp_port » de supabase/config.toml), sans identifiants.
+  SMTP_URL: process.env.SMTP_URL ?? "smtp://127.0.0.1:55319",
+  MAIL_FROM: process.env.MAIL_FROM ?? "securite@eduscholar.invalid",
 };
 
 // La commande vient du fichier package.json, jamais d'une saisie externe.

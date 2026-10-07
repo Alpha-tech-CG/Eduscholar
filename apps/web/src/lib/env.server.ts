@@ -25,6 +25,10 @@ const schema = z.object({
     .default(CROSSREF_OFFICIAL_URL),
   // Adresse de contact transmise à Crossref (accès « poli »). Facultative.
   CROSSREF_MAILTO: z.email().optional(),
+  // Avis de sécurité envoyés par l'application (ADR-0009). Sans ces deux
+  // valeurs, aucun avis ne part ; rien d'autre n'en dépend.
+  SMTP_URL: z.string().regex(/^smtps?:\/\/\S+$/).optional(),
+  MAIL_FROM: z.email().optional(),
 });
 
 export type ServerEnv = z.infer<typeof schema>;
@@ -41,6 +45,8 @@ export function serverEnv(): ServerEnv {
     APP_URL: process.env.APP_URL,
     CROSSREF_API_URL: process.env.CROSSREF_API_URL || undefined,
     CROSSREF_MAILTO: process.env.CROSSREF_MAILTO || undefined,
+    SMTP_URL: process.env.SMTP_URL || undefined,
+    MAIL_FROM: process.env.MAIL_FROM || undefined,
   });
 
   if (!parsed.success) {

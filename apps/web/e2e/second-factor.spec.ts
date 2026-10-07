@@ -11,6 +11,7 @@ import {
   TEST_FACTOR_SECRET,
   uniqueEmail,
   waitForEmailLink,
+  waitForEmailHtml,
   waitForEmailSubject,
 } from "./support/auth";
 import { forgetLastSuccess, freshTotp } from "./support/totp";
@@ -349,6 +350,11 @@ test.describe("validation en deux étapes", () => {
     const codes = await list.allTextContents();
     for (const code of codes) expect(code).toMatch(/^[A-HJ-NP-Z2-9]{4}(-[A-HJ-NP-Z2-9]{4}){3}$/);
     expect(new Set(codes).size).toBe(10);
+    // Le titulaire en est prévenu par courriel, sans lien ni code.
+    const generated = await waitForEmailHtml(email, "Nouveaux codes de secours");
+    expect(generated).toContain("ni lien ni code");
+    expect(generated).not.toMatch(/href\s*=|https?:\/\//i);
+    for (const code of codes) expect(generated).not.toContain(code);
 
     // Ils ne sont plus affichés ensuite ; seul leur nombre l'est.
     await page.goto("/fr/account/security");
@@ -386,6 +392,7 @@ test.describe("validation en deux étapes", () => {
     await page.getByLabel("Code de secours").fill((codes[3] ?? "").toLowerCase().replaceAll("-", ""));
     await page.getByRole("button", { name: "Utiliser ce code" }).click();
     await expect(page).toHaveURL(/\/fr\/account\/security\?notice=recovered/);
+    await waitForEmailSubject(email, "Code de secours utilisé");
     await expect(page.getByRole("main").getByRole("status")).toContainText(
       "la validation en deux étapes est désactivée",
     );

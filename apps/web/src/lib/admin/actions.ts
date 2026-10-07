@@ -9,7 +9,8 @@ import { codeWaitSeconds } from "@/lib/auth/second-factor";
 import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
-import { createSessionClient } from "@/lib/supabase/server";
+import { sendAccountNotice } from "@/lib/mail/send";
+import { createServiceClient, createSessionClient } from "@/lib/supabase/server";
 
 // Actions d'administration. Chacune appelle une fonction de la base sous la
 // session de l'administrateur : rôle, second facteur récent, interdiction
@@ -175,6 +176,20 @@ export async function setAccountStatus(
 
   // La base a fait le reste dans la même transaction : sessions du compte
   // fermées, et plus aucune session ouvrable tant qu'il est suspendu.
+  //
+  // Le titulaire est prévenu par courriel : la connexion, elle, ne lui dira
+  // rien. Son adresse est lue par le rôle serveur, une fois l'opération
+  // acceptée par la base ; elle n'est ni affichée ni journalisée.
+  try {
+    const target = await createServiceClient().auth.admin.getUserById(parsed.data.targetUser);
+    await sendAccountNotice(
+      target.data.user?.email,
+      parsed.data.suspended ? "account_suspended" : "account_restored",
+    );
+  } catch {
+    // L'avis est un complément : la suspension est faite.
+  }
+
   const locale = await getLocale();
   return redirect({
     href: {

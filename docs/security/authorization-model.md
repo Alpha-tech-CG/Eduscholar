@@ -558,6 +558,7 @@ et refuse le rejeu.
 | Émission des URL signées Storage | Ligne `files` visible sous la session de l'appelant, `scan_status` |
 | Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
 | Levée du second facteur après un code de secours (`auth.admin.mfa.deleteFactor`) | Code accepté par `redeem_recovery_code` sous la session du titulaire, juste avant ; l'identifiant vient de la session vérifiée |
+| Lecture de l'adresse d'un compte pour l'avis de suspension ou de rétablissement (`auth.admin.getUserById`) | `admin_set_account_status` acceptée juste avant sous la session de l'administrateur ; l'adresse ne sert qu'à l'envoi, n'est ni affichée ni journalisée |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
 | Création de notifications | Tâche système |

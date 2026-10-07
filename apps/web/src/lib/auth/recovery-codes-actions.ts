@@ -5,6 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import { createServiceClient, createSessionClient, verifyPassword } from "@/lib/supabase/server";
 import { checkAttempt } from "./rate-limit";
 import { afterRefusedCode, isCodeRefusedByHook } from "./refused-code";
+import { sendAccountNotice } from "@/lib/mail/send";
 import { codeWaitSeconds } from "./second-factor";
 import { getCurrentUser, getFullySignedInUser } from "./session";
 import type { AuthErrorCode, AuthFormState } from "./state";
@@ -83,6 +84,8 @@ export async function generateRecoveryCodes(
   }
   const codes = (data ?? []) as string[];
   if (codes.length !== 10) return { status: "error", error: "unavailable" };
+  // Le titulaire est prévenu : des codes générés à son insu ouvriraient son compte.
+  await sendAccountNotice(user.email, "recovery_codes_generated");
   return { status: "generated", codes };
 }
 
@@ -137,6 +140,9 @@ export async function redeemRecoveryCode(
   const session = await createSessionClient();
   await session.auth.signOut({ scope: "others" });
   await session.rpc("discard_recovery_codes");
+  // Le titulaire est prévenu par courriel : si ce n'est pas lui, il le saura
+  // même sans rouvrir la plateforme.
+  await sendAccountNotice(user.email, "recovery_code_used");
 
   const locale = await getLocale();
   return redirect({

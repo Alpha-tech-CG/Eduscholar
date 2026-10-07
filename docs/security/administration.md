@@ -31,8 +31,9 @@ Règles tenues par la base, quel que soit le chemin (écran ou appel direct à l
 - une suspension ferme aussitôt toutes les sessions du compte et l'empêche d'en ouvrir
   une nouvelle, dans la même transaction ; le rétablissement lui rend la connexion. À la
   connexion, le compte suspendu reçoit la même réponse qu'à un mot de passe erroné :
-  rien ne dit à un tiers qu'un compte existe ou qu'il est sanctionné. Le titulaire doit
-  donc être prévenu autrement (courriel à prévoir, D-27) ;
+  rien ne dit à un tiers qu'un compte existe ou qu'il est sanctionné. Le titulaire est
+  prévenu par un courriel de l'application, à la suspension comme au rétablissement
+  (ADR-0009) ;
 - 60 recherches par quart d'heure et 30 suspensions par heure, par administrateur ;
 - chaque recherche, attribution, retrait, suspension et rétablissement est inscrit au
   journal d'audit au nom de son auteur. La recherche y figure sans l'adresse cherchée. La

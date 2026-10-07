@@ -147,8 +147,9 @@ Limites connues :
 - qui connaît le mot de passe d'un compte peut, par onze codes erronés, fermer ses
   sessions et bloquer son second facteur un quart d'heure, et par cinq codes de secours
   erronés bloquer la voie de secours pour la même durée : une gêne, pas un accès ;
-- l'usage d'un code de secours ne déclenche pas de courriel (dette D-27) : le titulaire
-  en est averti à l'écran et par la fermeture de ses autres sessions.
+- l'usage d'un code de secours et la génération de nouveaux codes déclenchent un
+  courriel de l'application au titulaire (ADR-0009), en plus de l'avertissement à
+  l'écran et de la fermeture de ses autres sessions.
 
 #### Codes de secours
 

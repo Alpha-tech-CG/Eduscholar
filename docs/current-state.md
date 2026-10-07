@@ -144,6 +144,8 @@ Détail dans `docs/security/initial-audit.md`.
   (dette D-19).
 - Rejeu d'un code de validation fermé, et suspension qui ferme les sessions (dette
   D-28 et D-29).
+- Avis de sécurité par courriel envoyés par l'application (ADR-0009) : code de secours
+  utilisé, codes générés, compte suspendu ou rétabli.
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

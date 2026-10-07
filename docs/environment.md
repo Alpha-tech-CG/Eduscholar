@@ -26,6 +26,8 @@
 | `SUPABASE_SECRET_KEY` | **oui** | Clé `service_role` ; usages listés dans `authorization-model.md` §7.5 |
 | `APP_URL` | non | Adresse publique de l'application |
 | `CROSSREF_MAILTO` | non | Facultative. Adresse de contact transmise à Crossref avec chaque requête (accès « poli », débit plus favorable). Une adresse de l'équipe, jamais celle d'un utilisateur. |
+| `SMTP_URL` | oui | Facultative. Serveur d'envoi des avis de sécurité de l'application (ADR-0009), sous la forme `smtps://identifiant:secret@hôte:port`. Sans elle, aucun avis ne part. Le même compte que celui du service d'authentification. |
+| `MAIL_FROM` | non | Facultative, requise avec `SMTP_URL`. Adresse d'expédition des avis, sur un domaine authentifié (SPF, DKIM). |
 | `CROSSREF_API_URL` | non | À ne pas définir. Vaut `https://api.crossref.org` ; seule autre valeur admise : un serveur de test sur `http://127.0.0.1`, et seulement si `CROSSREF_TEST_STUB=1` hors Vercel (tests de bout en bout). |
 | `TRUSTED_CLIENT_IP_HEADER` | non | Hors Vercel : nom de l'en-tête, écrasé par le proxy frontal, qui porte l'adresse du client. Absent : la limitation de débit par client devient commune à tous les visiteurs. |
 

@@ -1,0 +1,123 @@
+// Courriels que l'application envoie elle-même au titulaire d'un compte
+// (ADR-0009) : des avis de sécurité que le service d'authentification n'émet
+// pas. Comme ses propres messages, ils sont bilingues et ne portent ni lien ni
+// code : un avis ne demande jamais de cliquer.
+//
+// Aucune donnée du compte n'entre dans le texte : tout y est constant.
+
+export const NOTICE_KINDS = [
+  "recovery_code_used",
+  "recovery_codes_generated",
+  "account_suspended",
+  "account_restored",
+] as const;
+export type NoticeKind = (typeof NOTICE_KINDS)[number];
+
+type Text = { subject: string; paragraphs: string[] };
+
+const FR: Record<NoticeKind, Text> = {
+  recovery_code_used: {
+    subject: "Code de secours utilisé",
+    paragraphs: [
+      "Un code de secours vient d'être utilisé sur votre compte : la validation en deux étapes est désactivée, et vos autres sessions ont été fermées.",
+      "Si c'est vous, réactivez-la depuis « Sécurité du compte » avec votre nouvel appareil.",
+      "Si ce n'est pas vous, changez votre mot de passe sans attendre, puis réactivez la validation en deux étapes.",
+    ],
+  },
+  recovery_codes_generated: {
+    subject: "Nouveaux codes de secours",
+    paragraphs: [
+      "De nouveaux codes de secours viennent d'être générés pour votre compte. Les précédents ne sont plus valables.",
+      "Si ce n'est pas vous, changez votre mot de passe sans attendre, puis générez de nouveaux codes.",
+    ],
+  },
+  account_suspended: {
+    subject: "Compte suspendu",
+    paragraphs: [
+      "Votre compte a été suspendu par l'administration de la plateforme. Vos sessions sont fermées et la connexion ne vous est plus ouverte : elle vous répondra comme à un mot de passe erroné.",
+      "Vos données sont conservées. Si vous pensez qu'il s'agit d'une erreur, contactez l'assistance.",
+    ],
+  },
+  account_restored: {
+    subject: "Compte rétabli",
+    paragraphs: [
+      "Votre compte a été rétabli par l'administration de la plateforme. Vous pouvez de nouveau vous connecter avec votre mot de passe.",
+    ],
+  },
+};
+
+const EN: Record<NoticeKind, Text> = {
+  recovery_code_used: {
+    subject: "Recovery code used",
+    paragraphs: [
+      "A recovery code was just used on your account: two-step verification is now off, and your other sessions have been closed.",
+      "If this was you, turn it back on from “Account security” with your new device.",
+      "If this was not you, change your password right away, then turn two-step verification back on.",
+    ],
+  },
+  recovery_codes_generated: {
+    subject: "New recovery codes",
+    paragraphs: [
+      "New recovery codes were just generated for your account. The previous ones no longer work.",
+      "If this was not you, change your password right away, then generate new codes.",
+    ],
+  },
+  account_suspended: {
+    subject: "Account suspended",
+    paragraphs: [
+      "Your account has been suspended by the platform's administrators. Your sessions are closed and you can no longer sign in: sign-in will answer as it does to a wrong password.",
+      "Your data is kept. If you believe this is a mistake, contact support.",
+    ],
+  },
+  account_restored: {
+    subject: "Account restored",
+    paragraphs: [
+      "Your account has been restored by the platform's administrators. You can sign in again with your password.",
+    ],
+  },
+};
+
+const FOOTER_FR = "Ce message ne contient ni lien ni code, et ne vous demandera jamais d'en saisir un.";
+const FOOTER_EN = "This message contains no link and no code, and will never ask you to enter one.";
+
+const escape = (value: string) =>
+  value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+
+export type NoticeMessage = { subject: string; text: string; html: string };
+
+/** Le message d'un avis : objet et corps bilingues, en texte et en HTML. */
+export function buildNotice(kind: NoticeKind): NoticeMessage {
+  const fr = FR[kind];
+  const en = EN[kind];
+
+  const text = [
+    "EduScholar",
+    "",
+    "Bonjour,",
+    ...fr.paragraphs,
+    FOOTER_FR,
+    "",
+    "----",
+    "",
+    "Hello,",
+    ...en.paragraphs,
+    FOOTER_EN,
+  ].join("\n");
+
+  const block = (lang: "fr" | "en", greeting: string, paragraphs: string[], footer: string) =>
+    [`<p lang="${lang}">${greeting}</p>`, ...paragraphs.map((p) => `<p lang="${lang}">${escape(p)}</p>`),
+      `<p lang="${lang}" style="font-size: 14px">${escape(footer)}</p>`].join("\n    ");
+
+  const html = `<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+    ${block("fr", "Bonjour,", fr.paragraphs, FOOTER_FR)}
+    <hr />
+    ${block("en", "Hello,", en.paragraphs, FOOTER_EN)}
+  </body>
+</html>
+`;
+
+  return { subject: `EduScholar — ${fr.subject} / ${en.subject}`, text, html };
+}
