@@ -326,23 +326,37 @@ export type Report = {
   createdAt: string;
 };
 
-export async function getOpenReports(): Promise<Report[]> {
+export type OpenReports = { reports: Report[]; total: number; page: number };
+
+/** Signalements ouverts, les plus anciens d'abord, par pages. */
+export async function getOpenReports(page: number): Promise<OpenReports> {
   const supabase = await createSessionClient();
-  const { data } = await supabase
+  const from = (page - 1) * MODERATION_PAGE_SIZE;
+  const { data, count, error } = await supabase
     .from("resource_reports")
-    .select("id, resource_id, reason, details, status, created_at")
+    .select("id, resource_id, reason, details, status, created_at", { count: "exact" })
     .eq("status", "open")
     .order("created_at", { ascending: true })
-    .limit(100);
+    .order("id")
+    .range(from, from + MODERATION_PAGE_SIZE - 1);
+  if (error) {
+    // Page au-delà de la dernière : on revient à la première.
+    if (error.code === "PGRST103" && page > 1) return getOpenReports(1);
+    return { reports: [], total: 0, page: 1 };
+  }
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    resourceId: row.resource_id,
-    reason: row.reason,
-    details: row.details,
-    status: row.status,
-    createdAt: row.created_at,
-  }));
+  return {
+    reports: (data ?? []).map((row) => ({
+      id: row.id,
+      resourceId: row.resource_id,
+      reason: row.reason,
+      details: row.details,
+      status: row.status,
+      createdAt: row.created_at,
+    })),
+    total: count ?? 0,
+    page,
+  };
 }
 
 export type LicenseOption = Option & { canHost: string };

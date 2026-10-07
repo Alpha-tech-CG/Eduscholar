@@ -460,7 +460,8 @@
       "pagination": "Queue pages",
       "previous": "Previous page",
       "next": "Next page",
-      "page": "Page {page} of {pages}"
+      "page": "Page {page} of {pages}",
+      "reportsPagination": "Report pages"
     },
     "import": {
       "title": "Import by DOI",

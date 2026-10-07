@@ -460,7 +460,8 @@
       "pagination": "Pages de la file",
       "previous": "Page précédente",
       "next": "Page suivante",
-      "page": "Page {page} sur {pages}"
+      "page": "Page {page} sur {pages}",
+      "reportsPagination": "Pages des signalements"
     },
     "import": {
       "title": "Importer par DOI",

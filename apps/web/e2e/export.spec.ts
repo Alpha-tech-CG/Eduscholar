@@ -291,6 +291,44 @@ test.describe("export d'un projet", () => {
     await page.goto("/fr/moderation");
     await expect(page.getByRole("main")).toContainText(`Détail privé ${marker}`);
 
+    // La liste des signalements se parcourt par pages, et dit combien il y en a.
+    // Vingt et un signalements datés dans l'avenir : ils se rangent en fin de
+    // liste et ne déplacent ceux d'aucun autre test.
+    const batch = `lot${Date.now()}${Math.round(Math.random() * 1e6)}`;
+    sql(`
+      with seeded as (
+        insert into public.resources
+          (type_code, title, authors, language_code, program_code, source_kind, source_name,
+           official_url, access_status, editorial_status, last_verified_at, published_at)
+        select 'article', 'Ressource ${batch} ' || g, array['Auteur Test'], 'fr', 'computer_science',
+               'connector', 'e2e-seed', 'https://exemple.invalid/${batch}/' || g, 'open_access',
+               'published', now(), now()
+        from generate_series(1, 21) g
+        returning id
+      )
+      insert into public.resource_reports (resource_id, reporter_id, reason, details, created_at)
+      select id, '${reporter.id}', 'broken_link', 'Signalement ${batch}', now() + interval '10 years' from seeded
+    `);
+    try {
+      await page.goto("/fr/moderation");
+      const pages = page.getByTestId("reports-page");
+      await expect(pages).toContainText("Page 1 sur");
+      const total = Number((await page.getByRole("heading", { name: /Signalements ouverts/ }).innerText()).match(/\((\d+)\)/)?.[1]);
+      expect(total).toBeGreaterThanOrEqual(22);
+      const last = Math.ceil(total / 20);
+      await page.goto(`/fr/moderation?rpage=${last}`);
+      await expect(pages).toHaveText(`Page ${last} sur ${last}`);
+      await expect(page.getByRole("main")).toContainText(`Signalement ${batch}`);
+      await page.getByRole("navigation", { name: "Pages des signalements" }).getByRole("link", { name: "Page précédente" }).click();
+      await expect(pages).toHaveText(`Page ${last - 1} sur ${last}`);
+      // Une page au-delà de la dernière ramène à la première.
+      await page.goto("/fr/moderation?rpage=499");
+      await expect(pages).toContainText("Page 1 sur");
+    } finally {
+      sql(`delete from public.resource_reports where details = 'Signalement ${batch}'`);
+      sql(`delete from public.resources where title like 'Ressource ${batch} %'`);
+    }
+
     const { data } = await downloadData(page, password);
     expect(data.platform_roles).toEqual([expect.objectContaining({ role: "moderator" })]);
     expect(data.catalogue.reports).toEqual([]);

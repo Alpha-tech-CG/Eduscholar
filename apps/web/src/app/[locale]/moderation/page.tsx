@@ -20,24 +20,34 @@ export default async function ModerationPage({
   searchParams,
 }: PageProps<"/[locale]/moderation">) {
   await requireModerator("/moderation");
-  const { notice, q, page: rawPage } = await searchParams;
+  const { notice, q, page: rawPage, rpage: rawReportPage } = await searchParams;
   const words = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 200) ?? "";
-  const requested = Number.parseInt((Array.isArray(rawPage) ? rawPage[0] : rawPage) ?? "", 10);
-  const wanted = Number.isInteger(requested) && requested >= 1 ? Math.min(requested, 500) : 1;
+  const pageNumber = (raw: string | string[] | undefined) => {
+    const requested = Number.parseInt((Array.isArray(raw) ? raw[0] : raw) ?? "", 10);
+    return Number.isInteger(requested) && requested >= 1 ? Math.min(requested, 500) : 1;
+  };
+  const wanted = pageNumber(rawPage);
 
-  const [t, tStatus, tReason, format, result, reports] = await Promise.all([
+  const [t, tStatus, tReason, format, result, openReports] = await Promise.all([
     getTranslations("Catalogue.moderation"),
     getTranslations("Catalogue.editorialStatus"),
     getTranslations("Catalogue.reportReason"),
     getFormatter(),
     getModerationQueue(words, wanted),
-    getOpenReports(),
+    getOpenReports(pageNumber(rawReportPage)),
   ]);
   const { resources: queue, total, page } = result;
   const lastPage = Math.max(1, Math.ceil(total / MODERATION_PAGE_SIZE));
-  const pageHref = (target: number) => ({
+  const { reports, total: reportTotal, page: reportPage } = openReports;
+  const lastReportPage = Math.max(1, Math.ceil(reportTotal / MODERATION_PAGE_SIZE));
+  // Chaque liste garde sa page quand l'autre change.
+  const pageHref = (target: number, reportTarget: number = reportPage) => ({
     pathname: "/moderation" as const,
-    query: { ...(words ? { q: words } : {}), ...(target > 1 ? { page: String(target) } : {}) },
+    query: {
+      ...(words ? { q: words } : {}),
+      ...(target > 1 ? { page: String(target) } : {}),
+      ...(reportTarget > 1 ? { rpage: String(reportTarget) } : {}),
+    },
   });
 
   return (
@@ -122,7 +132,7 @@ export default async function ModerationPage({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">{t("reports", { count: reports.length })}</h2>
+        <h2 className="text-lg font-semibold">{t("reports", { count: reportTotal })}</h2>
         {reports.length === 0 ? (
           <p className="opacity-70">{t("reportsEmpty")}</p>
         ) : (
@@ -161,6 +171,27 @@ export default async function ModerationPage({
             ))}
           </ul>
         )}
+        {lastReportPage > 1 ? (
+          <nav aria-label={t("reportsPagination")} className="flex items-center justify-between gap-4">
+            {reportPage > 1 ? (
+              <Link href={pageHref(page, reportPage - 1)} className="underline underline-offset-4">
+                {t("previous")}
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span className="text-sm opacity-70" data-testid="reports-page">
+              {t("page", { page: reportPage, pages: lastReportPage })}
+            </span>
+            {reportPage < lastReportPage ? (
+              <Link href={pageHref(page, reportPage + 1)} className="underline underline-offset-4">
+                {t("next")}
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+        ) : null}
       </section>
     </AuthPageShell>
   );
