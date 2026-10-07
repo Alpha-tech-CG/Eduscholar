@@ -451,7 +451,7 @@ has_full_project_access(project_id)      propriétaire ou membre à accès compl
 has_org_role(organization_id, roles[])   rôle dans une organisation non suspendue
 has_platform_role(roles[])               rôle de plateforme
 my_org_ids(roles[])                      organisations où l'appelant détient l'un des rôles
-is_account_active()                      compte non suspendu
+is_account_active()                      compte non suspendu, session du jeton encore ouverte
 is_onboarded()                           profil minimal complété, déclaration d'âge comprise
 has_verified_factor()                    second facteur activé
 must_keep_second_factor()                l'appelant détient un rôle qui exige le second facteur
@@ -483,7 +483,8 @@ Fonctions d'appui de l'administration : `has_recent_second_factor` (lue par l'é
 Fonctions internes, exécutables par aucun rôle de l'API : `require_own_project`,
 `require_own_source`, `require_own_section`, `check_source_payload`, `check_daily_source_quota`,
 `consume_user_quota` (débit par compte, appelée par `update_thesis_section` : 200
-enregistrements par dix minutes), `clean_line`,
+enregistrements par dix minutes), `is_session_live` (la session du jeton existe encore ;
+exigée par `is_account_active`, donc par toutes les politiques et fonctions), `clean_line`,
 `nfc_text_array`, `is_saveable_resource`, `require_library_user`.
 
 Règles :

@@ -275,6 +275,8 @@ test.describe("validation en deux étapes", () => {
   test("codes de secours : générés une fois, ils rendent l'accès sans l'application", async ({
     page,
   }) => {
+    // Parcours long : plusieurs codes à attendre, parfois une fenêtre de limite.
+    test.setTimeout(300_000);
     await awayFromWindowBoundary();
     const email = uniqueEmail("codes-secours");
     const password = strongPassword();

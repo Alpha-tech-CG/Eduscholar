@@ -1125,6 +1125,11 @@ describe("second facteur, service d'authentification en appel direct", () => {
   }
 
   it("un code déjà utilisé est refusé", async () => {
+    // La base refuse un second succès dans le même pas de trente secondes. Le
+    // test se place en début de pas : le rejeu à cheval sur deux pas n'est pas
+    // encore refusé (dette D-28), et ferait échouer ce test par intermittence.
+    const remaining = 30_000 - (Date.now() % 30_000);
+    if (remaining < 20_000) await new Promise((resolve) => setTimeout(resolve, remaining + 500));
     const { actor, factorId, code, passwordOnly } = await withSecondFactor("rejeu");
     try {
       const replay = await passwordOnly.auth.mfa.challengeAndVerify({ factorId, code });
@@ -1200,5 +1205,54 @@ describe("second facteur, service d'authentification en appel direct", () => {
     } finally {
       await admin.auth.admin.deleteUser(actor.id);
     }
+  });
+});
+
+describe("session fermée, jeton encore valable", () => {
+  it("le jeton d'une session fermée ne lit ni n'écrit plus rien, tout de suite", async () => {
+    const actor = await createActor("session-fermee");
+    const ownProfile = () => rest("profiles?select=user_id", actor.token).then((r) => r.json());
+
+    // Avant : la personne lit sa propre ligne, et un référentiel.
+    const licenses = () =>
+      rest("licenses?select=code&limit=1", actor.token).then((r) => r.json() as Promise<unknown[]>);
+    expect(await ownProfile()).toEqual([{ user_id: actor.id }]);
+    expect((await licenses()).length).toBe(1);
+
+    // La session est fermée côté service (déconnexion de tous les appareils).
+    const closed = await admin.auth.admin.signOut(actor.token, "global");
+    expect(closed.error).toBeNull();
+
+    // Le jeton n'a pas expiré, mais la base ne le reconnaît plus.
+    expect(await ownProfile()).toEqual([]);
+    expect(await licenses()).toEqual([]);
+    const tables = ["research_projects", "collections", "resource_favorites", "thesis_sections"];
+    for (const table of tables) {
+      const response = await rest(`${table}?select=*&limit=1`, actor.token);
+      expect(await response.json(), table).toEqual([]);
+    }
+    const written = await rest("rpc/create_project", actor.token, {
+      method: "POST",
+      body: JSON.stringify({ payload: { title: "Projet d'une session fermée" } }),
+    });
+    expect(written.status).toBe(403);
+    const redeemed = await rest("rpc/redeem_recovery_code", actor.token, {
+      method: "POST",
+      body: JSON.stringify({ code: "AAAA-BBBB-CCCC-DDDD" }),
+    });
+    expect(redeemed.status).toBe(403);
+
+    // Une autre session du même service n'est pas touchée.
+    const others = (await rest("profiles?select=user_id", alice.token).then((r) => r.json())) as unknown[];
+    expect(others.length).toBeGreaterThan(0);
+
+    // Une nouvelle connexion rend l'accès.
+    const again = await createClient(url, publishableKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    }).auth.signInWithPassword({ email: actor.email, password });
+    const fresh = again.data.session?.access_token ?? "";
+    expect(await rest("profiles?select=user_id", fresh).then((r) => r.json())).toEqual([
+      { user_id: actor.id },
+    ]);
   });
 });

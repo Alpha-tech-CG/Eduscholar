@@ -72,6 +72,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006003300_scheduled_purges_hardening.sql` | Corrections de la revue de sécurité : pas de ligne d'audit par compte purgé, comptes suspendus et courriels récents épargnés, propriétaire de la tâche vérifié |
 | `20261006003400_section_autosave.sql` | Enregistrement automatique : la modification d'une section rend sa date de version ; limite de débit par compte |
 | `20261006003500_section_autosave_hardening.sql` | Corrections de la revue de sécurité : clé de compteur en empreinte, purge des compteurs, ordre des verrous, forme jugée avant le décompte |
+| `20261006003600_live_session.sql` | Une session fermée cesse d'agir immédiatement : contrôle de la session du jeton dans `is_account_active` |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -444,7 +445,8 @@ autorisée. Elle est `security invoker` et n'est exécutable que par `service_ro
 
 | Fonction | Rôle |
 |---|---|
-| `is_account_active()` | Vrai si l'appelant est connecté, non anonyme, non suspendu et, s'il a activé un second facteur, si sa session l'a vérifié |
+| `is_account_active()` | Vrai si l'appelant est connecté, non anonyme, non suspendu, si sa session l'a vérifié quand un second facteur est activé, et si la session de son jeton existe encore |
+| `is_session_live()` | Vrai si la session nommée par le jeton (`session_id`) existe encore dans `auth.sessions` et appartient à l'appelant. Une session fermée — déconnexion, changement de mot de passe, refus d'un code, code de secours — cesse d'agir tout de suite, sans attendre les dix minutes de validité du jeton. Un jeton sans `session_id` n'est pas refusé par ce contrôle : le service n'en émet pas pour un utilisateur |
 | `has_verified_factor()` | Vrai si l'appelant a un second facteur vérifié |
 | `is_onboarded()` | Vrai si l'appelant a complété son profil minimal, déclaration d'âge comprise |
 | `account_deletion_check()` | Contrôle préalable à la suppression de son compte : `ok`, `forbidden` (compte suspendu) ou `last_org_admin` ; journalise la demande. Exposée par une enveloppe `security invoker` du même nom dans `public`. |

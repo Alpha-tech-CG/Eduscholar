@@ -127,8 +127,8 @@ droits n'existent que dans une session où le second facteur a été vérifié.
   compte) : le blocage en base est le filet pour qui contourne l'application.
 - **Effet d'un refus** : le service d'authentification ferme alors toutes les sessions
   du compte. L'application efface le cookie et renvoie à la connexion avec une
-  explication. Un jeton d'accès déjà émis reste valable jusqu'à son expiration, dix
-  minutes au plus.
+  explication. Un jeton d'accès déjà émis ne vaut plus rien en base dès cet instant :
+  elle vérifie que la session du jeton existe encore.
 - **Désactivation** : un code saisi à l'instant est exigé. Elle est refusée à un compte
   qui détient un rôle privilégié (`must_keep_second_factor`).
 - **Mot de passe oublié** : le service refuse de changer le mot de passe d'un compte à

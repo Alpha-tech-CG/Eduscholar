@@ -271,6 +271,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   la limite ne compte que les enregistrements aboutis, et une fenêtre fixe laisse passer
   jusqu'à 400 enregistrements à cheval sur deux fenêtres. Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 7 octobre 2026 — Révocation immédiate (D-19) : un jeton dont la session a été fermée
+  ne lit ni n'écrit plus rien en base, prouvé par appel direct avec un vrai jeton. Un
+  test intermittent a mis au jour une fenêtre de rejeu d'un code à six chiffres entre
+  deux pas de trente secondes : consignée en dette D-28, non corrigée (arbitrage de
+  produit). Relu par l'agent sécurité : aucun constat critique ou élevé, aucun chemin
+  restant en base pour une session fermée ; 1 moyen et 5 faibles. Corrigés : tests sans
+  témoin positif, terme de session ignoré, `my_report_ids` sans la règle du compte
+  actif, `must_keep_second_factor` répondant à une session fermée. Accepté et écrit au
+  modèle de menaces : jeton sans identifiant de session non refusé. Constat antérieur
+  noté en dette D-29 : la suspension ne ferme pas les sessions du service
+  d'authentification. Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 
