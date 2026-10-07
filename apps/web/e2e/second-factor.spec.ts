@@ -74,6 +74,8 @@ test.describe("validation en deux étapes", () => {
     // Déconnexion puis reconnexion : le mot de passe ne suffit plus.
     await page.goto("/fr/account/profile");
     await page.getByRole("button", { name: "Se déconnecter" }).click();
+    // La déconnexion est attendue : enchaîner aussitôt l'interromprait parfois.
+    await expect(page).toHaveURL(/\/fr$/);
     await signInThroughForm(page, email, password);
     await expect(page).toHaveURL(/\/fr\/sign-in\/verify/);
 
@@ -150,6 +152,8 @@ test.describe("validation en deux étapes", () => {
 
     await page.goto("/fr/account/profile");
     await page.getByRole("button", { name: "Se déconnecter" }).click();
+    // La déconnexion est attendue : enchaîner aussitôt l'interromprait parfois.
+    await expect(page).toHaveURL(/\/fr$/);
 
     await page.goto("/fr/forgot-password");
     await page.getByLabel("Adresse électronique").fill(email);
@@ -213,6 +217,8 @@ test.describe("validation en deux étapes", () => {
 
     await page.goto("/fr/account/profile");
     await page.getByRole("button", { name: "Se déconnecter" }).click();
+    // La déconnexion est attendue : enchaîner aussitôt l'interromprait parfois.
+    await expect(page).toHaveURL(/\/fr$/);
     await signInThroughForm(page, email, password);
     await expect(page).toHaveURL(/\/fr\/sign-in\/verify/);
 
@@ -249,6 +255,8 @@ test.describe("validation en deux étapes", () => {
 
     await page.goto("/fr/account/profile");
     await page.getByRole("button", { name: "Se déconnecter" }).click();
+    // La déconnexion est attendue : enchaîner aussitôt l'interromprait parfois.
+    await expect(page).toHaveURL(/\/fr$/);
 
     // État laissé par dix codes erronés envoyés directement au service
     // d'authentification (le test d'intégration couvre ce chemin de bout en bout).
@@ -321,6 +329,8 @@ test.describe("validation en deux étapes", () => {
     // --- Connexion sans l'application ----------------------------------------
     await page.goto("/fr/account");
     await page.getByRole("button", { name: "Se déconnecter" }).click();
+    // La déconnexion est attendue : enchaîner aussitôt l'interromprait parfois.
+    await expect(page).toHaveURL(/\/fr$/);
     await signInThroughForm(page, email, password);
     await expect(page).toHaveURL(/\/fr\/sign-in\/verify/);
     await page.getByRole("link", { name: "Je n'ai plus accès à mon application d'authentification" }).click();
