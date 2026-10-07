@@ -78,6 +78,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006004000_suspended_no_session.sql` | Un compte suspendu n'ouvre plus de session |
 | `20261006004100_personal_export_complete.sql` | Copie des données personnelles : événements du compte et projets supprimés en attente de purge |
 | `20261006004200_connector_gate.sql` | Sources externes : pause demandée par la source et plafond journalier, tenus en base |
+| `20261006004300_audit_retention.sql` | Conservation du journal d'audit : mécanisme dans la purge nocturne, inactif tant qu'aucune durée n'est posée |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -337,7 +338,17 @@ migration, et la migration appliquée sous le rôle `postgres` — elle échoue 
 l'exécution se vérifie dans `cron.job_run_details`. Un échec de la tâche ne
 déclenche aucune alerte à ce jour.
 
-Le même passage efface les compteurs de débit de plus de deux jours.
+Le même passage efface les compteurs de débit de plus de deux jours, et les lignes du
+journal d'audit plus anciennes que la durée de conservation — si elle a été posée. Elle
+ne l'est pas par défaut : c'est une décision juridique. Le propriétaire de la base la
+pose hors application (`private.platform_settings`, clé `audit_retention_months`, entre
+6 et 120 mois) ; hors de cette purge, le journal reste en ajout seul pour tous,
+propriétaire compris.
+
+Mesure du 7 octobre 2026, journal d'un million de lignes, utilisateur ordinaire sous
+RLS : 240 ms pour lire la page de ses cinquante derniers événements, 350 ms pour les
+compter, 120 ms pour `my_account_events`. Le partitionnement par mois est remis au-delà
+de cinq millions de lignes.
 
 Les tables enfants d'un projet contrôlent l'accès par `private.my_project_ids()`, jamais
 par une colonne recopiée, et portent `on delete cascade` vers le projet.

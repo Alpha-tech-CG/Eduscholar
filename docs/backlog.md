@@ -55,12 +55,12 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 |---|---|---|
 | D-01 | Fonctions d'attribution de rôle et de suspension sous la session de l'administrateur : **fait** (écran `/admin`, `service_role` n'écrit plus les rôles). Reste : les organisations (invitation, rôles, dissolution), où le rôle serveur écrit encore | Avec les organisations partenaires (D-04) |
 | D-02 | Authentification récente pour les opérations d'administration ; refus d'attribuer un rôle à un compte sans second facteur | fait |
-| D-03 | Journal d'audit : partitionnement par mois, conservation, export hors base | Avant la production |
+| D-03 | Journal d'audit : durée de conservation à **décider** (juriste) puis à poser en base ; export hors base ; partitionnement par mois au-delà de cinq millions de lignes | Avant la production — **fait** : mécanisme de conservation dans la purge nocturne, inactif tant qu'aucune durée n'est posée (`private.platform_settings`, clé `audit_retention_months`) |
 | D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
 | D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
 | D-06 | Dépôt distant : épingler les actions par empreinte, `CODEOWNERS`, protection de `main` | À la création du dépôt |
 | D-07 | Copie chiffrée hors plateforme de la base et des fichiers ; exercice de restauration | Avant la production |
-| D-08 | Mesure du plan d'exécution des politiques sur un journal d'audit volumineux | Avec D-03 |
+| D-08 | Mesure du plan d'exécution des politiques sur un journal d'audit volumineux | fait — un million de lignes : 240 ms pour la page de ses propres événements, 350 ms pour leur décompte, 120 ms pour la copie des données ; à remesurer au-delà de cinq millions |
 | D-09 | Authentification : CAPTCHA, contrôle des mots de passe compromis, alerte de nouvelle connexion, journalisation des événements de sécurité (échecs, limites atteintes). Sans CAPTCHA, un appel direct à l'API d'authentification n'est limité que par adresse IP. | Avant l'ouverture publique |
 | D-10 | Exiger le mot de passe actuel pour un changement fait par appel direct à l'API d'authentification avec une session ordinaire (réglage du service à vérifier sur le projet hébergé) | À la création du projet de staging |
 | D-11 | Enregistrer la déclaration d'âge en base et l'exiger à la première connexion, quel que soit le chemin d'inscription | fait en B-11 |

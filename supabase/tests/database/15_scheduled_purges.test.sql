@@ -124,7 +124,7 @@ select results_eq(
 
 -- Un second passage n'a plus rien à effacer et n'écrit rien.
 select is(
-  private.run_scheduled_purges(), '{"deleted_projects": 0, "unconfirmed_accounts": 0}'::jsonb,
+  private.run_scheduled_purges(), '{"deleted_projects": 0, "unconfirmed_accounts": 0, "audit_rows": 0}'::jsonb,
   'Un second passage n''efface rien'
 );
 select is(
@@ -139,6 +139,62 @@ select is(
   (select count(*) from public.audit_logs
    where action = 'account.deleted' and subject_user_id = 'b0000000-0000-0000-0000-000000003202'),
   1::bigint, 'Une suppression ordinaire reste inscrite au journal'
+);
+
+-- ---------------------------------------------------------------------------
+-- Journal d'audit : conservé tant qu'aucune durée n'est posée
+-- ---------------------------------------------------------------------------
+insert into public.audit_logs (occurred_at, category, action, target_type, target_id, metadata) values
+  (now() - interval '13 months', 'security', 'test.ancien', 'test', 'purge-audit', '{}'),
+  (now() - interval '11 months', 'security', 'test.recent', 'test', 'purge-audit', '{}');
+
+select is(
+  (select value from private.platform_settings where key = 'audit_retention_months'),
+  null::jsonb, 'Aucune durée de conservation n''est posée par défaut'
+);
+select is((private.run_scheduled_purges() ->> 'audit_rows')::integer, 0, 'Sans durée posée, rien n''est effacé du journal');
+select is(
+  (select count(*) from public.audit_logs where target_id = 'purge-audit'), 2::bigint, 'Les deux lignes sont toujours là'
+);
+
+-- Le journal reste en ajout seul, propriétaire compris, hors de la purge.
+select throws_ok(
+  $$ delete from public.audit_logs where target_id = 'purge-audit' $$,
+  '42501', null, 'Le propriétaire n''efface pas le journal à la main'
+);
+select set_config('eduscholar.scheduled_purge', 'audit', true);
+select throws_ok(
+  $$ update public.audit_logs set action = 'test.modifie' where target_id = 'purge-audit' $$,
+  '42501', null, 'Même sous le marqueur de la purge, aucune ligne ne se modifie'
+);
+select set_config('eduscholar.scheduled_purge', 'off', true);
+
+-- Un réglage hors bornes n'efface rien.
+update private.platform_settings set value = '1'::jsonb where key = 'audit_retention_months';
+select is((private.run_scheduled_purges() ->> 'audit_rows')::integer, 0, 'Une durée trop courte est ignorée');
+update private.platform_settings set value = '"douze"'::jsonb where key = 'audit_retention_months';
+select is((private.run_scheduled_purges() ->> 'audit_rows')::integer, 0, 'Un réglage illisible est ignoré');
+
+-- Douze mois : la ligne de treize mois part, celle de onze reste.
+update private.platform_settings set value = '12'::jsonb where key = 'audit_retention_months';
+select cmp_ok((private.run_scheduled_purges() ->> 'audit_rows')::integer, '>=', 1, 'La durée posée, les lignes plus anciennes sont effacées');
+select results_eq(
+  $$ select action from public.audit_logs where target_id = 'purge-audit' $$,
+  $$ values ('test.recent') $$,
+  'Seule la ligne plus ancienne que la durée est partie'
+);
+select is(
+  (select count(*) from public.audit_logs
+   where action = 'retention.purged' and occurred_at = now() and (metadata ->> 'audit_rows')::integer >= 1),
+  1::bigint, 'Le passage est inscrit au journal, avec le nombre de lignes effacées'
+);
+
+-- Aucun rôle de l'API ne lit ni ne pose les réglages.
+select is(
+  (select count(*) from unnest(array['anon', 'authenticated', 'service_role']) r
+   where has_table_privilege(r, 'private.platform_settings', 'select')
+      or has_table_privilege(r, 'private.platform_settings', 'update')),
+  0::bigint, 'Les réglages ne sont ni lus ni posés par l''API'
 );
 
 select * from finish();
