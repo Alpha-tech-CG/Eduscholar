@@ -474,16 +474,12 @@ reset role;
 select tests.login_claims('service_role', '{"role":"service_role"}');
 
 select throws_ok(
-  $$ insert into public.platform_roles (user_id, role) values ('b0000000-0000-0000-0000-000000000002', 'moderator') $$,
-  '23502', null, 'Une attribution de rôle sans auteur est refusée'
+  $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'a1000000-0000-0000-0000-000000000007') $$,
+  '42501', null, 'Le rôle serveur n''attribue plus de rôle : cela passe par les fonctions d''administration'
 );
 select throws_ok(
-  $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'b0000000-0000-0000-0000-000000000002') $$,
-  '23514', null, 'Personne ne s''attribue un rôle à soi-même'
-);
-select lives_ok(
-  $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'a1000000-0000-0000-0000-000000000007') $$,
-  'Une attribution de rôle avec auteur est acceptée'
+  $$ delete from public.platform_roles $$,
+  '42501', null, 'Ni n''en retire'
 );
 select throws_ok(
   $$ insert into public.organizations (slug, name) values ('sans-auteur', 'Sans auteur') $$,
@@ -505,6 +501,23 @@ select throws_ok(
 reset role;
 select tests.logout();
 
+-- Les gardes de la table valent quel que soit l'appelant : auteur obligatoire
+-- dès qu'une session est en cause, et personne ne s'attribue un rôle.
+select set_config('request.jwt.claims', '{"role":"service_role"}', true);
+select throws_ok(
+  $$ insert into public.platform_roles (user_id, role) values ('b0000000-0000-0000-0000-000000000002', 'moderator') $$,
+  '23502', null, 'Une attribution de rôle sans auteur est refusée'
+);
+select throws_ok(
+  $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'b0000000-0000-0000-0000-000000000002') $$,
+  '23514', null, 'Personne ne s''attribue un rôle à soi-même'
+);
+select lives_ok(
+  $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'a1000000-0000-0000-0000-000000000007') $$,
+  'Une attribution de rôle avec auteur est acceptée'
+);
+select set_config('request.jwt.claims', '', true);
+
 select is(
   (select actor_id from public.audit_logs
    where action = 'platform_roles.insert'
@@ -522,7 +535,9 @@ select is(
 );
 select is(
   (select count(*) from public.audit_logs
-   where action = 'account_status.insert' and actor_id is not null),
+   where action = 'account_status.insert' and actor_id is not null
+     -- Comptes de ce test uniquement : la base locale peut en contenir d'autres.
+     and subject_user_id::text ~ '^[a-f][0-9]0{6}-0000-0000-0000-00000000000[1-9]$'),
   1::bigint,
   'La suspension d''un compte est journalisée avec son auteur'
 );

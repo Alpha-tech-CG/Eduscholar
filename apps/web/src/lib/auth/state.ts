@@ -19,6 +19,13 @@ export type AuthErrorCode =
   | "invalid_code"
   | "second_factor_required"
   | "last_org_admin"
+  | "last_super_admin"
+  // Administration
+  | "recent_second_factor_required"
+  | "own_account"
+  | "account_suspended"
+  | "second_factor_missing"
+  | "user_not_found"
   // Catalogue
   | "forbidden"
   | "own_submission"

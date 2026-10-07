@@ -323,6 +323,8 @@ permettent pas de retrouver l'activité ou le projet d'une personne.
 | Suspendre un `moderator` | ✖ | ✖ | ✖ | `F` | `F` |
 | Suspendre un `platform_admin` | ✖ | ✖ | ✖ | ✖ | `F` |
 | Suspendre un `super_admin` | ✖ | ✖ | ✖ | ✖ | ✖ (hors application) |
+| Rétablir un compte suspendu | ✖ | ✖ | ✖ | `F`, si la suspension vient d'un `platform_admin` | `F` |
+| Chercher un compte par son adresse exacte | ✖ | ✖ | ✖ | `F`, journalisé | `F`, journalisé |
 | Écrire dans le journal d'audit | ✖ | ✖ | ✖ | ✖ | ✖ (écrit par la base) |
 | Lire le journal d'audit | ses propres événements de sécurité ; pas les changements de rôle ou de statut le concernant, qui portent l'identifiant de l'administrateur | événements de modération | événements d'administration de `org` | tous, sans contenu privé | tous, sans contenu privé |
 | Modifier ou supprimer une ligne d'audit | ✖ | ✖ | ✖ | ✖ | ✖ |
@@ -334,7 +336,10 @@ Règles associées :
   les fonctions de rôle ne renvoient vrai que si la session est de niveau `aal2`. Un compte
   privilégié sans second facteur actif n'a que les droits d'un `user`. MFA proposé aux
   encadreurs (cahier §10.2).
-- Une attribution de rôle exige en plus une session récente.
+- Toute opération d'administration exige en plus une session récente : le second
+  facteur présenté depuis moins de dix minutes, vérifié en base dans le jeton.
+- Un rôle ne se retire qu'à un compte de rang strictement inférieur à celui de
+  l'appelant ; il ne s'attribue qu'à un compte ayant déjà un second facteur vérifié.
 - « Événements d'administration de `org` » : changements de membres, de rôles, de
   paramètres et publications institutionnelles. L'activité personnelle des membres
   (recherches, bibliothèque, projets) n'en fait pas partie.
@@ -472,6 +477,9 @@ de route ne l'est pas. Un export par GET refuse une requête déclenchée par un
 (`Sec-Fetch-Site`) ; la copie des données passe par un POST dont l'origine est comparée
 à l'hôte visé, mot de passe redemandé.
 
+Fonctions d'appui de l'administration : `has_recent_second_factor` (lue par l'écran),
+`require_admin`, `highest_role_rank`, `effective_super_admin_count` (internes).
+
 Fonctions internes, exécutables par aucun rôle de l'API : `require_own_project`,
 `require_own_source`, `require_own_section`, `check_source_payload`, `check_daily_source_quota`, `clean_line`,
 `nfc_text_array`, `is_saveable_resource`, `require_library_user`.
@@ -525,6 +533,7 @@ depuis le serveur) :
 | Inviter un membre d'organisation, changer un rôle, accepter | `org_admin` ; l'invité pour l'acceptation |
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
+| `admin_session`, `admin_find_user`, `admin_list_accounts`, `admin_set_role`, `admin_set_account_status` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; jamais sur son propre compte ni sur un compte de rang égal ou supérieur ; détail dans `administration.md` |
 | `log_personal_data_export` | Le titulaire, compte actif ; écrit un événement de sécurité sans contenu, lisible de lui seul, avant la remise de la copie de ses données |
 | `add_thesis_section`, `update_thesis_section`, `move_thesis_section`, `delete_thesis_section`, `set_section_citation` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour la section ou le projet d'autrui, supprimés ou inexistants, avant tout examen de la requête ; une section ne cite qu'une source du même projet, et le retrait d'une citation ne révèle rien ; un texte modifié entre-temps n'est pas écrasé ; aucune ligne d'audit |
 | `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |
@@ -540,9 +549,7 @@ et refuse le rejeu.
 | Opération | Contrôle préalable |
 |---|---|
 | Émission des URL signées Storage | Ligne `files` visible sous la session de l'appelant, `scan_status` |
-| Attribution et retrait de rôles de plateforme | Rôle de l'appelant, `aal2`, session récente |
 | Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
-| Suspension et rétablissement de compte | Matrice 5.6 |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
 | Création de notifications | Tâche système |

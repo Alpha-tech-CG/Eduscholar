@@ -108,7 +108,13 @@
       "source_unavailable": "The source did not answer, or its answer could not be used. Nothing was imported; try again later.",
       "limit_reached": "You have reached the maximum allowed. Remove some items before adding more.",
       "duplicate_name": "You already have a collection with this name.",
-      "conflict": "This sheet was changed elsewhere since you opened it (another tab or device). Reload the page to start from the latest version; what you typed is kept below."
+      "conflict": "This sheet was changed elsewhere since you opened it (another tab or device). Reload the page to start from the latest version; what you typed is kept below.",
+      "last_super_admin": "You are the last super administrator: your account cannot be deleted until another one is appointed.",
+      "recent_second_factor_required": "This operation requires a recently entered verification code. Reload the page to enter it again.",
+      "own_account": "You cannot act on your own account.",
+      "account_suspended": "This account is suspended: it cannot be given a role.",
+      "second_factor_missing": "This account has not turned on two-step verification: it cannot be given a role.",
+      "user_not_found": "No account has this address."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -186,7 +192,8 @@
     "search": "Search for a resource",
     "library": "My library",
     "projects": "My research projects",
-    "exportData": "Download my data"
+    "exportData": "Download my data",
+    "administration": "Administration"
   },
   "Profile": {
     "title": "My profile",
@@ -824,5 +831,56 @@
     "errorPassword": "Incorrect password.",
     "errorRate": "Too many requests in a short while. Try again later.",
     "errorUnavailable": "Your data could not be gathered in full. No file was produced; try again in a moment."
+  },
+  "Admin": {
+    "title": "Administration",
+    "intro": "Platform roles and account suspension.",
+    "confirmTitle": "Confirm your identity",
+    "confirmIntro": "Administration requires a verification code entered within the last ten minutes.",
+    "code": "Six-digit code",
+    "codeHint": "The code currently shown by your authenticator app.",
+    "confirm": "Confirm",
+    "pending": "One moment…",
+    "ruleAudit": "Every lookup, grant, revocation or suspension is written to the audit log, under your name.",
+    "ruleSecondFactor": "A role can only be given to an account that has already turned on two-step verification.",
+    "ruleOwn": "You do not act on your own account, nor on an account of equal or higher rank.",
+    "lookupHeading": "Find an account",
+    "lookupEmail": "Account email address",
+    "lookupHint": "Exact address. There is no list of all accounts.",
+    "lookup": "Find",
+    "email": "Address",
+    "createdAt": "Created on",
+    "state": "State",
+    "confirmed": "address confirmed",
+    "unconfirmed": "address not confirmed",
+    "secondFactorOn": "two-step verification on",
+    "secondFactorOff": "two-step verification off",
+    "activeState": "active",
+    "suspendedState": "suspended",
+    "rolesLabel": "Roles",
+    "noRole": "none",
+    "separator": " · ",
+    "roles": {
+      "moderator": "Moderation",
+      "platform_admin": "Administration",
+      "super_admin": "Super administration"
+    },
+    "grant": "Give the “{role}” role",
+    "revoke": "Remove the “{role}” role",
+    "suspend": "Suspend this account",
+    "restore": "Restore this account",
+    "cannotSuspend": "This account is of equal or higher rank than yours: you can neither suspend nor restore it.",
+    "reason": "Reason",
+    "reasonHint": "Required. It is kept with the suspension.",
+    "accountsHeading": "Accounts with a role and suspended accounts",
+    "accountsEmpty": "No account to show.",
+    "loadFailed": "The list could not be loaded. Try again in a moment.",
+    "noticeConfirmed": "Identity confirmed.",
+    "noticeRoleGranted": "The role has been given.",
+    "noticeRoleRevoked": "The role has been removed.",
+    "noticeSuspended": "The account has been suspended.",
+    "noticeRestored": "The account has been restored.",
+    "truncated": "The list is too long to be shown in full: it is incomplete. Use the search by address.",
+    "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator."
   }
 }

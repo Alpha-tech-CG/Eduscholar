@@ -64,6 +64,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006002500_thesis_sections.sql` | Plan du mémoire : sections et sources citées |
 | `20261006002600_thesis_sections_hardening.sql` | Corrections de la revue de sécurité : volume de texte, date de modification limitée au contenu, fins de ligne, verrou du projet, plafond de citations |
 | `20261006002700_personal_data_export.sql` | Appuis de l'export des données personnelles : identifiants de ses signalements, trace de l'export |
+| `20261006002800_administration.sql` | Administration des rôles et des comptes sous la session de l'administrateur ; retrait de l'écriture de `service_role` sur les rôles |
+| `20261006002900_administration_hardening.sql` | Corrections de la revue de sécurité : rétablissement selon le rang, opérations toujours tracées, limites en base, garde du dernier super-administrateur |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -125,10 +127,12 @@ Accès : le titulaire lit et modifie sa ligne ; un utilisateur connecté lit les
 | `granted_at` | timestamptz | |
 
 Clé primaire `(user_id, role)`. Accès : chacun lit ses propres rôles (`user_id`, `role`,
-`granted_at` ; `granted_by` n'est pas lisible). Écriture par `service_role` uniquement,
-avec `granted_by` obligatoire ; seule une session directe sur la base peut l'omettre,
-pour amorcer le premier `super_admin`. `role` n'est pas modifiable : un rôle se retire
-et se réattribue. Toute modification est journalisée.
+`granted_at` ; `granted_by` n'est pas lisible). Écriture par les seules fonctions
+d'administration (`admin_set_role`), sous la session de l'administrateur : ni
+`authenticated` ni `service_role` n'écrivent dans la table. Seule une session directe
+sur la base peut omettre `granted_by`, pour amorcer le premier `super_admin`
+(`docs/security/administration.md`). Un déclencheur refuse que le dernier
+super-administrateur effectif perde son rôle. Toute modification est journalisée.
 
 ### `private.account_status`
 
@@ -141,6 +145,9 @@ et se réattribue. Toute modification est journalisée.
 | `reason` | text | |
 | `changed_by` | uuid | Différent de `user_id` |
 | `changed_at` | timestamptz | |
+| `suspended_by_rank` | smallint | Rang de l'administrateur qui a suspendu : un rang inférieur ne rétablit pas |
+
+Écrite par `admin_set_account_status` seulement.
 
 ### `public.organizations`
 

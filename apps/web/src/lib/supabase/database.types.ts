@@ -542,6 +542,27 @@ isOneToOne: false
 "add_thesis_section":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
+"admin_find_user":
+{ Args: { "email": string }; Returns: {
+              "confirmed": boolean,"created_at": string,"email": string,"has_second_factor": boolean,"roles": (string)[],"suspended": boolean,"suspension_reason": string,"user_id": string
+            }[]
+                           },
+"admin_list_accounts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "email": string,"roles": (string)[],"suspended": boolean,"suspension_reason": string,"user_id": string
+            }[]
+                           },
+"admin_session":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "recent": boolean,"role_rank": number
+            }[]
+                           },
+"admin_set_account_status":
+{ Args: { "reason"?: string,"suspended": boolean,"target_user": string }; Returns: undefined
+                           },
+"admin_set_role":
+{ Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: undefined
+                           },
 "consume_rate_limit":
 { Args: { "p_key": string,"p_limit": number,"p_window_seconds": number }; Returns: boolean
                            },

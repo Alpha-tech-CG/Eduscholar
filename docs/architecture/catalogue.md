@@ -217,22 +217,9 @@ qu'un aiguillage : chaque lecture passe par la RLS, chaque décision par la base
 
 ## Désigner un modérateur
 
-Il n'existe pas encore d'écran d'administration (dette D-01). Un modérateur est désigné
-par une personne ayant accès à la base :
-
-1. La personne crée son compte, complète son profil et active la validation en deux
-   étapes dans `/account/security`.
-2. Un administrateur de la base lui attribue le rôle :
-
-   ```sql
-   insert into public.platform_roles (user_id, role)
-   select id, 'moderator' from auth.users where email = 'adresse@exemple.org';
-   ```
-
-3. Elle se reconnecte et saisit son code : le lien « Modération » apparaît dans son compte.
-
-L'attribution est journalisée. Sans second facteur vérifié dans la session, le rôle ne
-donne aucun droit.
+Par l'écran d'administration (`/admin`), réservé aux administrateurs : voir
+[`docs/security/administration.md`](../security/administration.md). La personne doit avoir
+activé la validation en deux étapes avant de recevoir le rôle.
 
 ## Non couvert
 

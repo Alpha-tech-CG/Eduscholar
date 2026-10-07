@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { signOut } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
+import { getAdminSession } from "@/lib/admin/queries";
 import { isModerator } from "@/lib/catalogue/queries";
 import { getOwnProfile, getReferenceData, type Option } from "@/lib/profile/queries";
 
@@ -32,6 +33,7 @@ export default async function AccountPage({
   const reference = await getReferenceData(locale);
   const { notice } = await searchParams;
   const moderator = await isModerator();
+  const admin = (await getAdminSession()).rank >= 2;
 
   const rows: Array<[string, string | null]> = [
     [t("email"), user.email ?? null],
@@ -118,6 +120,13 @@ export default async function AccountPage({
           <li>
             <Link href="/moderation" className="underline underline-offset-4">
               {t("moderation")}
+            </Link>
+          </li>
+        ) : null}
+        {admin ? (
+          <li>
+            <Link href="/admin" className="underline underline-offset-4">
+              {t("administration")}
             </Link>
           </li>
         ) : null}

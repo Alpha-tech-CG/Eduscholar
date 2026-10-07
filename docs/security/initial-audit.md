@@ -230,6 +230,15 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   sans plafond), export tronqué remis comme complet, pagination instable, adresses
   altérées dans le Markdown, noms de fichiers réservés. Reste en dette : D-25. Ces
   corrections n'ont pas fait l'objet d'une seconde revue.
+- 7 octobre 2026 — Administration des rôles et des comptes (D-01, D-02, D-16) relue par
+  l'agent sécurité : aucun constat critique ou élevé, aucun chemin d'élévation de
+  privilège trouvé ; 4 moyens et 9 faibles. Corrigés : rétablissement par un rang
+  inférieur d'une suspension décidée par un supérieur, motif et auteur d'une suspension
+  modifiables sans trace, limites de recherche et de suspension tenues par la seule
+  application, retrait d'un rôle à un pair ou à un supérieur, course entre attribution
+  et suspension, garde du dernier super-administrateur contournable. Écrite : la
+  procédure du premier super-administrateur. Reste en dette : D-26. Ces corrections
+  n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

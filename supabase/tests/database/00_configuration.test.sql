@@ -312,6 +312,17 @@ select is(
    ) q),
   (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
     'private.account_deletion_check()',
+    'private.admin_find_user(p_email text)',
+    'private.admin_list_accounts()',
+    'private.admin_session()',
+    'private.admin_set_account_status(p_user uuid, p_suspended boolean, p_reason text)',
+    'private.admin_set_role(p_user uuid, p_role text, p_grant boolean)',
+    'private.has_recent_second_factor()',
+    'public.admin_find_user(email text)',
+    'public.admin_list_accounts()',
+    'public.admin_session()',
+    'public.admin_set_account_status(target_user uuid, suspended boolean, reason text)',
+    'public.admin_set_role(target_user uuid, role text, grant_role boolean)',
     'private.log_personal_data_export()',
     'public.log_personal_data_export()',
     'public.my_report_ids()',
@@ -482,10 +493,7 @@ select is(
     'public.organization_members UPDATE',
     'public.organizations DELETE',
     'public.organizations INSERT',
-    'public.organizations UPDATE',
-    'public.platform_roles DELETE',
-    'public.platform_roles INSERT',
-    'public.platform_roles UPDATE'
+    'public.organizations UPDATE'
   ]) as x),
   'service_role n''écrit que dans les tables attendues, jamais dans le journal d''audit'
 );

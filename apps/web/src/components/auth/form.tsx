@@ -6,6 +6,7 @@ import {
   useActionState,
   useContext,
   useEffect,
+  useId,
   useRef,
   type ReactNode,
 } from "react";
@@ -248,23 +249,26 @@ export function OptionalTextField({
 }: OptionalTextFieldProps) {
   const t = useTranslations("Auth");
   const { state } = useContext(FormStateContext);
+  // Identifiant propre à ce champ : une page peut porter plusieurs formulaires
+  // ayant un champ du même nom, et deux éléments ne partagent jamais un id.
+  const id = `${name}-${useId()}`;
   const error = state.status === "error" ? state.fields?.[name] : undefined;
   const submitted = state.status === "error" ? state.values?.[name] : undefined;
   const value = submitted ?? defaultValue;
   const className =
     "rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700";
-  const describedBy = [hint ? `${name}-hint` : null, error ? `${name}-error` : null]
+  const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-error` : null]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={name} className="font-medium">
+      <label htmlFor={id} className="font-medium">
         {label}
       </label>
       {rows ? (
         <textarea
-          id={name}
+          id={id}
           name={name}
           rows={rows}
           maxLength={maxLength}
@@ -276,7 +280,7 @@ export function OptionalTextField({
         />
       ) : (
         <input
-          id={name}
+          id={id}
           name={name}
           type={kind === "url" ? "url" : "text"}
           inputMode={kind === "numeric" ? "numeric" : undefined}
@@ -290,12 +294,12 @@ export function OptionalTextField({
         />
       )}
       {hint ? (
-        <p id={`${name}-hint`} className="text-sm opacity-70">
+        <p id={`${id}-hint`} className="text-sm opacity-70">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+        <p id={`${id}-error`} className="text-sm text-red-800 dark:text-red-300">
           {t(`fieldErrors.${error}`)}
         </p>
       ) : null}

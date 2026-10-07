@@ -61,6 +61,10 @@ const RULES = {
   search: {
     account: { limit: 150, windowSeconds: 5 * MINUTE },
   },
+  // Recherche d'un compte par un administrateur : chaque essai est journalisé.
+  "admin-lookup": {
+    account: { limit: 60, windowSeconds: 15 * MINUTE },
+  },
   // Exports (document d'un projet, données personnelles) : lectures lourdes.
   export: {
     account: { limit: 30, windowSeconds: 15 * MINUTE },

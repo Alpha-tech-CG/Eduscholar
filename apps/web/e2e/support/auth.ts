@@ -119,6 +119,20 @@ export async function expectSignedIn(page: Page, email: string) {
 }
 
 /** Vide les compteurs de limitation de débit, pour que les exécutions répétées ne se gênent pas. */
+/**
+ * Retire les rôles et les suspensions laissés par les exécutions précédentes
+ * sur les comptes de test (adresses en « @test.invalid »). Sans cela, la liste
+ * d'administration grossit à chaque exécution.
+ */
+export function resetTestRoles(): void {
+  sql(
+    `delete from public.platform_roles where user_id in (select id from auth.users where email like '%@test.invalid')`,
+  );
+  sql(
+    `delete from private.account_status where user_id in (select id from auth.users where email like '%@test.invalid')`,
+  );
+}
+
 export function resetRateLimits(): void {
   execFileSync(
     "docker",
@@ -167,6 +181,24 @@ export function completeProfileDirectly(userId: string): void {
 
 /** Clé de second facteur des modérateurs de test (base32). */
 export const TEST_FACTOR_SECRET = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"; // valeur-fictive
+
+/** Donne à un compte de test un second facteur vérifié, de clé connue. */
+export function giveSecondFactor(userId: string): void {
+  if (!UUID.test(userId)) throw new Error("Identifiant invalide");
+  sql(
+    `insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret) values (gen_random_uuid(), '${userId}', 'test', 'totp', 'verified', now(), now(), '${TEST_FACTOR_SECRET}')`,
+  );
+}
+
+/**
+ * Donne à un compte de test un rôle d'administration et un second facteur
+ * vérifié. Le tout premier administrateur d'une plateforme est désigné ainsi,
+ * hors application ; les suivants le sont par l'écran d'administration.
+ */
+export function makeAdmin(userId: string, role: "platform_admin" | "super_admin"): void {
+  giveSecondFactor(userId);
+  sql(`insert into public.platform_roles (user_id, role) values ('${userId}', '${role}')`);
+}
 
 /**
  * Donne à un compte de test le rôle de modérateur et un second facteur vérifié.

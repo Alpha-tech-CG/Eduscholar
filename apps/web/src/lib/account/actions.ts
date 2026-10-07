@@ -56,6 +56,7 @@ export async function deleteAccount(
   const { data: verdict, error: checkError } = await supabase.rpc("account_deletion_check");
   if (checkError) return { status: "error", error: "unavailable" };
   if (verdict === "last_org_admin") return { status: "error", error: "last_org_admin" };
+  if (verdict === "last_super_admin") return { status: "error", error: "last_super_admin" };
   if (verdict !== "ok") return { status: "error", error: "unavailable" };
 
   // L'identifiant vient de la session vérifiée, jamais du formulaire.

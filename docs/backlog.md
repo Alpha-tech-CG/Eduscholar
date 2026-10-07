@@ -53,8 +53,8 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 
 | ID | Sujet | Échéance |
 |---|---|---|
-| D-01 | Fonctions d'attribution de rôle, de suspension et de gestion des organisations, exécutées sous la session de l'administrateur plutôt que par `service_role` ; retirer ensuite à `service_role` l'écriture sur `platform_roles` | Avec l'administration (B-14) |
-| D-02 | Authentification récente pour les opérations d'administration. Fait : un rôle privilégié n'a d'effet que si un second facteur a été vérifié avant son attribution, et son titulaire ne peut pas le désactiver. Reste : refuser l'attribution elle-même, dans la fonction de D-01. | Avec D-01 |
+| D-01 | Fonctions d'attribution de rôle et de suspension sous la session de l'administrateur : **fait** (écran `/admin`, `service_role` n'écrit plus les rôles). Reste : les organisations (invitation, rôles, dissolution), où le rôle serveur écrit encore | Avec les organisations partenaires (D-04) |
+| D-02 | Authentification récente pour les opérations d'administration ; refus d'attribuer un rôle à un compte sans second facteur | fait |
 | D-03 | Journal d'audit : partitionnement par mois, conservation, export hors base | Avant la production |
 | D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
 | D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
@@ -77,7 +77,8 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-23 | Planifier `purge_deleted_projects()` (tâche quotidienne avec le rôle serveur) et vérifier son exécution — elle efface aussi les sources et les fiches de lecture ; même traitement pour les futures données à durée de conservation | À la création du projet de staging |
 | D-24 | Rédaction : enregistrement automatique et sortie de conflit sans rechargement ; limite de débit sur les enregistrements (réécriture répétée d'un gros texte) ; historique des versions (Phase 4) | Avant l'ouverture publique |
 | D-25 | Exports : tâche différée ou réponse en flux pour un gros compte (durée et taille de réponse de l'hébergeur) ; inclure dans la copie des données le journal de sécurité du compte et les projets supprimés en attente de purge ; courriel de notification après un export | Avant l'ouverture publique |
-| D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ; second facteur exigé pour supprimer un compte qui en a un | Avec D-01 et D-02 |
+| D-16 | Garde empêchant le dernier `super_admin` de supprimer son compte ou de perdre son rôle ; second facteur exigé pour supprimer un compte qui en a un | fait |
+| D-26 | Journal d'audit : la suppression en cascade d'un compte attribue la ligne du rôle supprimé à l'administrateur qui l'avait accordé ; journaliser les tentatives d'administration refusées ; historique des motifs de suspension ; pagination de la liste des comptes à rôle | Avec D-03 |
 
 ## Phases suivantes (non détaillées)
 

@@ -31,6 +31,11 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
       return message;
     case "invalid_date":
       return "validation";
+    case "recent_second_factor_required":
+    case "own_account":
+    case "account_suspended":
+    case "second_factor_missing":
+      return message;
     case "source_not_allowed":
       return "forbidden";
     case "duplicate_doi":

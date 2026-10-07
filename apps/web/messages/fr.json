@@ -108,7 +108,13 @@
       "source_unavailable": "La source n'a pas répondu, ou sa réponse est inexploitable. Rien n'a été importé ; réessayez plus tard.",
       "limit_reached": "Vous avez atteint le nombre maximal autorisé. Retirez des éléments avant d'en ajouter.",
       "duplicate_name": "Vous avez déjà une collection de ce nom.",
-      "conflict": "Cette fiche a été modifiée ailleurs depuis son ouverture (autre onglet ou autre appareil). Rechargez la page pour repartir de la dernière version ; votre saisie est conservée ci-dessous."
+      "conflict": "Cette fiche a été modifiée ailleurs depuis son ouverture (autre onglet ou autre appareil). Rechargez la page pour repartir de la dernière version ; votre saisie est conservée ci-dessous.",
+      "last_super_admin": "Vous êtes le dernier super-administrateur : votre compte ne peut pas être supprimé tant qu'un autre n'est pas désigné.",
+      "recent_second_factor_required": "Cette opération exige un code de validation saisi récemment. Rechargez la page pour le saisir à nouveau.",
+      "own_account": "Vous ne pouvez pas agir sur votre propre compte.",
+      "account_suspended": "Ce compte est suspendu : il ne peut pas recevoir de rôle.",
+      "second_factor_missing": "Ce compte n'a pas activé la validation en deux étapes : il ne peut pas recevoir de rôle.",
+      "user_not_found": "Aucun compte n'a cette adresse."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -186,7 +192,8 @@
     "search": "Rechercher une ressource",
     "library": "Ma bibliothèque",
     "projects": "Mes projets de recherche",
-    "exportData": "Télécharger mes données"
+    "exportData": "Télécharger mes données",
+    "administration": "Administration"
   },
   "Profile": {
     "title": "Mon profil",
@@ -824,5 +831,56 @@
     "errorPassword": "Mot de passe incorrect.",
     "errorRate": "Trop de demandes en peu de temps. Réessayez plus tard.",
     "errorUnavailable": "Vos données n'ont pas pu être réunies en entier. Aucun fichier n'a été produit ; réessayez dans un instant."
+  },
+  "Admin": {
+    "title": "Administration",
+    "intro": "Rôles de la plateforme et suspension des comptes.",
+    "confirmTitle": "Confirmez votre identité",
+    "confirmIntro": "L'administration exige un code de validation saisi dans les dix dernières minutes.",
+    "code": "Code à six chiffres",
+    "codeHint": "Le code affiché en ce moment par votre application d'authentification.",
+    "confirm": "Confirmer",
+    "pending": "Un instant…",
+    "ruleAudit": "Chaque recherche, attribution, retrait ou suspension est inscrit au journal d'audit, à votre nom.",
+    "ruleSecondFactor": "Un rôle ne s'attribue qu'à un compte qui a déjà activé la validation en deux étapes.",
+    "ruleOwn": "Vous n'agissez pas sur votre propre compte, ni sur un compte de rang égal ou supérieur au vôtre.",
+    "lookupHeading": "Chercher un compte",
+    "lookupEmail": "Adresse électronique du compte",
+    "lookupHint": "Adresse exacte. Il n'existe pas de liste de tous les comptes.",
+    "lookup": "Chercher",
+    "email": "Adresse",
+    "createdAt": "Créé le",
+    "state": "État",
+    "confirmed": "adresse confirmée",
+    "unconfirmed": "adresse non confirmée",
+    "secondFactorOn": "validation en deux étapes activée",
+    "secondFactorOff": "validation en deux étapes non activée",
+    "activeState": "actif",
+    "suspendedState": "suspendu",
+    "rolesLabel": "Rôles",
+    "noRole": "aucun",
+    "separator": " · ",
+    "roles": {
+      "moderator": "Modération",
+      "platform_admin": "Administration",
+      "super_admin": "Super-administration"
+    },
+    "grant": "Attribuer le rôle « {role} »",
+    "revoke": "Retirer le rôle « {role} »",
+    "suspend": "Suspendre ce compte",
+    "restore": "Rétablir ce compte",
+    "cannotSuspend": "Ce compte est de rang égal ou supérieur au vôtre : vous ne pouvez ni le suspendre ni le rétablir.",
+    "reason": "Motif",
+    "reasonHint": "Obligatoire. Il est conservé avec la suspension.",
+    "accountsHeading": "Comptes à rôle et comptes suspendus",
+    "accountsEmpty": "Aucun compte à afficher.",
+    "loadFailed": "La liste n'a pas pu être chargée. Réessayez dans un instant.",
+    "noticeConfirmed": "Identité confirmée.",
+    "noticeRoleGranted": "Le rôle est attribué.",
+    "noticeRoleRevoked": "Le rôle est retiré.",
+    "noticeSuspended": "Le compte est suspendu.",
+    "noticeRestored": "Le compte est rétabli.",
+    "truncated": "La liste est trop longue pour être affichée en entier : elle est incomplète. Utilisez la recherche par adresse.",
+    "ruleRank": "Une suspension décidée par un super-administrateur ne se lève que par un super-administrateur."
   }
 }

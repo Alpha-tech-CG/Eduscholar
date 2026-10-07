@@ -999,6 +999,35 @@ describe("catalogue, par appel direct à l'API", () => {
     expect(gone.data).toEqual([]);
   });
 
+  it("les fonctions d'administration sont fermées par appel direct", async () => {
+    const session = await alice.client.rpc("admin_session");
+    expect(session.data).toEqual([{ role_rank: 0, recent: false }]);
+
+    for (const client of [alice.client, fatou.client, anonymous, admin]) {
+      const responses = await Promise.all([
+        client.rpc("admin_find_user", { email: bob.email }),
+        client.rpc("admin_list_accounts"),
+        client.rpc("admin_set_role", { target_user: alice.id, role: "moderator", grant_role: true }),
+        client.rpc("admin_set_role", { target_user: alice.id, role: "super_admin", grant_role: true }),
+        client.rpc("admin_set_account_status", { target_user: bob.id, suspended: true, reason: "Abus" }),
+      ]);
+      for (const response of responses) {
+        expect(response.error).not.toBeNull();
+        expect(response.data ?? null).toBeNull();
+      }
+    }
+
+    // Le rôle serveur n'écrit plus de rôle : ni par la table, ni par les fonctions.
+    const direct = await admin.from("platform_roles").insert({ user_id: alice.id, role: "moderator" } as never);
+    expect(direct.error).not.toBeNull();
+
+    // Rien n'a changé : aucun rôle, aucun compte suspendu parmi les acteurs.
+    const roles = await alice.client.from("platform_roles").select("role");
+    expect(roles.data).toEqual([]);
+    const stillActive = await bob.client.from("profiles").select("user_id");
+    expect(stillActive.data).toEqual([{ user_id: bob.id }]);
+  });
+
   it("l'import par connecteur n'est appelable que par le serveur", async () => {
     const work = {
       source_name: "crossref",
