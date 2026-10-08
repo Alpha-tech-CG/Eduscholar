@@ -3,6 +3,7 @@ import { cache } from "react";
 import { getSecondFactorState } from "@/lib/auth/second-factor";
 import { getCurrentUser } from "@/lib/auth/session";
 import type { Option } from "@/lib/profile/queries";
+import { getRawReference } from "@/lib/reference/data";
 import { createSessionClient } from "@/lib/supabase/server";
 import { catalogueErrorCode } from "./errors";
 import { searchTerms, toTsQuery, type SearchFilters } from "./search";
@@ -397,12 +398,10 @@ const label = (labels: unknown, locale: string) => {
 
 /** Types de ressources, licences et langues, dans la langue demandée. */
 export const getCatalogueReference = cache(async (locale: string): Promise<CatalogueReference> => {
-  const supabase = await createSessionClient();
-  const [types, licenses, languages] = await Promise.all([
-    supabase.from("resource_types").select("code, labels").order("position"),
-    supabase.from("licenses").select("code, labels, can_host").order("position"),
-    supabase.from("languages").select("code, labels").order("code"),
-  ]);
+  const reference = await getRawReference();
+  const types = { data: reference.resource_types };
+  const licenses = { data: reference.licenses };
+  const languages = { data: reference.languages };
 
   return {
     types: (types.data ?? []).map((row) => ({ code: row.code, label: label(row.labels, locale) })),

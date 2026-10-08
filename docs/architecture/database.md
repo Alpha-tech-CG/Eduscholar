@@ -105,6 +105,7 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006006700_edited_after_import.sql` | Champs d'une fiche importée modifiés depuis l'import, tenus par déclencheur |
 | `20261006006800_admin_refusals_in_database.sql` | Refus d'administration consignés par la base, réponse 403 sans erreur levée ; conservation de l'historique des suspensions |
 | `20261006006900_admin_refusals_hardening.sql` | Corrections de revue : toutes les lectures couvertes, plafond de plateforme, purge prudente |
+| `20261006007000_reference_data_function.sql` | Référentiels rendus par une fonction ; lecture directe retirée aux comptes |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables

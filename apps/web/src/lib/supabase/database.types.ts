@@ -996,6 +996,9 @@ isOneToOne: false
 "redeem_recovery_code":
 { Args: { "code": string }; Returns: boolean
                            },
+"reference_data":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "register_sign_in_device":
 { Args: { "p_device_hash": string,"p_user_id": string }; Returns: boolean
                            },

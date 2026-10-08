@@ -1,3 +1,4 @@
+import { getRawReference } from "@/lib/reference/data";
 import "server-only";
 import { cache } from "react";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -67,29 +68,12 @@ function label(labels: unknown, locale: string): string {
 
 /** Référentiels dans la langue demandée. Les pays sont triés selon cette langue. */
 export const getReferenceData = cache(async (locale: string): Promise<ReferenceData> => {
-  const supabase = await createSessionClient();
-
-  // L'API plafonne chaque réponse à 100 lignes : les 249 pays sont lus en trois pages.
-  const countryPages = await Promise.all(
-    [0, 1, 2].map((page) =>
-      supabase
-        .from("countries")
-        .select("code, labels")
-        .order("code")
-        .range(page * 100, page * 100 + 99),
-    ),
-  );
-  const countries = { data: countryPages.flatMap((page) => page.data ?? []) };
-
-  const [levels, programs, specialties, subjects] = await Promise.all([
-    supabase.from("education_levels").select("code, labels").order("position"),
-    supabase.from("academic_programs").select("code, labels").order("code"),
-    supabase
-      .from("program_specialties")
-      .select("program_code, code, labels")
-      .order("position"),
-    supabase.from("subjects").select("program_code, code, labels").order("position"),
-  ]);
+  const reference = await getRawReference();
+  const countries = { data: reference.countries };
+  const levels = { data: reference.education_levels };
+  const programs = { data: reference.academic_programs };
+  const specialties = { data: reference.program_specialties };
+  const subjects = { data: reference.subjects };
 
   const collator = new Intl.Collator(locale);
 

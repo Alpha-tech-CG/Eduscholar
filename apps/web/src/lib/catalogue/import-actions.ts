@@ -1,5 +1,6 @@
 "use server";
 
+import { getRawReference } from "@/lib/reference/data";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
@@ -93,8 +94,8 @@ export async function importResourceByDoi(
   // sinon, celle qu'indique le modérateur.
   let languageCode: string | null = null;
   if (work.languageCode) {
-    const known = await session.from("languages").select("code").eq("code", work.languageCode);
-    if ((known.data ?? []).length === 1) languageCode = work.languageCode;
+    const { languages } = await getRawReference();
+    if (languages.some(({ code }) => code === work.languageCode)) languageCode = work.languageCode;
   }
   languageCode ??= /^[a-z]{2,3}$/.test(values.languageCode) ? values.languageCode : null;
   if (!languageCode) return { status: "error", error: "language_required", values };

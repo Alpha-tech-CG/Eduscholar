@@ -84,10 +84,25 @@ reset role;
 -- ---------------------------------------------------------------------------
 select tests.login('a0000000-0000-0000-0000-0000000000a1');
 
-select is((select count(*) from public.countries), 249::bigint, 'Un utilisateur lit les pays');
+select is(jsonb_array_length(public.reference_data() -> 'countries'), 249, 'Un utilisateur lit les pays, par la fonction des référentiels');
 select is(
-  (select count(*) from public.education_levels), 9::bigint,
-  'Un utilisateur ne voit que les niveaux actifs'
+  jsonb_array_length(public.reference_data() -> 'education_levels'), 9,
+  'Il ne voit que les niveaux actifs'
+);
+select throws_ok(
+  $$ select 1 from public.countries $$, '42501', null,
+  'Il ne lit plus les tables de référence directement : elles ne servent plus de maillon à une requête imbriquée'
+);
+select is(
+  (select count(*) from unnest(array['countries', 'languages', 'licenses', 'resource_types', 'education_levels',
+     'academic_domains', 'academic_programs', 'program_specialties', 'subjects']) t
+   where has_table_privilege('authenticated', 'public.' || t, 'select')
+      or has_table_privilege('anon', 'public.' || t, 'select')),
+  0::bigint, 'Aucune des neuf tables de référence n''est lisible par l''API d''un compte'
+);
+select is(
+  (select count(*) from jsonb_object_keys(public.reference_data())), 9::bigint,
+  'Les neuf référentiels sont rendus en un seul objet'
 );
 select ok(not private.is_onboarded(), 'Un compte neuf n''a pas complété son profil');
 

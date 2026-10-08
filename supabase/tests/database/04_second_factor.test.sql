@@ -33,7 +33,7 @@ insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, c
 select tests.login('a0000000-0000-0000-0000-0000000000f1', 'aal1');
 select ok(not private.is_account_active(), 'Avec un second facteur activé, une session aal1 n''a aucun droit');
 select is_empty($$ select 1 from public.profiles $$, 'Il ne lit pas son profil en aal1');
-select is_empty($$ select 1 from public.countries $$, 'Il ne lit pas les référentiels en aal1');
+select throws_ok($$ select public.reference_data() $$, '42501', 'forbidden', 'Il ne lit pas les référentiels en aal1');
 update public.profiles set preferred_locale = 'en'
   where user_id = 'a0000000-0000-0000-0000-0000000000f1';
 select is(public.account_deletion_check(), 'forbidden', 'Il ne peut pas demander la suppression de son compte en aal1');

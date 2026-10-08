@@ -366,9 +366,18 @@ describe("profil académique, par appel direct à l'API", () => {
   });
 
   it("un utilisateur lit les référentiels, sans le niveau désactivé", async () => {
-    const levels = await dana.client.from("education_levels").select("code");
-    expect(levels.error).toBeNull();
+    const reference = await dana.client.rpc("reference_data");
+    expect(reference.error).toBeNull();
+    const levels = { data: (reference.data as { education_levels: { code: string }[] }).education_levels };
     const codes = (levels.data ?? []).map((row) => row.code);
+    // Les tables elles-mêmes ne se lisent plus : ni seules, ni imbriquées dans une autre lecture.
+    const direct = await dana.client.from("education_levels").select("code");
+    expect(direct.error).not.toBeNull();
+    const nested = await dana.client
+      .from("resources")
+      .select("id, resource_types(code, resources(id, resource_types(code)))")
+      .limit(1);
+    expect(nested.error).not.toBeNull();
     expect(codes).toContain("bachelor_3");
     expect(codes).not.toContain("upper_secondary");
   });
@@ -498,8 +507,8 @@ describe("compte avec second facteur, par appel direct à l'API", () => {
         .select("user_id");
       expect(update.data).toEqual([]);
 
-      const countries = await attacker.from("countries").select("code").limit(1);
-      expect(countries.data).toEqual([]);
+      const countries = await attacker.rpc("reference_data" as never);
+      expect(countries.error).not.toBeNull();
 
       const deletion = await attacker.rpc("account_deletion_check" as never);
       expect(deletion.data).toBe("forbidden");
@@ -1252,10 +1261,11 @@ describe("session fermée, jeton encore valable", () => {
     const ownProfile = () => rest("profiles?select=user_id", actor.token).then((r) => r.json());
 
     // Avant : la personne lit sa propre ligne, et un référentiel.
-    const licenses = () =>
-      rest("licenses?select=code&limit=1", actor.token).then((r) => r.json() as Promise<unknown[]>);
+    const reference = () => rest("rpc/reference_data", actor.token, { method: "POST", body: "{}" });
     expect(await ownProfile()).toEqual([{ user_id: actor.id }]);
-    expect((await licenses()).length).toBe(1);
+    const before = await reference();
+    expect(before.status).toBe(200);
+    expect(((await before.json()) as { licenses: unknown[] }).licenses.length).toBeGreaterThan(0);
 
     // La session est fermée côté service (déconnexion de tous les appareils).
     const closed = await admin.auth.admin.signOut(actor.token, "global");
@@ -1263,7 +1273,7 @@ describe("session fermée, jeton encore valable", () => {
 
     // Le jeton n'a pas expiré, mais la base ne le reconnaît plus.
     expect(await ownProfile()).toEqual([]);
-    expect(await licenses()).toEqual([]);
+    expect((await reference()).status).toBe(403);
     const tables = ["research_projects", "collections", "resource_favorites", "thesis_sections"];
     for (const table of tables) {
       const response = await rest(`${table}?select=*&limit=1`, actor.token);
