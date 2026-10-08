@@ -76,6 +76,14 @@ insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, c
 insert into public.platform_roles (user_id, role) values
   ('a0000000-0000-0000-0000-000000007110', 'super_admin'),
   ('a1000000-0000-0000-0000-000000007111', 'super_admin');
+-- T1 : invité avec second facteur, sans aucun rôle.
+insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at) values
+  ('d2000000-0000-0000-0000-000000007112', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'orga-t1@test.invalid', now());
+update public.profiles
+  set country_code = 'SN', level_code = 'bachelor_3', program_code = 'computer_science', age_confirmed_at = now()
+  where user_id = 'd2000000-0000-0000-0000-000000007112';
+insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret) values
+  ('fa000000-0000-0000-0000-000000007112', 'd2000000-0000-0000-0000-000000007112', 'test', 'totp', 'verified', now() - interval '1 day', now(), 'secret-de-test');
 
 -- Organisation B : Q en est membre. Organisation C : portera une ressource.
 insert into public.organizations (id, slug, name, status) values
@@ -414,9 +422,15 @@ select results_eq(
 );
 
 -- À l'acceptation aussi : un compte qui a reçu entre-temps un rôle de plateforme.
+insert into public.organizations (id, slug, name, status) values
+  ('71000000-0000-0000-0000-0000000000a7', 'orga-reprise-g', 'Organisation G du test', 'pending');
 select tests.login('b0000000-0000-0000-0000-000000007101', 'aal2', 30);
 insert into tests.tokens
-select 'rd', public.admin_invite_org_admin((select id from tests.ids where label = 'd'), 'orga-r@test.invalid') ->> 'token';
+select 'rd', public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a7', 'orga-r@test.invalid') ->> 'token';
+select throws_ok(
+  $$ select private.admin_invite_org_admin((select id from tests.ids where label = 'd'), 'orga-t1@test.invalid') $$,
+  '42501', 'forbidden', 'Organisation suspendue, même sans aucun membre : c''est une reprise, fermée à un administrateur de plateforme'
+);
 reset role;
 insert into public.platform_roles (user_id, role, granted_by)
 values ('d1000000-0000-0000-0000-000000007109', 'moderator', 'b0000000-0000-0000-0000-000000007101');
@@ -664,6 +678,11 @@ select is(
   'suspended', 'L''organisation est toujours suspendue'
 );
 select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select results_eq(
+  $$ select status, recovery_since_suspension from public.admin_list_organizations(100, 0) where slug = 'orga-reprise-e' $$,
+  $$ values ('suspended', true) $$,
+  'Celui qui va rétablir voit qu''une invitation de reprise a été émise depuis la suspension'
+);
 select is(public.admin_set_organization_status('71000000-0000-0000-0000-0000000000e1', 'verified', 'Motif zzsecret de fin de reprise'), null, 'Un autre super-administrateur rétablit l''organisation');
 reset role;
 select tests.login('d0000000-0000-0000-0000-000000007103', 'aal2', 10);
@@ -705,6 +724,220 @@ select is(
   (select invited_by from public.organization_members
    where organization_id = '71000000-0000-0000-0000-0000000000e1' and user_id = 'd0000000-0000-0000-0000-000000007103'),
   'a1000000-0000-0000-0000-000000007111'::uuid, 'L''appartenance aussi'
+);
+
+select results_eq(
+  $$ select a.actor_id, a.metadata from public.audit_logs a
+     where a.action = 'organization.reinstated' and a.organization_id = '71000000-0000-0000-0000-0000000000e1' order by a.id $$,
+  $$ values ('a0000000-0000-0000-0000-000000007110'::uuid, '{"after_recovery": false}'::jsonb),
+            ('a0000000-0000-0000-0000-000000007110'::uuid, '{"after_recovery": true}'::jsonb) $$,
+  'Le journal dit si un rétablissement suit une reprise'
+);
+
+-- Période d'observation de l'administrateur de reprise.
+select ok(
+  (select recovery_until between now() + interval '29 days' and now() + interval '31 days'
+   from public.organization_members
+   where organization_id = '71000000-0000-0000-0000-0000000000e1' and user_id = 'd0000000-0000-0000-0000-000000007103'),
+  'L''administrateur de reprise est en observation trente jours'
+);
+select is(
+  (select count(*) from public.organization_members where recovery_until is not null
+     and organization_id <> '71000000-0000-0000-0000-0000000000e1' and user_id::text like '%-0000000071__'),
+  0::bigint, 'Personne d''autre ne l''est'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.organization_members', 'recovery_until', 'select')
+  and not has_column_privilege('authenticated', 'public.organization_members', 'recovery_until', 'update')
+  and not has_column_privilege('anon', 'public.organization_members', 'recovery_until', 'select')
+  and not has_column_privilege('service_role', 'public.organization_members', 'recovery_until', 'update'),
+  'L''échéance ne se lit pas par les comptes et ne s''écrit par aucun rôle de l''API'
+);
+select tests.login('d0000000-0000-0000-0000-000000007103', 'aal2', 10);
+select throws_ok(
+  $$ select public.set_org_member_role('71000000-0000-0000-0000-0000000000e1', 'c0000000-0000-0000-0000-000000007108', 'member') $$,
+  '42501', 'forbidden', 'En observation, il ne rétrograde pas l''administratrice qui l''était avant lui'
+);
+select throws_ok(
+  $$ select public.remove_org_member('71000000-0000-0000-0000-0000000000e1', 'c0000000-0000-0000-0000-000000007108') $$,
+  '42501', 'forbidden', 'Ni ne la retire'
+);
+select matches(
+  public.invite_org_member('71000000-0000-0000-0000-0000000000e1', '{"email": "nouveau-e@test.invalid", "role": "member"}'),
+  '^[0-9a-f]{64}$', 'Les autres opérations lui restent ouvertes'
+);
+select is(
+  jsonb_array_length(public.org_members('71000000-0000-0000-0000-0000000000e1') -> 'members'), 2,
+  'Dont la lecture des membres'
+);
+reset role;
+update public.organization_members set recovery_until = now() - interval '1 minute'
+where organization_id = '71000000-0000-0000-0000-0000000000e1' and user_id = 'd0000000-0000-0000-0000-000000007103';
+select tests.login('d0000000-0000-0000-0000-000000007103', 'aal2', 10);
+select lives_ok(
+  $$ select public.set_org_member_role('71000000-0000-0000-0000-0000000000e1', 'c0000000-0000-0000-0000-000000007108', 'member') $$,
+  'La période passée, il le peut'
+);
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- La reprise se définit par l'état : suspendue, zéro administrateur, un membre
+-- ---------------------------------------------------------------------------
+-- Organisation H : V administratrice, N membre.
+insert into public.organizations (id, slug, name, status) values
+  ('71000000-0000-0000-0000-0000000000a8', 'orga-reprise-h', 'Organisation H du test', 'verified');
+insert into public.organization_members (organization_id, user_id, role) values
+  ('71000000-0000-0000-0000-0000000000a8', 'e0000000-0000-0000-0000-000000007104', 'org_admin'),
+  ('71000000-0000-0000-0000-0000000000a8', 'e1000000-0000-0000-0000-000000007105', 'member');
+select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select is(public.admin_set_organization_status('71000000-0000-0000-0000-0000000000a8', 'suspended', 'Motif zzsecret pour H'), null, 'S1 suspend l''organisation H');
+reset role;
+select tests.login('e0000000-0000-0000-0000-000000007104');
+select lives_ok($$ select public.leave_organization('71000000-0000-0000-0000-0000000000a8') $$, 'Sa dernière administratrice la quitte');
+reset role;
+select results_eq(
+  $$ select count(*), count(*) filter (where role = 'org_admin') from public.organization_members
+     where organization_id = '71000000-0000-0000-0000-0000000000a8' $$,
+  $$ values (1::bigint, 0::bigint) $$,
+  'Il reste un membre, et aucun administrateur'
+);
+select tests.login('b0000000-0000-0000-0000-000000007101', 'aal2', 30);
+select throws_ok(
+  $$ select private.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a8', 'reprise-h@test.invalid') $$,
+  '42501', 'forbidden', 'Suspendue et sans administrateur : ce n''est pas un « premier administrateur », un administrateur de plateforme est refusé'
+);
+reset role;
+-- Un renommage pendant la suspension ne change pas l'auteur de celle-ci.
+select tests.login('a1000000-0000-0000-0000-000000007111', 'aal2', 30);
+select is(public.admin_rename_organization('71000000-0000-0000-0000-0000000000a8', '{"name": "Organisation H renommée"}'), null, 'S2 renomme l''organisation suspendue');
+reset role;
+select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select throws_ok(
+  $$ select private.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a8', 'reprise-h@test.invalid') $$,
+  '42501', 'forbidden', 'L''auteur de la suspension reste refusé, même après un renommage par un autre'
+);
+reset role;
+select tests.login('a1000000-0000-0000-0000-000000007111', 'aal2', 30);
+insert into tests.tokens
+select 'h', public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a8', 'reprise-h@test.invalid') ->> 'token';
+select matches((select token from tests.tokens where label = 'h'), '^[0-9a-f]{64}$', 'Un autre super-administrateur invite');
+select throws_ok(
+  $$ select private.admin_set_organization_status('71000000-0000-0000-0000-0000000000a8', 'verified', 'Motif zzsecret') $$,
+  '42501', 'forbidden', 'L''émetteur ne rétablit pas'
+);
+reset role;
+select results_eq(
+  $$ select a.metadata from public.audit_logs a
+     where a.action = 'organization.admin_invited' and a.organization_id = '71000000-0000-0000-0000-0000000000a8' $$,
+  $$ values ('{"recovery": true, "existing_admin_count": 0}'::jsonb) $$,
+  'Le journal dit que c''est une reprise, sans administrateur en place'
+);
+-- Plus de trente jours, invitation purgée : l'interdit tient toujours.
+update public.organization_invitations
+set created_at = now() - interval '45 days', expires_at = now() - interval '38 days'
+where organization_id = '71000000-0000-0000-0000-0000000000a8';
+update private.organization_decisions set decided_at = now() - interval '45 days'
+where organization_id = '71000000-0000-0000-0000-0000000000a8';
+select set_config('request.jwt.claims', '', true);
+select lives_ok($$ select private.purge_stale_org_invitations() $$, 'La purge passe');
+select is(
+  (select count(*) from public.organization_invitations where organization_id = '71000000-0000-0000-0000-0000000000a8'),
+  0::bigint, 'L''invitation de reprise est effacée'
+);
+select tests.login('a1000000-0000-0000-0000-000000007111', 'aal2', 30);
+select throws_ok(
+  $$ select private.admin_set_organization_status('71000000-0000-0000-0000-0000000000a8', 'verified', 'Motif zzsecret') $$,
+  '42501', 'forbidden', 'Après la purge de l''invitation et plus de trente jours, l''émetteur ne rétablit toujours pas'
+);
+reset role;
+select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select results_eq(
+  $$ select status, recovery_since_suspension from public.admin_list_organizations(100, 0) where slug = 'orga-reprise-h' $$,
+  $$ values ('suspended', true) $$,
+  'Un tiers voit qu''une reprise a été engagée depuis la suspension'
+);
+select is(public.admin_set_organization_status('71000000-0000-0000-0000-0000000000a8', 'verified', 'Motif zzsecret de retour de H'), null, 'Et rétablit l''organisation');
+select is(
+  (select recovery_since_suspension from public.admin_list_organizations(100, 0) where slug = 'orga-reprise-h'),
+  false, 'Rétablie, elle n''affiche plus ce signal'
+);
+reset role;
+select results_eq(
+  $$ select a.actor_id, a.metadata from public.audit_logs a
+     where a.action = 'organization.reinstated' and a.organization_id = '71000000-0000-0000-0000-0000000000a8' $$,
+  $$ values ('a0000000-0000-0000-0000-000000007110'::uuid, '{"after_recovery": true}'::jsonb) $$,
+  'Le journal dit que ce rétablissement suit une reprise'
+);
+-- Active, un membre, aucun administrateur : il faut d'abord suspendre.
+select tests.login('a1000000-0000-0000-0000-000000007111', 'aal2', 30);
+select throws_ok(
+  $$ select public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a8', 'reprise-h@test.invalid') $$,
+  '22023', 'invalid_transition', 'Organisation active avec des membres mais sans administrateur : la reprise exige d''abord une suspension'
+);
+reset role;
+select tests.login('b0000000-0000-0000-0000-000000007101', 'aal2', 30);
+select throws_ok(
+  $$ select public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a8', 'reprise-h@test.invalid') $$,
+  '22023', 'invalid_transition', 'Pour un administrateur de plateforme aussi'
+);
+reset role;
+
+-- Auteur de la suspension inconnu : la reprise reste possible ; la purge garde
+-- ce qui fonde les règles.
+insert into public.organizations (id, slug, name, status) values
+  ('71000000-0000-0000-0000-0000000000a9', 'orga-reprise-i', 'Organisation I du test', 'suspended');
+insert into public.organization_members (organization_id, user_id, role) values
+  ('71000000-0000-0000-0000-0000000000a9', 'e1000000-0000-0000-0000-000000007105', 'member');
+insert into private.organization_decisions (organization_id, decision, reason, decided_by, decided_at) values
+  ('71000000-0000-0000-0000-0000000000a9', 'reinstated', 'Ancienne décision close', null, now() - interval '4 years');
+insert into private.organization_decisions (organization_id, decision, reason, decided_by, decided_at) values
+  ('71000000-0000-0000-0000-0000000000a9', 'suspended', 'Ancienne suspension en cours', null, now() - interval '4 years');
+select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select matches(
+  public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000a9', 'reprise-i@test.invalid') ->> 'token',
+  '^[0-9a-f]{64}$', 'Auteur de la suspension supprimé : un super-administrateur peut reprendre'
+);
+reset role;
+update private.organization_decisions set decided_at = now() - interval '4 years'
+where organization_id = '71000000-0000-0000-0000-0000000000a9';
+select set_config('request.jwt.claims', '', true);
+select lives_ok($$ select private.purge_stale_org_invitations() $$, 'La purge passe');
+select results_eq(
+  $$ select decision from private.organization_decisions
+     where organization_id = '71000000-0000-0000-0000-0000000000a9' order by id $$,
+  $$ values ('suspended'), ('recovery_invited') $$,
+  'La purge garde la suspension en cours et l''invitation de reprise qui l''a suivie, pas la décision close'
+);
+
+-- Premier administrateur d'une organisation neuve, puis elle devient une reprise.
+insert into public.organizations (id, slug, name, status) values
+  ('71000000-0000-0000-0000-0000000000af', 'orga-reprise-f', 'Organisation F du test', 'pending');
+select tests.login('b0000000-0000-0000-0000-000000007101', 'aal2', 30);
+insert into tests.tokens
+select 'f', public.admin_invite_org_admin('71000000-0000-0000-0000-0000000000af', 'orga-t1@test.invalid') ->> 'token';
+select matches((select token from tests.tokens where label = 'f'), '^[0-9a-f]{64}$', 'Organisation neuve et sans membre : un administrateur de plateforme invite toujours son premier administrateur');
+reset role;
+select is(
+  (select count(*) from private.organization_decisions
+   where organization_id = '71000000-0000-0000-0000-0000000000af'),
+  0::bigint, 'Ce n''est pas une reprise : aucune décision n''est gardée'
+);
+select tests.login('a0000000-0000-0000-0000-000000007110', 'aal2', 30);
+select is(public.admin_set_organization_status('71000000-0000-0000-0000-0000000000af', 'suspended', 'Motif zzsecret pour F'), null, 'L''organisation est suspendue avant l''acceptation');
+reset role;
+select tests.login('d2000000-0000-0000-0000-000000007112', 'aal2', 10);
+select is(
+  public.accept_org_invitation((select token from tests.tokens where label = 'f')), null,
+  'Invitation « premier administrateur » devenue une reprise : elle ne s''accepte pas, même réponse vide'
+);
+reset role;
+select is(
+  (select status from public.organization_invitations where organization_id = '71000000-0000-0000-0000-0000000000af'),
+  'revoked', 'Elle est révoquée'
+);
+select is(
+  (select count(*) from public.organization_members where organization_id = '71000000-0000-0000-0000-0000000000af'),
+  0::bigint, 'Et personne n''est entré'
 );
 
 -- Quitter une organisation, puis l'administrer au nom de la plateforme : refusé trente jours.
