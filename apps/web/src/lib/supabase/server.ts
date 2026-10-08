@@ -59,7 +59,12 @@ export function createServiceClient(): SupabaseClient<Database> {
  * Vérifie un mot de passe sans toucher à la session en cours : le client
  * utilisé ne lit ni n'écrit aucun cookie.
  */
-export async function verifyPassword(email: string, password: string): Promise<boolean> {
+export async function verifyPassword(
+  email: string,
+  password: string,
+  /** Jeton du défi anti-robot, exigé par le service quand le défi est activé. */
+  captchaToken?: string,
+): Promise<boolean> {
   const env = serverEnv();
   const client = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
     auth: {
@@ -69,7 +74,11 @@ export async function verifyPassword(email: string, password: string): Promise<b
     },
   });
 
-  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  const { data, error } = await client.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken },
+  });
   if (error || !data.session) return false;
 
   // La session ouverte pour la vérification est refermée aussitôt.

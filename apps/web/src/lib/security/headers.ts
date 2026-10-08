@@ -8,9 +8,14 @@ export function generateNonce(): string {
   return Buffer.from(crypto.randomUUID()).toString("base64");
 }
 
+/** Origine du défi Cloudflare Turnstile : son script et son cadre. */
+export const CAPTCHA_ORIGIN = "https://challenges.cloudflare.com";
+
 export function buildContentSecurityPolicy(
   nonce: string,
   isDev: boolean,
+  /** Le défi anti-robot est configuré : son origine, et elle seule, est admise. */
+  captcha = false,
 ): string {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
@@ -20,6 +25,7 @@ export function buildContentSecurityPolicy(
       "'strict-dynamic'",
       // React utilise eval en développement uniquement.
       ...(isDev ? ["'unsafe-eval'"] : []),
+      ...(captcha ? [CAPTCHA_ORIGIN] : []),
     ],
     // En développement, Next.js injecte des styles sans nonce.
     "style-src": isDev
@@ -28,6 +34,8 @@ export function buildContentSecurityPolicy(
     "img-src": ["'self'", "blob:", "data:"],
     "font-src": ["'self'"],
     "connect-src": ["'self'", ...(isDev ? ["ws:"] : [])],
+    // Aucun cadre, sauf celui du défi anti-robot quand il est configuré.
+    "frame-src": captcha ? [CAPTCHA_ORIGIN] : ["'none'"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],

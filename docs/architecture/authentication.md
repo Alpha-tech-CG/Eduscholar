@@ -182,6 +182,14 @@ est activée, et quand il la désactive lui-même avec son code. À l'activation
 sessions du compte sont fermées. Les deux notifications sont déclarées dans
 `supabase/config.toml` : elles sont à reproduire sur chaque projet hébergé.
 
+### Défi anti-robot et mots de passe compromis
+
+Voir l'ADR-0011. Le défi Cloudflare Turnstile est vérifié par le service
+d'authentification ; l'application affiche le widget et transmet le jeton. Il est
+inactif tant que `TURNSTILE_SITE_KEY` n'est pas définie, et la politique de sécurité de
+contenu n'admet alors aucun cadre. Le contrôle des mots de passe compromis n'envoie que
+cinq caractères d'empreinte, et s'active par `PASSWORD_BREACH_CHECK=1`.
+
 ### Alerte de nouvelle connexion
 
 Une connexion depuis un navigateur que le compte ne connaît pas envoie au titulaire

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import {
@@ -15,10 +16,17 @@ type RecoveryCodesProps = {
   generatedOn: string | null;
   /** Faux : un code de l'application d'authentification est demandé avant de générer. */
   recentSecondFactor: boolean;
+  /** Défi anti-robot, rendu par le serveur : le mot de passe est revérifié auprès du service. */
+  captcha?: ReactNode;
 };
 
 /** Génération des codes de secours. Ils ne sont affichés qu'une fois. */
-export function RecoveryCodes({ remaining, generatedOn, recentSecondFactor }: RecoveryCodesProps) {
+export function RecoveryCodes({
+  remaining,
+  generatedOn,
+  recentSecondFactor,
+  captcha,
+}: RecoveryCodesProps) {
   const t = useTranslations("Auth.recoveryCodes");
   const tErrors = useTranslations("Auth.errors");
   const [state, generate, pending] = useActionState(generateRecoveryCodes, initial);
@@ -96,6 +104,7 @@ export function RecoveryCodes({ remaining, generatedOn, recentSecondFactor }: Re
         {pending ? t("pending") : remaining > 0 ? t("regenerate") : t("generate")}
       </button>
       {remaining > 0 ? <p className="text-sm opacity-70">{t("regenerateHint")}</p> : null}
+      {captcha}
     </form>
   );
 }

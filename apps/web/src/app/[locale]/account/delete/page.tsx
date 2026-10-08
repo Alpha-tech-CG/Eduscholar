@@ -1,3 +1,4 @@
+import { Captcha } from "@/components/auth/captcha";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AuthForm, CheckboxField, TextField } from "@/components/auth/form";
@@ -49,6 +50,7 @@ export default async function DeleteAccountPage() {
           label={t("password")}
         />
         <CheckboxField name="confirmDeletion" label={t("confirm")} />
+        <Captcha />
       </AuthForm>
     </AuthPageShell>
   );

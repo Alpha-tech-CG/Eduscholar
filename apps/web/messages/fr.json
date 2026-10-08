@@ -120,7 +120,9 @@
       "source_paused": "La source demande une pause : trop de requêtes lui ont été adressées. Rien n'a été importé ; réessayez dans quelques minutes.",
       "source_daily_limit": "Le nombre d'imports que la plateforme s'autorise par jour auprès de cette source est atteint. Réessayez demain.",
       "nothing_to_submit": "Votre projet n'a encore aucune section : il n'y a rien à soumettre.",
-      "scope_required": "Cochez au moins une section, ou choisissez l'accès à tout le projet."
+      "scope_required": "Cochez au moins une section, ou choisissez l'accès à tout le projet.",
+      "captcha_required": "Terminez la vérification anti-robot, puis renvoyez le formulaire.",
+      "breached_password": "Ce mot de passe figure dans des fuites de données connues. Choisissez-en un autre, que vous n'utilisez nulle part ailleurs."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -203,6 +205,9 @@
       "passwordHint": "Il est redemandé pour que personne d'autre n'obtienne vos codes depuis une session restée ouverte.",
       "generatedOn": "Générés le {date}.",
       "useWarning": "Un code de secours a été utilisé sur ce compte le {date} : la validation en deux étapes a alors été désactivée et vos autres sessions fermées. Si ce n'était pas vous, changez de mot de passe sans attendre, puis réactivez-la."
+    },
+    "captcha": {
+      "label": "Vérification anti-robot"
     }
   },
   "Account": {

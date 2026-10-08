@@ -164,6 +164,9 @@ Détail dans `docs/security/initial-audit.md`.
   staging.
 - Journal d'administration complété (D-26) et recherche du catalogue par fonction
   dédiée, avec classement par pertinence (D-21, ADR-0010).
+- Défi anti-robot Cloudflare Turnstile et contrôle des mots de passe compromis (D-09,
+  ADR-0011), inactifs tant que leurs variables ne sont pas définies ; référentiels servis
+  par une fonction (D-15).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

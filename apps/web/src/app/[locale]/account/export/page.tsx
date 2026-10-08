@@ -1,3 +1,4 @@
+import { Captcha } from "@/components/auth/captcha";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthPageShell } from "@/components/auth/page-shell";
@@ -72,6 +73,7 @@ export default async function DataExportPage({
         >
           {t("submit")}
         </button>
+        <Captcha />
       </form>
     </AuthPageShell>
   );

@@ -29,6 +29,8 @@
 | `SMTP_URL` | oui | Facultative. Serveur d'envoi des avis de sécurité de l'application (ADR-0009), sous la forme `smtps://identifiant:secret@hôte:port`. Sans elle, aucun avis ne part. Le même compte que celui du service d'authentification. |
 | `MAIL_FROM` | non | Facultative, requise avec `SMTP_URL`. Adresse d'expédition des avis, sur un domaine authentifié (SPF, DKIM). |
 | `CRON_SECRET` | **oui** | Facultative. Valeur aléatoire d'au moins 32 caractères que la tâche planifiée de l'hébergeur présente (`Authorization: Bearer …`) pour déclencher l'envoi du courriel des notifications (`/api/cron/notification-digest`). Sans elle, la route répond « introuvable » et aucun courriel de notification ne part. |
+| `TURNSTILE_SITE_KEY` | non | Facultative. Clé de site Cloudflare Turnstile (ADR-0011) : affiche le défi anti-robot et ouvre la politique de sécurité de contenu à son origine. À définir **avant** d'activer le défi dans le service d'authentification. Le secret correspondant ne se met pas ici : il se règle dans `[auth.captcha]` du projet hébergé. |
+| `PASSWORD_BREACH_CHECK` | non | Facultative. `1` active le contrôle des mots de passe compromis à l'inscription et au changement de mot de passe (seuls cinq caractères d'empreinte sortent). |
 | `CROSSREF_API_URL` | non | À ne pas définir. Vaut `https://api.crossref.org` ; seule autre valeur admise : un serveur de test sur `http://127.0.0.1`, et seulement si `CROSSREF_TEST_STUB=1` hors Vercel (tests de bout en bout). |
 | `TRUSTED_CLIENT_IP_HEADER` | non | Hors Vercel : nom de l'en-tête, écrasé par le proxy frontal, qui porte l'adresse du client. Absent : la limitation de débit par client devient commune à tous les visiteurs. |
 

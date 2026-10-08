@@ -22,6 +22,9 @@ export default async function proxy(request: NextRequest) {
   const csp = buildContentSecurityPolicy(
     nonce,
     process.env.NODE_ENV === "development",
+    // Lu ici sans passer par le module des variables serveur : le proxy ne
+    // doit pas échouer pour une variable absente.
+    /^[0-9A-Za-z_-]{10,100}$/.test(process.env.TURNSTILE_SITE_KEY ?? ""),
   );
 
   // Next.js lit le nonce dans l'en-tête CSP de la requête pour l'appliquer

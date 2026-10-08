@@ -1,3 +1,4 @@
+import { Captcha } from "@/components/auth/captcha";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthForm, TextField } from "@/components/auth/form";
@@ -75,6 +76,7 @@ export default async function SignInPage({
           autoComplete="current-password"
           label={t("fields.password")}
         />
+        <Captcha />
       </AuthForm>
     </AuthPageShell>
   );

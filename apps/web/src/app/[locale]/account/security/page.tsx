@@ -1,3 +1,4 @@
+import { Captcha } from "@/components/auth/captcha";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { AuthForm, TextField } from "@/components/auth/form";
@@ -67,6 +68,7 @@ export default async function SecurityPage({
           <h2 className="text-lg font-semibold">{t("recoveryCodes.heading")}</h2>
           <p className="text-sm opacity-80">{t("recoveryCodes.intro")}</p>
           <RecoveryCodes
+            captcha={<Captcha />}
             remaining={recovery.remaining}
             generatedOn={
               recovery.generatedAt
@@ -100,7 +102,7 @@ export default async function SecurityPage({
       ) : (
         <>
           <p className="text-sm opacity-80">{t("secondFactor.lossWarning")}</p>
-          <SecondFactorEnrollment />
+          <SecondFactorEnrollment captcha={<Captcha />} />
         </>
       )}
     </AuthPageShell>

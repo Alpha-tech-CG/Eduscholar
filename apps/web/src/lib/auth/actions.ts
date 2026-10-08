@@ -1,5 +1,7 @@
 "use server";
 
+import { isBreachedPassword } from "./breached-password";
+import { readCaptcha } from "./captcha";
 import { noteSignInDevice } from "./device";
 import { recordAuthEvent } from "./events";
 import { getLocale } from "next-intl/server";
@@ -79,10 +81,19 @@ export async function signUp(
     // Limite propre à cette adresse : même réponse que d'habitude, sans envoi.
     if (verdict === "account_limited") return success;
 
+    const captcha = readCaptcha(formData);
+    if (captcha.missing) {
+      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
+    }
+    if (await isBreachedPassword(parsed.data.password)) {
+      return { status: "error", error: "breached_password", values: { email: parsed.data.email } };
+    }
+
     const supabase = await createSessionClient();
     const { error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
+      options: { captchaToken: captcha.token },
     });
 
     if (error?.code === "weak_password") {
@@ -115,15 +126,21 @@ export async function signIn(
   };
   if (!parsed.success) return invalid;
 
-  const failure = await withMinimumDuration(async () => {
+  const failure = await withMinimumDuration<AuthFormState | null>(async () => {
     if ((await checkAttempt("sign-in", parsed.data.email)) !== "allowed") {
       return rateLimited;
+    }
+
+    const captcha = readCaptcha(formData);
+    if (captcha.missing) {
+      return { status: "error", error: "captcha_required", values: { email: submittedEmail } };
     }
 
     const supabase = await createSessionClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
+      options: { captchaToken: captcha.token },
     });
     if (error || !data.user) {
       await recordAuthEvent("failed:sign-in");
@@ -173,8 +190,13 @@ export async function requestPasswordReset(
     // savoir que la limite est atteinte.
     if (verdict === "account_limited") return success;
 
+    const captcha = readCaptcha(formData);
+    if (captcha.missing) {
+      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
+    }
+
     const supabase = await createSessionClient();
-    await supabase.auth.resetPasswordForEmail(parsed.data.email);
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, { captchaToken: captcha.token });
 
     // Même réponse que le compte existe ou non.
     return success;
@@ -251,6 +273,9 @@ export async function updatePassword(
   if ((await checkAttempt("password-update")) !== "allowed") return rateLimited;
 
   const supabase = await createSessionClient();
+  if (await isBreachedPassword(parsed.data.password)) {
+    return { status: "error", error: "breached_password" };
+  }
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
 
   if (error) {

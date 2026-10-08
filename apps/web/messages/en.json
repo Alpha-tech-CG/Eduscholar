@@ -120,7 +120,9 @@
       "source_paused": "The source has asked for a pause: too many requests were sent to it. Nothing was imported; try again in a few minutes.",
       "source_daily_limit": "The platform has reached the number of imports it allows itself per day from this source. Try again tomorrow.",
       "nothing_to_submit": "Your project has no section yet: there is nothing to submit.",
-      "scope_required": "Tick at least one section, or choose access to the whole project."
+      "scope_required": "Tick at least one section, or choose access to the whole project.",
+      "captcha_required": "Complete the anti-robot check, then send the form again.",
+      "breached_password": "This password appears in known data breaches. Choose another one that you use nowhere else."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -203,6 +205,9 @@
       "passwordHint": "It is asked again so that nobody else can obtain your codes from a session left open.",
       "generatedOn": "Generated on {date}.",
       "useWarning": "A backup code was used on this account on {date}: two-step verification was then turned off and your other sessions closed. If this was not you, change your password right away, then turn it back on."
+    },
+    "captcha": {
+      "label": "Anti-robot check"
     }
   },
   "Account": {

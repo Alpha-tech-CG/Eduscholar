@@ -14,6 +14,8 @@ export type AuthErrorCode =
   | "invalid_link"
   | "already_signed_in"
   | "weak_password"
+  | "breached_password"
+  | "captcha_required"
   | "same_password"
   | "session_expired"
   | "invalid_code"

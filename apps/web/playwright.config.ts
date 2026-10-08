@@ -13,6 +13,9 @@ export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/support/global-setup.ts",
   fullyParallel: true,
+  // Quatre navigateurs à la fois hors intégration continue : au-delà, sur un
+  // poste de développement, un processus de test finit par manquer de mémoire.
+  workers: process.env.CI ? undefined : 4,
   // Une connexion enchaîne plusieurs redirections : cinq secondes ne suffisent
   // pas toujours quand les deux projets tournent ensemble.
   expect: { timeout: 10_000 },

@@ -1,5 +1,6 @@
 "use server";
 
+import { readCaptcha } from "@/lib/auth/captcha";
 import { getLocale } from "next-intl/server";
 import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
@@ -48,7 +49,7 @@ export async function deleteAccount(
   if ((await checkAttempt("reauthentication", user.id)) !== "allowed") {
     return { status: "error", error: "rate_limited" };
   }
-  if (!(await verifyPassword(user.email, password))) {
+  if (!(await verifyPassword(user.email, password, readCaptcha(formData).token))) {
     return { status: "error", error: "invalid_credentials" };
   }
 

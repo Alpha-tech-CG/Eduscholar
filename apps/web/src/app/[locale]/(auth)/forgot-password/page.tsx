@@ -1,3 +1,4 @@
+import { Captcha } from "@/components/auth/captcha";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AuthForm, TextField } from "@/components/auth/form";
@@ -31,6 +32,7 @@ export default async function ForgotPasswordPage() {
         pendingLabel={t("pending")}
       >
         <TextField name="email" type="email" autoComplete="email" label={t("fields.email")} />
+        <Captcha />
       </AuthForm>
     </AuthPageShell>
   );

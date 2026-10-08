@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import {
@@ -15,7 +16,7 @@ const initial: EnrollmentState = { status: "idle" };
  * Activation du second facteur en deux temps : obtenir le secret, puis prouver
  * par un premier code que l'application d'authentification est configurée.
  */
-export function SecondFactorEnrollment() {
+export function SecondFactorEnrollment({ captcha }: { captcha?: ReactNode }) {
   const t = useTranslations("Auth.secondFactor");
   const [state, start, pending] = useActionState(startSecondFactorEnrollment, initial);
 
@@ -48,6 +49,7 @@ export function SecondFactorEnrollment() {
         >
           {pending ? t("pending") : t("enable")}
         </button>
+        {captcha}
       </form>
     );
   }

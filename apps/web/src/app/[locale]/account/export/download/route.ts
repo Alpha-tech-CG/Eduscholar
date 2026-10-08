@@ -1,3 +1,4 @@
+import { readCaptcha } from "@/lib/auth/captcha";
 import { buildPersonalDataExport } from "@/lib/account/export";
 import { checkAttempt } from "@/lib/auth/rate-limit";
 import { getFullySignedInUser } from "@/lib/auth/session";
@@ -34,9 +35,13 @@ export async function POST(
   if (!user?.email) return empty(404);
 
   let password = "";
+
+  let captchaToken: string | undefined;
   try {
-    const value = (await request.formData()).get("password");
+    const formData = await request.formData();
+    const value = formData.get("password");
     if (typeof value === "string") password = value;
+    captchaToken = readCaptcha(formData).token;
   } catch {
     return empty(400);
   }
@@ -45,7 +50,9 @@ export async function POST(
   if ((await checkAttempt("reauthentication", user.id)) !== "allowed") {
     return backToForm(request, locale, "rate");
   }
-  if (!(await verifyPassword(user.email, password))) return backToForm(request, locale, "password");
+  if (!(await verifyPassword(user.email, password, captchaToken))) {
+    return backToForm(request, locale, "password");
+  }
   if ((await checkAttempt("data-export", user.id)) !== "allowed") {
     return backToForm(request, locale, "rate");
   }

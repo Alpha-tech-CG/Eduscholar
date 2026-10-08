@@ -33,6 +33,12 @@ const schema = z.object({
   // Secret que présente la tâche planifiée de l'hébergeur pour déclencher
   // l'envoi des courriels de notification. Sans lui, la route n'existe pas.
   CRON_SECRET: z.string().min(32).max(200).optional().catch(undefined),
+  // Clé de site Cloudflare Turnstile (ADR-0011). Elle n'est pas secrète : elle
+  // est servie au navigateur. Sans elle, aucun défi n'est affiché. Le secret
+  // correspondant se règle dans le service d'authentification, pas ici.
+  TURNSTILE_SITE_KEY: z.string().regex(/^[0-9A-Za-z_-]{10,100}$/).optional().catch(undefined),
+  // Contrôle des mots de passe compromis (ADR-0011) : « 1 » pour l'activer.
+  PASSWORD_BREACH_CHECK: z.enum(["0", "1"]).optional().catch(undefined),
 });
 
 export type ServerEnv = z.infer<typeof schema>;
@@ -52,6 +58,8 @@ export function serverEnv(): ServerEnv {
     SMTP_URL: process.env.SMTP_URL || undefined,
     MAIL_FROM: process.env.MAIL_FROM || undefined,
     CRON_SECRET: process.env.CRON_SECRET || undefined,
+    TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY || undefined,
+    PASSWORD_BREACH_CHECK: process.env.PASSWORD_BREACH_CHECK || undefined,
   });
 
   if (!parsed.success) {

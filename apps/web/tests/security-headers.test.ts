@@ -92,3 +92,20 @@ describe("CSP de repli des routes d'API", () => {
     expect(apiContentSecurityPolicy).toContain("sandbox");
   });
 });
+
+describe("Content-Security-Policy et défi anti-robot", () => {
+  it("n'admet aucun cadre tant que le défi n'est pas configuré", () => {
+    const csp = parse(buildContentSecurityPolicy("abc123", false));
+    expect(csp.get("frame-src")).toEqual(["'none'"]);
+    expect(csp.get("script-src")?.join(" ")).not.toContain("cloudflare");
+  });
+
+  it("n'admet, une fois configuré, que l'origine du défi", () => {
+    const csp = parse(buildContentSecurityPolicy("abc123", false, true));
+    expect(csp.get("frame-src")).toEqual(["https://challenges.cloudflare.com"]);
+    expect(csp.get("script-src")).toContain("https://challenges.cloudflare.com");
+    expect(csp.get("script-src")).not.toContain("'unsafe-inline'");
+    expect(csp.get("connect-src")).toEqual(["'self'"]);
+    expect(csp.get("frame-ancestors")).toEqual(["'none'"]);
+  });
+});
