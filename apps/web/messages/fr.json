@@ -384,7 +384,11 @@
       "source": "Origine de la fiche",
       "lastVerified": "Dernière vérification",
       "officialUrl": "Lien officiel",
-      "missing": "Non renseigné"
+      "missing": "Non renseigné",
+      "editedSinceImport": "Modifié depuis l'import",
+      "editedFields": {
+        "title": "Titre"
+      }
     },
     "contribute": {
       "title": "Proposer une ressource",

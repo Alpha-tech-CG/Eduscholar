@@ -137,12 +137,20 @@ Un DOI déjà importé, ou déjà porté par une fiche validée, renvoie à la f
 sans nouvelle requête à la source. Une fiche refusée ou retirée n'empêche pas un nouvel
 import.
 
+**Modifications après import** : la base retient, par déclencheur, quels champs repris de
+la source (titre, auteurs, année, type, langue, licence, lien officiel) ont été modifiés
+depuis l'import ; la fiche les affiche sous « Modifié depuis l'import ». La liste ne
+s'écrit ni ne se vide, et ne garde pas la valeur d'origine : un champ signalé le reste,
+même ramené à sa valeur première. Renseigner ce qui ne vient pas de la source — statut
+d'accès, niveaux, matières, mots-clés, résumé — n'est pas signalé. Les fiches importées
+avant cette règle partent d'une liste vide.
+
 **Second regard** : le modérateur qui a importé une fiche peut la prendre en charge, la
 corriger ou la refuser, mais ni la vérifier ni la publier. Un autre modérateur le fait.
 Limites : 60 essais par quart d'heure et par modérateur côté application, 200 imports
 par jour et par modérateur en base. Une réponse `429` ou une panne de la source
-n'entraîne aucune nouvelle tentative automatique ; le respect de l'en-tête `Retry-After`
-reste à faire (dette D-20).
+n'entraîne aucune nouvelle tentative automatique ; la source est mise en pause pour la
+durée qu'indique l'en-tête `Retry-After`.
 
 ## Recherche et fiche publiée
 

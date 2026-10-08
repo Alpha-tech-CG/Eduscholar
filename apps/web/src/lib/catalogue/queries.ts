@@ -11,7 +11,7 @@ import { searchTerms, toTsQuery, type SearchFilters } from "./search";
 // de ce qu'il voit. Les colonnes sont nommées une à une (modèle de menaces M-52).
 
 const RESOURCE_COLUMNS =
-  "id, type_code, title, abstract, authors, institution_name, publication_year, thesis_degree, language_code, country_code, program_code, level_codes, subject_codes, tags, doi, official_url, access_status, license_code, source_kind, source_name, last_verified_at, editorial_status, visibility, created_at, updated_at, published_at";
+  "id, type_code, title, abstract, authors, institution_name, publication_year, thesis_degree, language_code, country_code, program_code, level_codes, subject_codes, tags, doi, official_url, access_status, license_code, source_kind, source_name, edited_fields, last_verified_at, editorial_status, visibility, created_at, updated_at, published_at";
 
 export type Resource = {
   id: string;
@@ -34,6 +34,8 @@ export type Resource = {
   licenseCode: string;
   sourceKind: string;
   sourceName: string;
+  /** Champs repris d'une source par connecteur et modifiés depuis l'import. */
+  editedFields: string[];
   lastVerifiedAt: string | null;
   editorialStatus: string;
   visibility: string;
@@ -63,6 +65,7 @@ type ResourceRow = {
   license_code: string;
   source_kind: string;
   source_name: string;
+  edited_fields: string[];
   last_verified_at: string | null;
   editorial_status: string;
   visibility: string;
@@ -93,6 +96,7 @@ function toResource(row: ResourceRow): Resource {
     licenseCode: row.license_code,
     sourceKind: row.source_kind,
     sourceName: row.source_name,
+    editedFields: row.edited_fields ?? [],
     lastVerifiedAt: row.last_verified_at,
     editorialStatus: row.editorial_status,
     visibility: row.visibility,

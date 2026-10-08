@@ -27,6 +27,15 @@ export async function ResourceSummary({ resource }: ResourceSummaryProps) {
   const safeUrl =
     resource.officialUrl && /^https?:\/\//.test(resource.officialUrl) ? resource.officialUrl : null;
 
+  const editedLabels: Record<string, string> = {
+    title: t("editedFields.title"),
+    authors: t("authors"),
+    publication_year: t("year"),
+    type_code: t("type"),
+    language_code: t("language"),
+    license_code: t("license"),
+    official_url: t("officialUrl"),
+  };
   const rows: Array<[string, string | null]> = [
     [t("type"), labelOf(catalogue.types, resource.typeCode)],
     [t("authors"), resource.authors.join(", ") || null],
@@ -42,6 +51,13 @@ export async function ResourceSummary({ resource }: ResourceSummaryProps) {
     [t("accessStatus"), tAccess(resource.accessStatus as "unknown")],
     [t("license"), labelOf(catalogue.licenses, resource.licenseCode)],
     [t("source"), resource.sourceName],
+    // Ce que la plateforme a changé depuis l'import : la source ne le dit pas ainsi.
+    [
+      t("editedSinceImport"),
+      resource.editedFields
+        .flatMap((field) => (Object.hasOwn(editedLabels, field) ? [editedLabels[field]] : []))
+        .join(", ") || null,
+    ],
     [
       t("lastVerified"),
       resource.lastVerifiedAt

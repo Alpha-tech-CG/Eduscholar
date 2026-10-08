@@ -80,6 +80,17 @@ test.describe("import d'une ressource par DOI", () => {
     expect(page.url().split("?")[0]).toBe(resourceUrl);
     await expect(status(page)).toContainText("figure déjà au catalogue");
 
+    // Tant que rien n'est corrigé, la fiche ne signale aucune modification.
+    await page.goto(resourceUrl);
+    await expect(main).not.toContainText("Modifié depuis l'import");
+    // L'importatrice corrige la licence : la fiche dit ce qui ne vient plus de la source.
+    await page.getByLabel("Licence", { exact: true }).selectOption({ label: "Tous droits réservés" });
+    await page.getByRole("button", { name: "Enregistrer la correction" }).click();
+    await expect(main).toContainText("Modifié depuis l'import");
+    await expect(
+      main.locator("dt", { hasText: "Modifié depuis l'import" }).locator("xpath=following-sibling::dd[1]"),
+    ).toHaveText("Licence");
+
     // La fiche suit le circuit ordinaire, avec un second regard : l'importatrice
     // la prend en charge mais ne peut pas la vérifier elle-même.
     await page.getByLabel("Action", { exact: true }).selectOption({ label: "Prendre en charge" });

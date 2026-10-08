@@ -384,7 +384,11 @@
       "source": "Origin of the record",
       "lastVerified": "Last verified",
       "officialUrl": "Official link",
-      "missing": "Not provided"
+      "missing": "Not provided",
+      "editedSinceImport": "Changed since import",
+      "editedFields": {
+        "title": "Title"
+      }
     },
     "contribute": {
       "title": "Suggest a resource",
