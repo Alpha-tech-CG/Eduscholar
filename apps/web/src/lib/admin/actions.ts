@@ -9,6 +9,7 @@ import { codeWaitSeconds } from "@/lib/auth/second-factor";
 import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
+import { getAdminSession } from "./queries";
 import { sendAccountNotice } from "@/lib/mail/send";
 import { createServiceClient, createSessionClient } from "@/lib/supabase/server";
 
@@ -20,21 +21,35 @@ import { createServiceClient, createSessionClient } from "@/lib/supabase/server"
 const expired: AuthFormState = { status: "error", error: "session_expired" };
 const invalid: AuthFormState = { status: "error", error: "validation" };
 
-type Operation = "find_user" | "set_role" | "set_account_status" | "account_history";
-
 /**
- * Consigne une opération refusée. La base a annulé la transaction du refus, et
- * avec elle toute trace : celle-ci s'écrit après coup, sous la même session.
- * Seuls l'opération et le motif du refus sont gardés, jamais la cible. La
- * trace est déclarée par l'application : un appel direct à l'API n'en laisse pas.
+ * Consigne le seul refus que l'application oppose elle-même : la limite de
+ * débit de la recherche d'un compte. Tous les autres sont opposés par la base,
+ * qui les consigne dans la transaction même de l'appel — y compris pour un
+ * appel direct à l'API.
  */
-async function logRefusal(operation: Operation, code: AuthErrorCode): Promise<void> {
+async function logLookupLimit(): Promise<void> {
   try {
     const supabase = await createSessionClient();
-    await supabase.rpc("log_admin_refusal", { operation, code });
+    await supabase.rpc("log_admin_refusal", { operation: "find_user", code: "rate_limited" });
   } catch {
     // La trace est un complément : le refus, lui, a déjà été opposé.
   }
+}
+
+/**
+ * Les fonctions d'administration ne lèvent pas sur un refus de droit : elles
+ * rendent un objet et la réponse porte le statut 403. Une écriture n'a eu lieu
+ * que si la réponse est un succès sans erreur ni contenu ; tout le reste est
+ * tenu pour un refus, quoi qu'en dise le client de l'API.
+ */
+/** Code d'un refus, lu dans l'erreur ou, à défaut, dans le corps rendu. */
+function refusalCode(response: { data: unknown; error: unknown }): AuthErrorCode {
+  const body = (response.error ?? response.data) as { code?: string; message?: string } | null;
+  return body && !Array.isArray(body) ? catalogueErrorCode(body) : "forbidden";
+}
+
+function succeeded(response: { data: unknown; error: unknown; status: number }): boolean {
+  return response.error == null && response.data == null && (response.status === 200 || response.status === 204);
 }
 
 function text(formData: FormData, name: string): string {
@@ -112,22 +127,24 @@ export async function findUser(_previous: LookupState, formData: FormData): Prom
 
   if (!z.email().safeParse(email).success) return { status: "error", error: "validation", email };
   if ((await checkAttempt("admin-lookup", user.id)) !== "allowed") {
-    await logRefusal("find_user", "rate_limited");
+    await logLookupLimit();
     return { status: "error", error: "rate_limited", email };
   }
 
   const supabase = await createSessionClient();
-  const { data, error } = await supabase.rpc("admin_find_user", { email });
-  if (error) {
-    const code = catalogueErrorCode(error);
-    await logRefusal("find_user", code);
-    return { status: "error", error: code, email };
+  const { data, error, status } = await supabase.rpc("admin_find_user", { email });
+  if (status === 403) {
+    // Refus de la base, déjà consigné par elle. Une lecture refusée ne rend
+    // aucune ligne : le motif se déduit de la session d'administration.
+    const session = await getAdminSession();
+    const refusal = session.rank >= 2 && !session.recent ? "recent_second_factor_required" : "forbidden";
+    return { status: "error", error: refusal, email };
   }
+  if (error) return { status: "error", error: catalogueErrorCode(error), email };
   const row = data?.[0];
   if (!row) return { status: "error", error: "user_not_found", email };
 
   const history = await supabase.rpc("admin_account_history", { target_user: row.user_id });
-  if (history.error) await logRefusal("account_history", catalogueErrorCode(history.error));
 
   return {
     status: "found",
@@ -140,7 +157,7 @@ export async function findUser(_previous: LookupState, formData: FormData): Prom
       suspended: row.suspended,
       suspensionReason: row.suspension_reason,
       hasSecondFactor: row.has_second_factor,
-      history: history.error
+      history: history.error || history.status !== 200
         ? null
         : (history.data ?? []).map((change) => ({
             changedAt: change.changed_at,
@@ -169,16 +186,13 @@ export async function setRole(_previous: AuthFormState, formData: FormData): Pro
   if (!parsed.success) return invalid;
 
   const supabase = await createSessionClient();
-  const { error } = await supabase.rpc("admin_set_role", {
+  const response = await supabase.rpc("admin_set_role", {
     target_user: parsed.data.targetUser,
     role: parsed.data.role,
     grant_role: parsed.data.grant,
   });
-  if (error) {
-    const code = catalogueErrorCode(error);
-    await logRefusal("set_role", code);
-    return { status: "error", error: code };
-  }
+  // Un refus de la base porte son code ; elle l'a déjà consigné.
+  if (!succeeded(response)) return { status: "error", error: refusalCode(response) };
 
   const locale = await getLocale();
   return redirect({
@@ -214,16 +228,14 @@ export async function setAccountStatus(
   }
 
   const supabase = await createSessionClient();
-  const { error } = await supabase.rpc("admin_set_account_status", {
+  const response = await supabase.rpc("admin_set_account_status", {
     target_user: parsed.data.targetUser,
     suspended: parsed.data.suspended,
     reason: parsed.data.reason,
   });
-  if (error) {
-    const code = catalogueErrorCode(error);
-    await logRefusal("set_account_status", code);
-    return { status: "error", error: code, values };
-  }
+  // Rien de ce qui suit — lecture de l'adresse, avis par courriel — n'a lieu
+  // sans la preuve que la base a fait l'opération.
+  if (!succeeded(response)) return { status: "error", error: refusalCode(response), values };
 
   // La base a fait le reste dans la même transaction : sessions du compte
   // fermées, et plus aucune session ouvrable tant qu'il est suspendu.

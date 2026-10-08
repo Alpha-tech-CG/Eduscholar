@@ -62,35 +62,35 @@ values ('f0000000-0000-0000-0000-000000002807', 'suspended', 'Test');
 -- ---------------------------------------------------------------------------
 select tests.login('d0000000-0000-0000-0000-000000002805', 'aal2', 10);
 select results_eq($$ select role_rank, recent from public.admin_session() $$, $$ values (0, true) $$, 'Un utilisateur n''a aucun rang d''administration');
-select throws_ok($$ select * from public.admin_find_user('adm-m@test.invalid') $$, '42501', 'forbidden', 'Un utilisateur ne cherche pas de compte');
-select throws_ok($$ select * from public.admin_list_accounts() $$, '42501', 'forbidden', 'Ni ne liste les comptes');
+select throws_ok($$ select * from private.admin_find_user('adm-m@test.invalid') $$, '42501', 'forbidden', 'Un utilisateur ne cherche pas de compte');
+select throws_ok($$ select * from private.admin_list_accounts() $$, '42501', 'forbidden', 'Ni ne liste les comptes');
 select throws_ok(
-  $$ select public.admin_set_role('e0000000-0000-0000-0000-000000002806', 'moderator', true) $$,
+  $$ select private.admin_set_role('e0000000-0000-0000-0000-000000002806', 'moderator', true) $$,
   '42501', 'forbidden', 'Ni n''attribue de rôle'
 );
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'platform_admin', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'platform_admin', true) $$,
   '42501', 'forbidden', 'Ni ne s''en attribue un'
 );
 select throws_ok(
-  $$ select public.admin_set_account_status('e0000000-0000-0000-0000-000000002806', true, 'Abus') $$,
+  $$ select private.admin_set_account_status('e0000000-0000-0000-0000-000000002806', true, 'Abus') $$,
   '42501', 'forbidden', 'Ni ne suspend de compte'
 );
 reset role;
 
 select tests.login('c0000000-0000-0000-0000-000000002804', 'aal2', 10);
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
   '42501', 'forbidden', 'Une modératrice n''attribue pas de rôle'
 );
-select throws_ok($$ select * from public.admin_find_user('adm-u@test.invalid') $$, '42501', 'forbidden', 'Ni ne cherche de compte');
+select throws_ok($$ select * from private.admin_find_user('adm-u@test.invalid') $$, '42501', 'forbidden', 'Ni ne cherche de compte');
 reset role;
 
 -- Administrateur sans second facteur présenté, ou présenté il y a trop longtemps.
 select tests.login('b0000000-0000-0000-0000-000000002802', 'aal1');
 select results_eq($$ select role_rank, recent from public.admin_session() $$, $$ values (0, false) $$, 'En aal1, un administrateur n''a aucun rang');
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
   '42501', 'forbidden', 'Ni aucun pouvoir'
 );
 reset role;
@@ -98,15 +98,15 @@ reset role;
 select tests.login('b0000000-0000-0000-0000-000000002802', 'aal2', 700);
 select results_eq($$ select role_rank, recent from public.admin_session() $$, $$ values (2, false) $$, 'Second facteur présenté il y a plus de dix minutes : rang reconnu, session non récente');
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$,
   '42501', 'recent_second_factor_required', 'L''attribution exige un second facteur récent'
 );
 select throws_ok(
-  $$ select * from public.admin_find_user('adm-u@test.invalid') $$,
+  $$ select * from private.admin_find_user('adm-u@test.invalid') $$,
   '42501', 'recent_second_factor_required', 'La recherche aussi'
 );
 select throws_ok(
-  $$ select public.admin_set_account_status('d0000000-0000-0000-0000-000000002805', true, 'Abus') $$,
+  $$ select private.admin_set_account_status('d0000000-0000-0000-0000-000000002805', true, 'Abus') $$,
   '42501', 'recent_second_factor_required', 'La suspension aussi'
 );
 reset role;
@@ -114,13 +114,13 @@ reset role;
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 set local role anon;
 select throws_ok($$ select * from public.admin_session() $$, '42501', null, 'Un visiteur n''appelle aucune fonction d''administration');
-select throws_ok($$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$, '42501', null, 'Ni n''attribue de rôle');
+select throws_ok($$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$, '42501', null, 'Ni n''attribue de rôle');
 reset role;
 
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 set local role service_role;
-select throws_ok($$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$, '42501', null, 'Le rôle serveur n''attribue pas de rôle par les fonctions');
-select throws_ok($$ select * from public.admin_find_user('adm-u@test.invalid') $$, '42501', null, 'Ni ne cherche de compte');
+select throws_ok($$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'moderator', true) $$, '42501', null, 'Le rôle serveur n''attribue pas de rôle par les fonctions');
+select throws_ok($$ select * from private.admin_find_user('adm-u@test.invalid') $$, '42501', null, 'Ni ne cherche de compte');
 reset role;
 
 select is(
@@ -152,31 +152,31 @@ select lives_ok(
   'Le refaire est sans effet'
 );
 select throws_ok(
-  $$ select public.admin_set_role('e0000000-0000-0000-0000-000000002806', 'moderator', true) $$,
+  $$ select private.admin_set_role('e0000000-0000-0000-0000-000000002806', 'moderator', true) $$,
   '42501', 'second_factor_missing', 'Pas de rôle pour un compte sans second facteur'
 );
 select throws_ok(
-  $$ select public.admin_set_role('f0000000-0000-0000-0000-000000002807', 'moderator', true) $$,
+  $$ select private.admin_set_role('f0000000-0000-0000-0000-000000002807', 'moderator', true) $$,
   '42501', 'account_suspended', 'Ni pour un compte suspendu'
 );
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'platform_admin', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'platform_admin', true) $$,
   '42501', 'forbidden', 'Un administrateur n''attribue pas le rôle d''administrateur'
 );
 select throws_ok(
-  $$ select public.admin_set_role('b1000000-0000-0000-0000-000000002803', 'platform_admin', false) $$,
+  $$ select private.admin_set_role('b1000000-0000-0000-0000-000000002803', 'platform_admin', false) $$,
   '42501', 'forbidden', 'Ni ne le retire à un pair'
 );
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'super_admin', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'super_admin', true) $$,
   '42501', 'forbidden', 'Le rôle de super-administrateur ne s''attribue pas par l''application'
 );
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'owner', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'owner', true) $$,
   '42501', 'forbidden', 'Un rôle inconnu est refusé'
 );
 select throws_ok(
-  $$ select public.admin_set_role('b0000000-0000-0000-0000-000000002802', 'moderator', true) $$,
+  $$ select private.admin_set_role('b0000000-0000-0000-0000-000000002802', 'moderator', true) $$,
   '42501', 'own_account', 'Personne ne modifie ses propres rôles'
 );
 select throws_ok(
@@ -198,15 +198,15 @@ select lives_ok(
   'Il suspend une modératrice'
 );
 select throws_ok(
-  $$ select public.admin_set_account_status('b1000000-0000-0000-0000-000000002803', true, 'Rivalité') $$,
+  $$ select private.admin_set_account_status('b1000000-0000-0000-0000-000000002803', true, 'Rivalité') $$,
   '42501', 'forbidden', 'Il ne suspend pas un autre administrateur'
 );
 select throws_ok(
-  $$ select public.admin_set_account_status('a0000000-0000-0000-0000-000000002801', true, 'Coup de force') $$,
+  $$ select private.admin_set_account_status('a0000000-0000-0000-0000-000000002801', true, 'Coup de force') $$,
   '42501', 'forbidden', 'Ni la super-administratrice'
 );
 select throws_ok(
-  $$ select public.admin_set_account_status('b0000000-0000-0000-0000-000000002802', true, 'Moi-même') $$,
+  $$ select private.admin_set_account_status('b0000000-0000-0000-0000-000000002802', true, 'Moi-même') $$,
   '42501', 'own_account', 'Personne ne se suspend soi-même'
 );
 -- Pas d'opération sans trace : le motif et l'auteur d'origine ne s'écrasent pas.
@@ -220,11 +220,11 @@ select throws_ok(
 );
 -- Retrait d'un rôle : seulement à un compte de rang strictement inférieur.
 select throws_ok(
-  $$ select public.admin_set_role('b1000000-0000-0000-0000-000000002803', 'moderator', false) $$,
+  $$ select private.admin_set_role('b1000000-0000-0000-0000-000000002803', 'moderator', false) $$,
   '42501', 'forbidden', 'Il ne retire aucun rôle à un pair'
 );
 select throws_ok(
-  $$ select public.admin_set_role('a0000000-0000-0000-0000-000000002801', 'moderator', false) $$,
+  $$ select private.admin_set_role('a0000000-0000-0000-0000-000000002801', 'moderator', false) $$,
   '42501', 'forbidden', 'Ni à la super-administratrice'
 );
 
@@ -330,11 +330,11 @@ select is(
   1::bigint, 'Le retrait est journalisé à son nom'
 );
 select throws_ok(
-  $$ select public.admin_set_role('a0000000-0000-0000-0000-000000002801', 'platform_admin', true) $$,
+  $$ select private.admin_set_role('a0000000-0000-0000-0000-000000002801', 'platform_admin', true) $$,
   '42501', 'own_account', 'Elle ne modifie pas ses propres rôles'
 );
 select throws_ok(
-  $$ select public.admin_set_role('d0000000-0000-0000-0000-000000002805', 'super_admin', true) $$,
+  $$ select private.admin_set_role('d0000000-0000-0000-0000-000000002805', 'super_admin', true) $$,
   '42501', 'forbidden', 'Elle non plus n''attribue pas le rôle de super-administrateur'
 );
 -- Dernier super-administrateur : pas de suppression de son compte.
@@ -344,12 +344,12 @@ reset role;
 -- Un administrateur ne lève pas la suspension décidée par la super-administratrice.
 select tests.login('b0000000-0000-0000-0000-000000002802', 'aal2', 30);
 select throws_ok(
-  $$ select public.admin_set_account_status('e0000000-0000-0000-0000-000000002806', false) $$,
+  $$ select private.admin_set_account_status('e0000000-0000-0000-0000-000000002806', false) $$,
   '42501', 'forbidden', 'Une suspension décidée par un rang supérieur ne se lève pas par un rang inférieur'
 );
 -- Ni celle de l'ancien administrateur, redevenu simple compte.
 select throws_ok(
-  $$ select public.admin_set_account_status('b1000000-0000-0000-0000-000000002803', false) $$,
+  $$ select private.admin_set_account_status('b1000000-0000-0000-0000-000000002803', false) $$,
   '42501', 'forbidden', 'Y compris pour un ancien administrateur rétrogradé'
 );
 -- Il lève en revanche une suspension de son rang : celle de la modératrice.

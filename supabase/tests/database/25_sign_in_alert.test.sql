@@ -170,11 +170,11 @@ select results_eq(
 );
 
 select tests.login('a0000000-0000-0000-0000-000000006101');
-select throws_ok($$ select * from public.admin_auth_events() $$, '42501', null, 'Un utilisateur ne lit pas les compteurs');
+select throws_ok($$ select * from private.admin_auth_events() $$, '42501', null, 'Un utilisateur ne lit pas les compteurs');
 select throws_ok($$ select public.record_auth_event('failed:sign-in') $$, '42501', null, 'Ni n''en écrit');
 reset role;
 select tests.login('d0000000-0000-0000-0000-000000006104', 'aal1');
-select throws_ok($$ select * from public.admin_auth_events() $$, '42501', null, 'Un administrateur sans second facteur présenté non plus');
+select throws_ok($$ select * from private.admin_auth_events() $$, '42501', null, 'Un administrateur sans second facteur présenté non plus');
 reset role;
 select tests.login('d0000000-0000-0000-0000-000000006104', 'aal2', 30);
 select results_eq(

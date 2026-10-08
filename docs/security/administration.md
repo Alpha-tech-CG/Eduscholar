@@ -83,19 +83,33 @@ procédure à deux personnes s'applique.
 
 ## Limites connues
 
-- Une opération refusée annule sa transaction, et n'écrit donc rien au journal par
-  elle-même. L'application consigne le refus après coup (`admin.refused` : qui, quelle
-  opération, quel motif de refus — jamais la cible). Ces lignes portent `source: app` :
-  elles sont déclarées par l'application, pas écrites par la base au moment du refus. Un
-  compte sans rôle d'administration ne peut déclarer que `forbidden` ; cinq lignes par
-  heure pour lui, trente pour un administrateur, cinq cents pour toute la plateforme. Le
-  premier dépassement d'une heure laisse une ligne `admin.refusal_overflow`. Un refus
-  opposé à un appel direct de l'API, hors application, ne se voit que dans les journaux
-  de l'API (dette D-31).
+- Un refus de droit ne lève plus d'erreur : la fonction d'administration le capture,
+  l'écrit au journal (`admin.refused`, `source: database` : qui, quelle opération, quel
+  motif — jamais la cible) et répond « 403 ». La transaction aboutit, la trace reste, et
+  ce que la fonction avait commencé est annulé. Un appel direct à l'API laisse donc la
+  même trace que l'application. Les deux écritures rendent un objet `{ code, message }`
+  quand elles refusent et rien quand elles aboutissent ; une lecture refusée ne rend
+  aucune ligne. L'application ne tient une écriture pour faite que si la réponse est un
+  succès sans erreur ni contenu.
+- Plafonds de cette consignation : cinq lignes par heure pour un compte sans rôle
+  d'administration, trente pour un administrateur ; le premier dépassement d'une heure
+  laisse une ligne `admin.refusal_overflow`. Cinq cents lignes par heure pour l'ensemble
+  des comptes sans rôle, puis une ligne `admin.refusal_platform_overflow` ; les refus
+  d'un administrateur passent toujours.
+- Les autres refus — compte introuvable, limite de débit, valeur invalide — ne sont
+  opposés qu'à un administrateur déjà reconnu ; ils sont levés comme avant et ne sont pas
+  consignés. Seule la limite de débit de la recherche, opposée par l'application, l'est
+  (`source: app`).
+- Le motif d'une suspension n'entre pas au journal d'audit. Il est gardé dans
+  l'historique du compte, avec son auteur, à chaque suspension et à chaque
+  rétablissement ; l'administration le lit sur la fiche du compte, et cette lecture est
+  journalisée. L'historique part avec le compte.
 - Tout administrateur lit l'historique de tout compte, y compris d'un pair ou d'un
   super-administrateur : il n'y agit pas, et sa lecture est journalisée.
-- L'historique d'un compte est gardé sans limite de durée tant que le compte existe ; il
-  n'entre pas dans la copie des données remise au titulaire.
+- L'historique d'un compte est gardé trois ans ; passé quatre-vingt-dix jours, seules les
+  cinquante décisions les plus récentes du compte le sont. La copie des données remise
+  au titulaire porte la date et la nature de chaque décision (événements du compte), pas
+  son motif ni son auteur : le motif se demande à l'administration.
 - La liste des comptes s'arrête à cinq cents, détenteurs d'un rôle d'abord.
 - Le motif d'une suspension n'entre pas au journal d'audit. Il est gardé dans
   l'historique du compte, avec son auteur, à chaque suspension et à chaque

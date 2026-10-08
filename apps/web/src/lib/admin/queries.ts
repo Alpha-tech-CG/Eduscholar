@@ -55,8 +55,11 @@ export async function listAdminAccounts(page = 1): Promise<AdminAccountList | nu
   const supabase = await createSessionClient();
   const from = (page - 1) * ACCOUNT_PAGE_SIZE;
   // Un compte de plus que la page : il dit s'il y en a une suivante.
-  const { data, error } = await supabase.rpc("admin_list_accounts").range(from, from + ACCOUNT_PAGE_SIZE);
-  if (error) return null;
+  const { data, error, status } = await supabase
+    .rpc("admin_list_accounts")
+    .range(from, from + ACCOUNT_PAGE_SIZE);
+  // Une lecture refusée ne rend aucune ligne : elle ne passe pas pour une liste vide.
+  if (error || status === 403) return null;
 
   const accounts = (data ?? []).slice(0, ACCOUNT_PAGE_SIZE).map((row) => ({
     userId: row.user_id,
@@ -84,8 +87,8 @@ export type AuthEventCount = {
  */
 export async function listAuthEvents(): Promise<AuthEventCount[] | null> {
   const supabase = await createSessionClient();
-  const { data, error } = await supabase.rpc("admin_auth_events");
-  if (error) return null;
+  const { data, error, status } = await supabase.rpc("admin_auth_events");
+  if (error || status === 403) return null;
   return (data ?? []).map((row) => {
     const [nature = "", operation = ""] = row.kind.split(":");
     return { day: row.day, nature, operation, total: row.total };

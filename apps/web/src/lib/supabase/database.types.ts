@@ -817,10 +817,10 @@ isOneToOne: false
             }[]
                            },
 "admin_set_account_status":
-{ Args: { "reason"?: string,"suspended": boolean,"target_user": string }; Returns: undefined
+{ Args: { "reason"?: string,"suspended": boolean,"target_user": string }; Returns: Json
                            },
 "admin_set_role":
-{ Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: undefined
+{ Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: Json
                            },
 "claim_notification_digests":
 { Args: { "p_limit": number }; Returns: {

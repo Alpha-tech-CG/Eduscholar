@@ -1029,6 +1029,25 @@ describe("catalogue, par appel direct à l'API", () => {
       }
     }
 
+    // Refusé par appel direct, sans passer par l'application : la base a
+    // consigné elle-même la tentative, et la réponse est bien un refus.
+    const refused = await alice.client.rpc("admin_set_role", {
+      target_user: alice.id,
+      role: "moderator",
+      grant_role: true,
+    });
+    expect(refused.status).toBe(403);
+    expect(refused.error?.message).toBe("forbidden");
+    const traces = await admin
+      .from("audit_logs")
+      .select("target_id, metadata")
+      .eq("action", "admin.refused")
+      .eq("actor_id", alice.id);
+    expect(traces.data?.length).toBeGreaterThan(0);
+    for (const trace of traces.data ?? []) {
+      expect(trace.metadata).toEqual({ code: "forbidden", source: "database" });
+    }
+
     // Le rôle serveur n'écrit plus de rôle : ni par la table, ni par les fonctions.
     const direct = await admin.from("platform_roles").insert({ user_id: alice.id, role: "moderator" } as never);
     expect(direct.error).not.toBeNull();

@@ -103,6 +103,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006006400_resource_search_function.sql` | Recherche du catalogue par une fonction dédiée (ADR-0010) |
 | `20261006006600_resource_search_hardening.sql` | Corrections de revue : mots courts, filtres hors référentiel, index partiel |
 | `20261006006700_edited_after_import.sql` | Champs d'une fiche importée modifiés depuis l'import, tenus par déclencheur |
+| `20261006006800_admin_refusals_in_database.sql` | Refus d'administration consignés par la base, réponse 403 sans erreur levée ; conservation de l'historique des suspensions |
+| `20261006006900_admin_refusals_hardening.sql` | Corrections de revue : toutes les lectures couvertes, plafond de plateforme, purge prudente |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -711,11 +713,17 @@ l'auteur d'une décision supprime le sien, la décision reste sans son identifia
 - `admin_account_history` (administration, second facteur récent) : les cinquante
   décisions les plus récentes d'un compte, avec l'adresse de leur auteur. La lecture est
   journalisée (`user.history_read`) ;
-- `log_admin_refusal` (tout compte connecté) : consigne une opération d'administration
-  refusée, sous la session de qui a essuyé le refus. Opération et motif sont pris dans
-  des listes fermées ; sans rôle d'administration, seul `forbidden` se déclare. Cinq
-  lignes par heure sans rôle, trente pour un administrateur, cinq cents pour la
-  plateforme ; le premier dépassement d'une heure laisse une ligne à lui.
+- les six fonctions d'administration (`admin_find_user`, `admin_account_history`,
+  `admin_list_accounts`, `admin_auth_events`, `admin_set_role`,
+  `admin_set_account_status`) capturent le refus de droit levé par leur fonction
+  interne, le consignent par `private.refuse_admin_operation` et répondent 403 sans
+  lever : la trace reste. Les règles, elles, sont toujours dans `private.*`, qui lève ;
+- `log_admin_refusal` (administrateur) ne sert plus qu'au refus que l'application oppose
+  elle-même : la limite de débit de la recherche d'un compte ;
+- cinq lignes par heure sans rôle, trente pour un administrateur, cinq cents pour
+  l'ensemble des comptes sans rôle ; chaque dépassement laisse une ligne à lui ;
+- `private.purge_status_history` (tâche `eduscholar-status-history-purge`) : trois ans,
+  et cinquante décisions par compte au-delà de quatre-vingt-dix jours.
 
 ## Fonctions du schéma `private`
 

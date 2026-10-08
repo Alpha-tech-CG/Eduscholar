@@ -419,6 +419,18 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   qu'après leur lecture ; le refus pour débit se confondait avec une panne. Non retenu :
   un délai propre à la fonction, sans effet sur la requête appelante. Ces corrections
   n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Refus d'administration consignés par la base (D-31) relus par
+  l'agent sécurité : aucun constat critique ou élevé, et aucun chemin où un refus
+  rendrait un succès ; 3 moyens et 5 faibles. Corrigés : l'application déduisait le
+  succès de la seule absence d'erreur du client, juste avant de lire une adresse par le
+  rôle serveur et d'envoyer un avis (elle exige désormais un succès sans erreur ni
+  contenu) ; le plafond de la plateforme faisait taire en silence les refus d'un
+  administrateur ; la liste des comptes et les compteurs de l'authentification n'étaient
+  pas couverts ; le décompte du journal précédait le quota et n'avait pas d'index ;
+  l'opération consignée était un texte libre ; une rafale de décisions pouvait chasser
+  des motifs récents à la purge. Accepté : une limite de débit de la base, opposée à un
+  administrateur reconnu, n'est pas consignée. Ces corrections n'ont pas fait l'objet
+  d'une seconde revue.
 
 ## Suivi
 

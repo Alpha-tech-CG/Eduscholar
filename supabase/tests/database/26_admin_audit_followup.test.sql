@@ -108,103 +108,188 @@ select is(
 -- Qui ne peut pas le lire.
 select tests.login('d0000000-0000-0000-0000-000000006303');
 select throws_ok(
-  $$ select * from public.admin_account_history('d0000000-0000-0000-0000-000000006303') $$, '42501', null,
+  $$ select * from private.admin_account_history('d0000000-0000-0000-0000-000000006303') $$, '42501', null,
   'Le titulaire ne lit pas l''historique de ses suspensions'
 );
 reset role;
 select tests.login('c0000000-0000-0000-0000-000000006304', 'aal2', 30);
 select throws_ok(
-  $$ select * from public.admin_account_history('d0000000-0000-0000-0000-000000006303') $$, '42501', 'forbidden',
+  $$ select * from private.admin_account_history('d0000000-0000-0000-0000-000000006303') $$, '42501', 'forbidden',
   'Une modératrice non plus'
 );
 reset role;
 select tests.login('b0000000-0000-0000-0000-000000006301', 'aal2', 700);
 select throws_ok(
-  $$ select * from public.admin_account_history('d0000000-0000-0000-0000-000000006303') $$,
+  $$ select * from private.admin_account_history('d0000000-0000-0000-0000-000000006303') $$,
   '42501', 'recent_second_factor_required', 'Ni un administrateur dont le second facteur n''est plus récent'
 );
 reset role;
 
 -- ---------------------------------------------------------------------------
--- Tentatives refusées
+-- Tentatives refusées : consignées par la base, dans la transaction de l'appel
 -- ---------------------------------------------------------------------------
-delete from private.rate_limit_buckets where bucket_key like 'admin-refusal:%';
+delete from private.rate_limit_buckets where bucket_key like 'admin-refusal%';
+delete from private.account_status where user_id = 'd0000000-0000-0000-0000-000000006303';
+
+-- Un compte sans rôle appelle une fonction d'administration : refus rendu, pas levé.
 select tests.login('d0000000-0000-0000-0000-000000006303');
-select lives_ok($$ select public.log_admin_refusal('set_role', 'forbidden') $$, 'Un refus se consigne sous la session de qui l''a essuyé');
-select lives_ok($$ select public.log_admin_refusal('set_role', 'suivi-u@test.invalid') $$, 'Un motif hors liste est ignoré, sans erreur');
-select lives_ok($$ select public.log_admin_refusal('n''importe quoi', 'forbidden') $$, 'Une opération hors liste aussi');
-select lives_ok($$ select public.log_admin_refusal(null, null) $$, 'Des valeurs absentes aussi');
+select is(
+  public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', true),
+  '{"code": "42501", "message": "forbidden"}'::jsonb,
+  'Le refus est rendu avec son code, sans lever d''erreur : la trace peut rester'
+);
+select is(current_setting('response.status', true), '403', 'L''API répondra « 403 »');
 reset role;
+select is(
+  (select count(*) from public.platform_roles where user_id = 'd0000000-0000-0000-0000-000000006303'), 0::bigint,
+  'Rien n''a été accordé'
+);
 select results_eq(
   $$ select actor_id, subject_user_id, target_type, target_id, metadata
-     from public.audit_logs where action = 'admin.refused'
-       and actor_id = 'd0000000-0000-0000-0000-000000006303' $$,
-  $$ values ('d0000000-0000-0000-0000-000000006303'::uuid, null::uuid, 'operation', 'set_role', '{"code": "forbidden", "source": "app"}'::jsonb) $$,
-  'Une seule ligne : qui, quelle opération, quel refus, et d''où vient la trace — pas la cible, rien de libre'
+     from public.audit_logs where action = 'admin.refused' and actor_id = 'd0000000-0000-0000-0000-000000006303' $$,
+  $$ values ('d0000000-0000-0000-0000-000000006303'::uuid, null::uuid, 'operation', 'set_role', '{"code": "forbidden", "source": "database"}'::jsonb) $$,
+  'La base consigne elle-même le refus : qui, quelle opération, quel motif — pas la cible'
 );
--- Sans rôle d'administration, on ne déclare pas un refus que l'on n'a pas pu essuyer.
+
+-- Les lectures refusées ne rendent aucune ligne, et laissent la même trace.
 select tests.login('d0000000-0000-0000-0000-000000006303');
-select public.log_admin_refusal('set_account_status', 'own_account');
-select public.log_admin_refusal('set_role', 'second_factor_missing');
-select public.log_admin_refusal('set_role', 'recent_second_factor_required');
-reset role;
+select is((select count(*) from public.admin_find_user('suivi-p@test.invalid')), 0::bigint, 'Une recherche refusée ne rend rien');
+select is((select count(*) from public.admin_account_history('b0000000-0000-0000-0000-000000006301')), 0::bigint, 'Un historique refusé non plus');
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused'
-     and actor_id = 'd0000000-0000-0000-0000-000000006303'),
-  1::bigint, 'Un compte sans rôle ne se donne pas l''air d''avoir franchi le contrôle d''administration'
+  public.admin_set_account_status('b0000000-0000-0000-0000-000000006301', true, 'Abus') ->> 'message', 'forbidden',
+  'Une suspension refusée rend son refus'
 );
+reset role;
+select results_eq(
+  $$ select target_id from public.audit_logs where action = 'admin.refused' and actor_id = 'd0000000-0000-0000-0000-000000006303' order by target_id $$,
+  $$ values ('account_history'), ('find_user'), ('set_account_status'), ('set_role') $$,
+  'Chaque opération refusée a sa ligne'
+);
+select is(
+  (select count(*) from private.account_status where user_id = 'b0000000-0000-0000-0000-000000006301'), 0::bigint,
+  'Et rien n''a été suspendu'
+);
+
 -- Cinq par heure pour un compte sans rôle ; le dépassement laisse une ligne, une seule.
 select tests.login('d0000000-0000-0000-0000-000000006303');
-select public.log_admin_refusal('find_user', 'forbidden') from generate_series(1, 20);
-select lives_ok($$ select public.log_admin_refusal('find_user', 'forbidden') $$, 'Au-delà du plafond, l''appel ne lève rien');
+select public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', true) from generate_series(1, 20);
 reset role;
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused'
-     and actor_id = 'd0000000-0000-0000-0000-000000006303'),
+  (select count(*) from public.audit_logs where action = 'admin.refused' and actor_id = 'd0000000-0000-0000-0000-000000006303'),
   5::bigint, 'Cinq refus consignés par heure pour un compte sans rôle'
 );
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refusal_overflow'
-     and actor_id = 'd0000000-0000-0000-0000-000000006303'),
+  (select count(*) from public.audit_logs where action = 'admin.refusal_overflow' and actor_id = 'd0000000-0000-0000-0000-000000006303'),
   1::bigint, 'Le dépassement laisse une ligne, une seule : le silence qui suit se voit'
 );
--- Un administrateur déclare les refus qui lui sont propres, jusqu'à trente par heure.
+
+-- Un administrateur : ses refus propres portent leur motif.
 select tests.login('b0000000-0000-0000-0000-000000006301', 'aal2', 30);
-select public.log_admin_refusal('set_account_status', 'own_account');
-select public.log_admin_refusal('set_role', 'forbidden') from generate_series(1, 40);
+select is(
+  public.admin_set_account_status('b0000000-0000-0000-0000-000000006301', true, 'Moi-même') ->> 'message', 'own_account',
+  'Agir sur son propre compte est refusé, avec son motif'
+);
+select is(public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', true), null::jsonb, 'Une opération permise ne rend rien');
+select throws_ok(
+  $$ select public.admin_set_role('99999999-0000-0000-0000-000000006399', 'moderator', true) $$,
+  'P0001', 'not_found', 'Une erreur qui n''est pas un refus de droit est levée comme avant'
+);
+select public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', false);
 reset role;
-select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused'
-     and actor_id = 'b0000000-0000-0000-0000-000000006301'),
-  30::bigint, 'Trente pour un administrateur, dont le refus d''agir sur son propre compte'
+select tests.login('b0000000-0000-0000-0000-000000006301', 'aal2', 700);
+select is((select count(*) from public.admin_find_user('suivi-u@test.invalid')), 0::bigint, 'Second facteur ancien : la recherche ne rend rien');
+select is((select count(*) from public.admin_list_accounts()), 0::bigint, 'Ni la liste des comptes');
+select is((select count(*) from public.admin_auth_events()), 0::bigint, 'Ni les compteurs de l''authentification');
+reset role;
+select results_eq(
+  $$ select target_id, metadata ->> 'code' from public.audit_logs
+     where action = 'admin.refused' and actor_id = 'b0000000-0000-0000-0000-000000006301' order by target_id $$,
+  $$ values ('auth_events', 'recent_second_factor_required'), ('find_user', 'recent_second_factor_required'),
+            ('list_accounts', 'recent_second_factor_required'), ('set_account_status', 'own_account') $$,
+  'Ses refus sont consignés avec leur motif, les deux lectures de liste comprises'
 );
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused'
-     and actor_id = 'b0000000-0000-0000-0000-000000006301' and metadata ->> 'code' = 'own_account'),
-  1::bigint, 'Son motif propre est gardé'
+  (select count(*) from public.audit_logs where action = 'user.lookup' and actor_id = 'b0000000-0000-0000-0000-000000006301'
+     and occurred_at >= now()),
+  0::bigint, 'La recherche refusée n''a pas laissé de ligne de recherche aboutie'
 );
+
+-- L'application ne déclare plus que le refus qu'elle oppose elle-même.
+select tests.login('d0000000-0000-0000-0000-000000006303');
+select public.log_admin_refusal('find_user', 'rate_limited');
+select public.log_admin_refusal('set_role', 'forbidden');
+reset role;
+select tests.login('b0000000-0000-0000-0000-000000006301', 'aal2', 30);
+select public.log_admin_refusal('set_role', 'forbidden');
+select public.log_admin_refusal('set_account_status', 'own_account');
+select public.log_admin_refusal('find_user', 'rate_limited');
+reset role;
+select results_eq(
+  $$ select actor_id, target_id, metadata from public.audit_logs
+     where action = 'admin.refused' and metadata ->> 'source' = 'app'
+       and actor_id::text like '%-00000000630_' $$,
+  $$ values ('b0000000-0000-0000-0000-000000006301'::uuid, 'find_user', '{"code": "rate_limited", "source": "app"}'::jsonb) $$,
+  'Seule la limite de débit de la recherche, opposée par l''application à un administrateur, se déclare'
+);
+
 -- Plafond de la plateforme : cinq cents par heure, tous comptes confondus.
 insert into public.audit_logs (category, action, metadata)
 select 'platform', 'admin.refused', '{"source": "test"}'::jsonb from generate_series(1, 500);
-delete from private.rate_limit_buckets where bucket_key like 'admin-refusal%';
 select tests.login('b1000000-0000-0000-0000-000000006302', 'aal2', 30);
-select public.log_admin_refusal('set_role', 'forbidden');
+select is(
+  public.admin_set_account_status('b1000000-0000-0000-0000-000000006302', true, 'Moi-même') ->> 'message', 'own_account',
+  'Au-delà du plafond de la plateforme, le refus est toujours opposé'
+);
 reset role;
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused'
-     and actor_id = 'b1000000-0000-0000-0000-000000006302'),
-  0::bigint, 'Au-delà du plafond de la plateforme, plus rien ne s''ajoute'
+  (select count(*) from public.audit_logs where action = 'admin.refused' and actor_id = 'b1000000-0000-0000-0000-000000006302'),
+  1::bigint, 'Et le refus d''un administrateur reste consigné : le bruit des autres ne le fait pas taire'
 );
--- Sans session : rien.
-select set_config('request.jwt.claims', jsonb_build_object('role', 'authenticated')::text, true);
-select set_config('role', 'authenticated', true);
-select lives_ok($$ select public.log_admin_refusal('set_role', 'forbidden') $$, 'Sans identité, l''appel ne fait rien');
+-- Pour un compte sans rôle, le plafond de la plateforme vaut : une ligne le dit, une seule.
+delete from private.rate_limit_buckets where bucket_key like 'admin-refusal%';
+select tests.login('c0000000-0000-0000-0000-000000006304', 'aal2', 30);
+select public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', true);
+select public.admin_set_role('d0000000-0000-0000-0000-000000006303', 'moderator', true);
+select is((select count(*) from public.admin_list_accounts()), 0::bigint, 'La liste des comptes, refusée, ne rend rien');
+select is((select count(*) from public.admin_auth_events()), 0::bigint, 'Les compteurs de l''authentification non plus');
 reset role;
 select is(
-  (select count(*) from public.audit_logs where action = 'admin.refused' and actor_id is null
-     and metadata ->> 'source' = 'app'),
-  0::bigint, 'Aucun refus sans auteur'
+  (select count(*) from public.audit_logs where action = 'admin.refused' and actor_id = 'c0000000-0000-0000-0000-000000006304'),
+  0::bigint, 'Au-delà du plafond de la plateforme, les refus d''un compte sans rôle d''administration ne s''ajoutent plus'
 );
+select is(
+  (select count(*) from public.audit_logs where action = 'admin.refusal_platform_overflow'),
+  1::bigint, 'Une ligne dit que le plafond est atteint, une seule par heure'
+);
+
+
+-- ---------------------------------------------------------------------------
+-- Conservation de l'historique
+-- ---------------------------------------------------------------------------
+insert into private.account_status_history (user_id, status, reason, changed_at)
+select 'd0000000-0000-0000-0000-000000006303', 'suspended', 'Ancienne décision ' || i, now() - make_interval(days => i)
+from generate_series(1, 60) i;
+insert into private.account_status_history (user_id, status, reason, changed_at)
+values ('b0000000-0000-0000-0000-000000006301', 'suspended', 'Très ancienne', now() - interval '4 years');
+select tests.login('d0000000-0000-0000-0000-000000006303');
+select throws_ok($$ select private.purge_status_history() $$, '42501', null, 'Un utilisateur ne lance pas la purge de l''historique');
+reset role;
+select is(private.purge_status_history(), 1, 'Des décisions récentes, même nombreuses, ne sont pas effacées : seule part celle de plus de trois ans');
+update private.account_status_history set changed_at = changed_at - interval '100 days' where reason like 'Ancienne décision%';
+select cmp_ok(private.purge_status_history(), '>=', 10, 'Passé quatre-vingt-dix jours, seules les cinquante plus récentes du compte sont gardées');
+select is(
+  (select count(*) from private.account_status_history where user_id = 'd0000000-0000-0000-0000-000000006303'), 50::bigint,
+  'Cinquante décisions au plus par compte'
+);
+select is(
+  (select count(*) from private.account_status_history where user_id = 'b0000000-0000-0000-0000-000000006301'), 0::bigint,
+  'Rien de plus de trois ans'
+);
+select is(
+  (select count(*) from cron.job where jobname = 'eduscholar-status-history-purge' and active and username = 'postgres'),
+  1::bigint, 'Elle est planifiée chaque nuit'
+);
+delete from private.account_status_history where user_id = 'd0000000-0000-0000-0000-000000006303' and reason like 'Ancienne décision%';
 
 -- ---------------------------------------------------------------------------
 -- Suppression en cascade : l'auteur n'est pas celui qui avait accordé le rôle
