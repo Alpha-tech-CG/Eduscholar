@@ -1106,12 +1106,19 @@ describe("second facteur, service d'authentification en appel direct", () => {
     return String((digest.readUInt32BE(offset) & 0x7fffffff) % 1_000_000).padStart(6, "0");
   }
 
-  async function withSecondFactor(label: string) {
+  /** Attend le début du pas suivant de trente secondes. */
+  const nextStep = () =>
+    new Promise((resolve) => setTimeout(resolve, 30_000 - (Date.now() % 30_000) + 300));
+
+  async function withSecondFactor(label: string, { earlyInStep = false } = {}) {
     const actor = await createActor(label);
     const enrollment = await actor.client.auth.mfa.enroll({ factorType: "totp" });
     if (enrollment.error || enrollment.data.type !== "totp") throw new Error("activation impossible");
     const secret = enrollment.data.totp.secret;
     const factorId = enrollment.data.id;
+    // Sur demande, le code est calculé et vérifié loin de la fin du pas : on
+    // sait alors à quel pas il appartient.
+    if (earlyInStep && 30_000 - (Date.now() % 30_000) < 10_000) await nextStep();
     const code = totp(secret);
     const verified = await actor.client.auth.mfa.challengeAndVerify({ factorId, code });
     if (verified.error) throw new Error("vérification impossible");
@@ -1125,14 +1132,15 @@ describe("second facteur, service d'authentification en appel direct", () => {
   }
 
   it("un code déjà utilisé est refusé", async () => {
-    // Le test se place en fin de pas : le rejeu a lieu au pas suivant, où le
-    // service accepte encore le code du pas précédent. La base le refuse.
-    const remaining = 30_000 - (Date.now() % 30_000);
-    await new Promise((resolve) => setTimeout(resolve, Math.max(0, remaining - 4_000)));
-    const { actor, factorId, secret, code, passwordOnly } = await withSecondFactor("rejeu");
+    // Le rejeu a lieu au pas qui suit celui du code : le service accepte
+    // encore le code du pas précédent, et c'est la base qui le refuse. Un pas
+    // plus tard, le service le refuserait lui-même, et le test ne prouverait
+    // plus rien : le code est donc calculé loin de la fin de son pas.
+    const { actor, factorId, secret, code, passwordOnly } = await withSecondFactor("rejeu", {
+      earlyInStep: true,
+    });
     try {
-      const wait = 30_000 - (Date.now() % 30_000);
-      if (wait < 29_000) await new Promise((resolve) => setTimeout(resolve, wait + 300));
+      await nextStep();
       const replay = await passwordOnly.auth.mfa.challengeAndVerify({ factorId, code });
       expect(replay.error?.code).toBe("mfa_verification_rejected");
 
@@ -1148,7 +1156,7 @@ describe("second facteur, service d'authentification en appel direct", () => {
     } finally {
       await admin.auth.admin.deleteUser(actor.id);
     }
-  });
+  }, 120_000);
 
   it("après dix codes faux, le facteur est bloqué, même pour un code juste", async () => {
     const { actor, factorId, secret, passwordOnly } = await withSecondFactor("essais");

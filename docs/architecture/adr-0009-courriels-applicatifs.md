@@ -42,6 +42,27 @@ la personne qui invite, par l'adresse confirmée de son compte ; le titre du pro
 cette personne choisit librement, n'y figure pas, pour qu'il ne serve pas à faire passer
 un autre message. Vingt invitations par jour et par compte.
 
+## Complément du 8 octobre 2026 : le courriel des notifications
+
+Qui le demande reçoit un courriel quand de nouvelles notifications l'attendent (E-05).
+
+- **Demandé, jamais imposé** : désactivé par défaut, réglé depuis la page
+  « Notifications ». Au plus un courriel par vingt heures.
+- **Aucun contenu** : le message dit qu'il y a du nouveau, sans nommer le projet ni ce
+  qui s'y est passé, et ne porte aucun lien vers le compte — il invite à ouvrir
+  l'application comme d'habitude. Son seul lien est celui du désabonnement.
+- **Désabonnement sans connexion** : le lien porte un jeton propre à la personne. Ouvrir
+  la page ne fait rien ; il faut le demander, pour qu'un logiciel de messagerie qui suit
+  les liens ne désabonne personne. L'en-tête `List-Unsubscribe` désigne la même page ; le
+  désabonnement en un clic (RFC 8058) n'est pas offert.
+- **Déclenchement** : la base ne sait pas envoyer de courriel. Une tâche planifiée de
+  l'hébergeur appelle `/api/cron/notification-digest` en présentant `CRON_SECRET` ; la
+  base choisit les destinataires et les marque comme prévenus avant l'envoi. Un envoi qui
+  échoue n'est pas retenté avant le lendemain : le courriel est un complément, la
+  notification interne reste la référence.
+- **Par lot de cinquante** : au-delà, les personnes restantes sont prévenues à l'appel
+  suivant. À reprendre (transport partagé, file d'attente) si le volume le demande.
+
 ## Écarté
 
 - **Confirmation par courriel avant de lever le second facteur** : fermerait la voie de

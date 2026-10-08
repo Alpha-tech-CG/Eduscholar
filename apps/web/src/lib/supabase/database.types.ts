@@ -159,6 +159,19 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"notification_preferences": {
+                  Row: {
+                    "email_digest": boolean,"last_emailed_at": string | null,"unsubscribe_token": string,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "email_digest"?: boolean,"last_emailed_at"?: string | null,"unsubscribe_token": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "email_digest"?: boolean,"last_emailed_at"?: string | null,"unsubscribe_token"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"notifications": {
                   Row: {
                     "created_at": string,"id": string,"kind": string,"project_id": string,"read_at": string | null,"section_id": string | null,"user_id": string,"version_id": string | null
@@ -413,13 +426,13 @@ isOneToOne: false
                   ]
                 },"project_tasks": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"details": string | null,"done_at": string | null,"done_by": string | null,"due_date": string | null,"id": string,"project_id": string,"title": string
+                    "created_at": string,"created_by": string | null,"details": string | null,"done_at": string | null,"done_by": string | null,"due_date": string | null,"id": string,"project_id": string,"reminded_for": string | null,"title": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id": string,"title": string
+                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id": string,"reminded_for"?: string | null,"title": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id"?: string,"title"?: string
+                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id"?: string,"reminded_for"?: string | null,"title"?: string
                   }
                   Relationships: [
                     {
@@ -786,6 +799,11 @@ isOneToOne: false
 "admin_set_role":
 { Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: undefined
                            },
+"claim_notification_digests":
+{ Args: { "p_limit": number }; Returns: {
+              "email": string,"unsubscribe_token": string
+            }[]
+                           },
 "connector_gate":
 { Args: { "p_daily_limit": number,"p_source": string }; Returns: string
                            },
@@ -877,6 +895,9 @@ isOneToOne: false
                            },
 "my_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: Json[]
+                           },
+"my_notification_preferences":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "my_notifications":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -982,6 +1003,9 @@ isOneToOne: false
 "set_member_scope":
 { Args: { "payload": Json,"project_id": string,"user_id": string }; Returns: undefined
                            },
+"set_notification_preferences":
+{ Args: { "payload": Json }; Returns: undefined
+                           },
 "set_section_citation":
 { Args: { "pages"?: string,"present": boolean,"section_id": string,"source_id": string }; Returns: undefined
                            },
@@ -998,6 +1022,9 @@ isOneToOne: false
                            },
 "submit_thesis_version":
 { Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
+"unsubscribe_notifications":
+{ Args: { "p_token": string }; Returns: undefined
                            },
 "update_collection":
 { Args: { "collection_id": string,"description"?: string,"name": string }; Returns: undefined

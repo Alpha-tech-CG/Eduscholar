@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildInvitation, buildNotice, NOTICE_KINDS } from "@/lib/mail/notices";
+import { buildDigest, buildInvitation, buildNotice, NOTICE_KINDS } from "@/lib/mail/notices";
 import { transportOptions } from "@/lib/mail/transport";
 
 describe("avis de sécurité envoyés par l'application", () => {
@@ -78,5 +78,34 @@ describe("invitation à suivre un projet", () => {
     const { text } = buildInvitation(link, null);
     expect(text).toContain("Vous êtes invité");
     expect(text).toContain("You are invited");
+  });
+});
+
+describe("courriel des notifications", () => {
+  const jeton = "ab".repeat(32);
+  const fr = `https://exemple.invalid/fr/unsubscribe/${jeton}`;
+  const en = `https://exemple.invalid/en/unsubscribe/${jeton}`;
+  const { subject, text, html } = buildDigest(fr, en);
+
+  it("est bilingue et ne porte que le lien de désabonnement", () => {
+    expect(subject).toBe("EduScholar — Nouvelles notifications / New notifications");
+    for (const body of [text, html]) {
+      expect(body).toContain("Bonjour,");
+      expect(body).toContain("Hello,");
+      expect(body).toContain(fr);
+      expect(body).toContain(en);
+      // Aucune autre adresse que les deux liens de désabonnement.
+      expect(body.split(fr).join("").split(en).join("")).not.toMatch(/https?:\/\//i);
+    }
+    expect(html.match(/<a\b/g)).toHaveLength(2);
+    expect(html).not.toMatch(/<script|<img/i);
+  });
+
+  it("ne dit rien du projet ni du compte", () => {
+    // Les couleurs des styles mises à part.
+    for (const body of [text, html.replace(/style="[^"]*"/g, "")]) {
+      expect(body.split(fr).join("").split(en).join("")).not.toMatch(/@|\d{6,}|[0-9a-f]{20,}/i);
+      expect(body).not.toMatch(/«\s*Mémoire|commentaire|décision|tâche/i);
+    }
   });
 });

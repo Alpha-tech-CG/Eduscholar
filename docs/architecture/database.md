@@ -94,6 +94,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006005600_member_scope.sql` | Portée d'un membre limitée à certaines sections |
 | `20261006005700_share_links.sql` | Lien de partage et demandes soumises à l'accord du propriétaire |
 | `20261006005800_scope_and_links_hardening.sql` | Corrections de revue : invitations annulées à chaque décision sur un membre, fiche réduite pour un accès limité, délai après refus |
+| `20261006005900_notification_emails.sql` | Courriel facultatif des notifications, désabonnement par jeton, rappel d'échéance |
+| `20261006006000_notification_emails_hardening.sql` | Corrections de revue : traces d'audit, comptes bannis, rappel retenté |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -641,6 +643,31 @@ demandes faites par lien (`pending`, `approved`, `refused`).
   projet, une seule par personne et par projet ;
 - liens expirés ou désactivés et demandes closes sont effacés après trente jours, les
   demandes sans réponse après quatre-vingt-dix (tâche `eduscholar-invitations-purge`).
+
+### Courriel des notifications et rappel d'échéance (E-05)
+
+`notification_preferences (user_id, email_digest, unsubscribe_token, last_emailed_at,
+updated_at)` : le choix de recevoir un courriel quand de nouvelles notifications
+attendent. Désactivé par défaut ; aucun droit direct, pour aucun rôle de l'API.
+
+- `set_notification_preferences` (le titulaire) fixe le choix ; activer repart d'un jeton
+  neuf et ne prévient pas de ce qui attendait déjà ;
+- `claim_notification_digests` (rôle de service) rend l'adresse et le jeton de
+  désabonnement des personnes à prévenir, et les marque comme prévenues dans la même
+  requête. Sont exclus : compte suspendu, banni ou supprimé, adresse non confirmée,
+  personne prévenue depuis moins de vingt heures, et qui n'a rien de nouveau qu'elle
+  puisse encore voir (`private.notification_visible_to`, la règle des notifications
+  internes). Chaque envoi laisse au journal une ligne qui ne porte qu'un nombre ;
+- `unsubscribe_notifications` (rôle de service) coupe le courriel de qui présente le
+  jeton, et le remplace. Jeton inconnu ou mal formé : rien, sans le dire. Le titulaire
+  lit ce désabonnement parmi les événements de son compte. Le jeton est gardé en clair :
+  il doit figurer dans chaque courriel, et ne permet que cela ;
+- `private.notify_due_tasks` (tâche `eduscholar-task-reminders`, chaque jour) écrit une
+  notification `task_due` au propriétaire et aux encadreurs à accès complet pour une
+  tâche non faite dont l'échéance tombe sous deux jours. `project_tasks.reminded_for`
+  retient l'échéance déjà rappelée : la déplacer la rappelle de nouveau. Un rappel non lu
+  vaut pour toutes les tâches proches du projet ; un rappel qui n'a pas pu s'écrire est
+  retenté le lendemain.
 
 ## Fonctions du schéma `private`
 

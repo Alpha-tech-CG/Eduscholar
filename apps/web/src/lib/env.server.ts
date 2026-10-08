@@ -30,6 +30,9 @@ const schema = z.object({
   // Une valeur mal formée est ignorée : l'application ne s'arrête pas pour elle.
   SMTP_URL: z.string().regex(/^smtps?:\/\/\S+$/).optional().catch(undefined),
   MAIL_FROM: z.email().optional().catch(undefined),
+  // Secret que présente la tâche planifiée de l'hébergeur pour déclencher
+  // l'envoi des courriels de notification. Sans lui, la route n'existe pas.
+  CRON_SECRET: z.string().min(32).max(200).optional().catch(undefined),
 });
 
 export type ServerEnv = z.infer<typeof schema>;
@@ -48,6 +51,7 @@ export function serverEnv(): ServerEnv {
     CROSSREF_MAILTO: process.env.CROSSREF_MAILTO || undefined,
     SMTP_URL: process.env.SMTP_URL || undefined,
     MAIL_FROM: process.env.MAIL_FROM || undefined,
+    CRON_SECRET: process.env.CRON_SECRET || undefined,
   });
 
   if (!parsed.success) {

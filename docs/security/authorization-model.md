@@ -544,6 +544,7 @@ depuis le serveur) :
 | `invite_project_member`, `revoke_project_invitation`, `remove_project_member`, `project_sharing` | Le propriétaire du projet, compte actif au profil complété |
 | `invitation_preview`, `accept_project_invitation` | L'appelant connecté sous l'adresse invitée, confirmée ; accepter exige en outre un profil complété ; toute autre situation reçoit la même réponse vide |
 | `shared_projects`, `leave_project` | Tout membre du projet, compte actif |
+| `my_notification_preferences`, `set_notification_preferences` | Le titulaire, compte actif : son seul choix de recevoir le courriel des notifications |
 | `shared_project_document` | Tout membre : en accès complet, le projet entier ; en accès limité, le titre, le statut, l'échéance et les seules sections ouvertes, sans sources ni citations |
 | `set_member_scope`, `create_project_link`, `revoke_project_link`, `decide_access_request` | Le propriétaire du projet, compte actif au profil complété |
 | `request_project_access`, `my_pending_access_requests` | Tout compte actif au profil complété ; la demande ne dit rien du projet et ne donne aucun droit |
@@ -587,6 +588,9 @@ et refuse le rejeu.
 | Purge nocturne (`private.run_scheduled_purges`) — **hors rôle serveur** : tâche pg_cron sous la session du propriétaire de la base | Exécutable par aucun rôle de l'API, rôle serveur compris ; efface les projets supprimés depuis trente jours, les comptes jamais confirmés depuis sept jours (ni rôle, ni organisation, ni suspension), les compteurs de débit périmés et, si une durée de conservation a été posée, les lignes du journal d'audit plus anciennes — seule exception à son caractère d'ajout seul |
 | Égards dus aux sources (`connector_gate`, `connector_pause`) | Appelées par le connecteur juste avant et juste après une requête vers la source, elle-même décidée par un modérateur vérifié ; ne lisent ni n'écrivent aucune donnée d'utilisateur |
 | Limitation de débit de l'authentification (`consume_rate_limit`) | Aucun : l'appel précède l'authentification. La fonction ne lit et n'écrit que des compteurs, sous des clés qui sont des empreintes. |
+| Courriel des notifications (`claim_notification_digests`) | Appel de la tâche planifiée de l'hébergeur, qui présente `CRON_SECRET` ; la fonction choisit elle-même les destinataires (choix actif, compte ni suspendu ni banni, adresse confirmée, du nouveau encore visible, vingt heures depuis le dernier courriel) et ne rend qu'une adresse et un jeton de désabonnement ; une ligne d'audit par envoi, qui ne porte qu'un nombre |
+| Désabonnement par lien (`unsubscribe_notifications`) | Aucun : la personne n'est pas connectée, et le jeton du courriel — 256 bits, remplacé à l'usage — est le seul titre. Il ne permet que de couper ces courriels. Même réponse que le jeton soit valable ou non ; l'événement est lisible par le titulaire |
+| Rappel d'échéance (`private.notify_due_tasks`) — **hors rôle serveur** : tâche pg_cron sous la session du propriétaire de la base | Exécutable par aucun rôle de l'API ; n'écrit que des notifications, au propriétaire et aux encadreurs à accès complet |
 
 Règles de `service_role` :
 

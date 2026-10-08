@@ -1,7 +1,7 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { serverEnv } from "@/lib/env.server";
-import { buildInvitation, buildNotice, type NoticeKind, type NoticeMessage } from "./notices";
+import { buildDigest, buildInvitation, buildNotice, type NoticeKind, type NoticeMessage } from "./notices";
 import { transportOptions } from "./transport";
 
 // Envoi des avis de sécurité de l'application (ADR-0009).
@@ -12,7 +12,12 @@ import { transportOptions } from "./transport";
 
 const TIMEOUT_MS = 5000;
 
-async function send(to: string | null | undefined, message: NoticeMessage, label: string): Promise<boolean> {
+async function send(
+  to: string | null | undefined,
+  message: NoticeMessage,
+  label: string,
+  headers?: Record<string, string>,
+): Promise<boolean> {
   const env = serverEnv();
   if (!to || !env.SMTP_URL || !env.MAIL_FROM) return false;
 
@@ -23,7 +28,13 @@ async function send(to: string | null | undefined, message: NoticeMessage, label
       greetingTimeout: TIMEOUT_MS,
       socketTimeout: TIMEOUT_MS,
     });
-    await transport.sendMail({ from: `EduScholar <${env.MAIL_FROM}>`, to, ...message });
+    // Une adresse, et une seule : elle n'est pas lue comme une liste.
+    await transport.sendMail({
+      from: `EduScholar <${env.MAIL_FROM}>`,
+      to: { name: "", address: to },
+      ...message,
+      headers,
+    });
     return true;
   } catch {
     console.error(`${label} non envoyé : le service de courriel n'a pas accepté le message.`);
@@ -49,4 +60,18 @@ export function sendProjectInvitation(
   inviterEmail: string | null,
 ): Promise<boolean> {
   return send(to, buildInvitation(link, inviterEmail), "Invitation");
+}
+
+/**
+ * Envoie le courriel des notifications. Les liens de désabonnement portent un
+ * jeton : ils ne sont consignés nulle part, pas même en cas d'échec.
+ */
+export function sendNotificationDigest(
+  to: string,
+  unsubscribeFr: string,
+  unsubscribeEn: string,
+): Promise<boolean> {
+  return send(to, buildDigest(unsubscribeFr, unsubscribeEn), "Courriel des notifications", {
+    "List-Unsubscribe": `<${unsubscribeFr}>`,
+  });
 }

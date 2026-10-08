@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { e2eCron } from "./e2e/support/cron";
 
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
@@ -52,6 +53,8 @@ export default defineConfig({
         TRUSTED_CLIENT_IP_HEADER: "x-e2e-client-ip",
         CROSSREF_API_URL: `http://127.0.0.1:${crossrefStubPort}`,
         CROSSREF_TEST_STUB: "1",
+        // Tâche planifiée du courriel des notifications : valeur propre aux tests.
+        CRON_SECRET: e2eCron.value,
       },
       timeout: 60_000,
     },

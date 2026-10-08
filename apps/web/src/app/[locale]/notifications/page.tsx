@@ -3,8 +3,8 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { AuthForm } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { Link } from "@/i18n/navigation";
-import { markNotificationsRead } from "@/lib/notifications/actions";
-import { getNotifications } from "@/lib/notifications/queries";
+import { markNotificationsRead, setEmailDigest } from "@/lib/notifications/actions";
+import { getEmailDigestPreference, getNotifications } from "@/lib/notifications/queries";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -15,12 +15,18 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Ce qui s'est passé sur les projets que l'utilisateur écrit ou suit. */
 export default async function NotificationsPage({ searchParams }: PageProps<"/[locale]/notifications">) {
   await requireOnboardedUser("/notifications");
-  const [t, format, notifications, { notice }] = await Promise.all([
+  const [t, format, notifications, emailDigest, { notice }] = await Promise.all([
     getTranslations("Notifications"),
     getFormatter(),
     getNotifications(),
+    getEmailDigestPreference(),
     searchParams,
   ]);
+  const notices: Record<string, string> = {
+    read: t("noticeRead"),
+    "email-on": t("email.noticeOn"),
+    "email-off": t("email.noticeOff"),
+  };
   const unread = (notifications ?? []).filter((notification) => !notification.read).length;
 
   return (
@@ -36,9 +42,9 @@ export default async function NotificationsPage({ searchParams }: PageProps<"/[l
         </p>
       }
     >
-      {notice === "read" ? (
+      {typeof notice === "string" && notices[notice] ? (
         <p role="status" className="rounded border border-foreground/20 p-3">
-          {t("noticeRead")}
+          {notices[notice]}
         </p>
       ) : null}
 
@@ -79,6 +85,23 @@ export default async function NotificationsPage({ searchParams }: PageProps<"/[l
             </AuthForm>
           ) : null}
         </>
+      )}
+
+      {emailDigest === null ? null : (
+        <section aria-labelledby="email-digest" className="flex flex-col gap-3 border-t border-foreground/20 pt-6">
+          <h2 id="email-digest" className="text-lg font-medium">
+            {t("email.title")}
+          </h2>
+          <p data-testid="email-digest-state">{emailDigest ? t("email.on") : t("email.off")}</p>
+          <p className="text-sm opacity-80">{t("email.hint")}</p>
+          <AuthForm
+            action={setEmailDigest}
+            submitLabel={emailDigest ? t("email.disable") : t("email.enable")}
+            pendingLabel={t("pending")}
+          >
+            <input type="hidden" name="enabled" value={emailDigest ? "false" : "true"} />
+          </AuthForm>
+        </section>
       )}
     </AuthPageShell>
   );

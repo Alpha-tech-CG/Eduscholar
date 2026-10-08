@@ -86,6 +86,12 @@ const RULES = {
   "doi-import-day": {
     account: { limit: 300, windowSeconds: 24 * HOUR },
   },
+  // Désabonnement des courriels de notification : sans session, par jeton.
+  // Le jeton ne se devine pas ; la limite ne borne que la charge, et reste
+  // large pour qu'un client seul ne ferme pas cette voie aux autres.
+  unsubscribe: {
+    ip: { limit: 300, windowSeconds: 15 * MINUTE },
+  },
   reauthentication: {
     ip: { limit: 20, windowSeconds: 15 * MINUTE },
     pair: { limit: 5, windowSeconds: 15 * MINUTE },

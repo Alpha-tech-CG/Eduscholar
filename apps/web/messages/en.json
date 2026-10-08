@@ -1232,13 +1232,33 @@
       "version_submitted": "A version of “{project}” has been submitted to you",
       "version_decided": "Decision given on a version of “{project}”",
       "task_added": "New task on “{project}”",
-      "access_requested": "Someone is asking to follow “{project}”"
+      "access_requested": "Someone is asking to follow “{project}”",
+      "task_due": "Deadline approaching on “{project}”"
     },
     "new": "unread",
     "read": "read",
     "separator": " · ",
     "markRead": "Mark all as read",
     "pending": "One moment…",
-    "noticeRead": "Your notifications are marked as read."
+    "noticeRead": "Your notifications are marked as read.",
+    "email": {
+      "title": "Email",
+      "on": "You receive an email when new notifications are waiting for you.",
+      "off": "You do not receive emails for your notifications.",
+      "hint": "At most one email a day. It only says there is something new: neither the project nor what happened appears in it. Every email lets you unsubscribe.",
+      "enable": "Receive an email",
+      "disable": "Stop receiving emails",
+      "noticeOn": "You will receive an email when new notifications are waiting for you.",
+      "noticeOff": "You will no longer receive emails for your notifications."
+    }
+  },
+  "Unsubscribe": {
+    "title": "Notification emails",
+    "intro": "You can stop receiving the emails that tell you about new notifications. Your notifications remain readable in EduScholar.",
+    "confirm": "Stop receiving these emails",
+    "pending": "One moment…",
+    "done": "If this link was valid, you will no longer receive these emails.",
+    "reactivate": "You can ask for them again from the “Notifications” page of your account.",
+    "toHome": "Back to home"
   }
 }

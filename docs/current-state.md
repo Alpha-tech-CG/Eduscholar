@@ -155,7 +155,10 @@ Détail dans `docs/security/initial-audit.md`.
 - Notifications internes : chacun est averti de ce que l'autre a fait sur le projet
   (E-05, sans courriel pour l'instant).
 - Portée d'un membre limitée à certaines sections, et lien de partage soumis à l'accord
-  du propriétaire (E-06) : la Phase 4 est complète, hors courriels de notification.
+  du propriétaire (E-06).
+- Courriel facultatif des notifications, désabonnement par lien et rappel d'échéance
+  (E-05) : la Phase 4 est complète. L'envoi attend, au déploiement, `CRON_SECRET` et la
+  tâche planifiée de l'hébergeur.
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

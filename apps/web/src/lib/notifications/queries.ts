@@ -12,6 +12,7 @@ export const NOTIFICATION_KINDS = [
   "version_decided",
   "task_added",
   "access_requested",
+  "task_due",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -43,7 +44,7 @@ function hrefOf(row: Row): string {
   if ((row.kind === "version_submitted" || row.kind === "version_decided") && row.version_id) {
     return `${base}/versions/${row.version_id}`;
   }
-  if (row.kind === "task_added") return `${base}/tasks`;
+  if (row.kind === "task_added" || row.kind === "task_due") return `${base}/tasks`;
   if (row.kind === "access_requested" && owner) return `${base}/sharing`;
   return base;
 }
@@ -70,4 +71,14 @@ export async function getUnreadNotificationCount(): Promise<number> {
   const supabase = await createSessionClient();
   const { data, error } = await supabase.rpc("my_unread_notification_count");
   return error || typeof data !== "number" ? 0 : data;
+}
+
+/** Jeton de désabonnement, tel qu'il figure dans un courriel. */
+export const UNSUBSCRIBE_TOKEN = /^[0-9a-f]{64}$/;
+
+/** L'utilisateur a-t-il demandé le courriel des notifications ? `null` si la lecture échoue. */
+export async function getEmailDigestPreference(): Promise<boolean | null> {
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase.rpc("my_notification_preferences");
+  return error || typeof data !== "boolean" ? null : data;
 }

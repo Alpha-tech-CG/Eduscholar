@@ -8,8 +8,10 @@ import {
   sqlValue,
   strongPassword,
   uniqueEmail,
+  waitForEmailHtml,
   waitForInvitation,
 } from "./support/auth";
+import { e2eCron } from "./support/cron";
 
 const alert = (page: Page) => page.getByRole("main").getByRole("alert");
 const status = (page: Page) => page.getByRole("main").getByRole("status");
@@ -673,6 +675,90 @@ test.describe("partage d'un projet avec un encadreur", () => {
     await page.getByRole("button", { name: "Désactiver le lien" }).click();
     await expect(page).toHaveURL(/notice=link-revoked$/);
     await expect(page.getByTestId("active-link")).toHaveCount(0);
+  });
+
+  test("courriel des notifications, rappel d'échéance et désabonnement", async ({ page, browser, request }) => {
+    const owner = await createMember("courriel-etudiante");
+    const { projectId, token } = seedProject(owner.id);
+    const digestState = page.getByTestId("email-digest-state");
+    const preference = () =>
+      sqlValue(`select email_digest from public.notification_preferences where user_id = '${owner.id}'`);
+
+    await signInThroughForm(page, owner.email, owner.password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+
+    // --- Aucun courriel sans l'avoir demandé ------------------------------------
+    await page.goto("/fr/notifications");
+    await expect(digestState).toHaveText("Vous ne recevez pas de courriel pour vos notifications.");
+    await page.getByRole("button", { name: "Recevoir un courriel" }).click();
+    await expect(page).toHaveURL(/notice=email-on$/);
+    await expect(status(page)).toContainText("Vous recevrez un courriel");
+    await expect(digestState).toHaveText("Vous recevez un courriel quand de nouvelles notifications vous attendent.");
+
+    // --- Une tâche arrive à échéance : le rappel du jour la signale -----------------
+    sql(`
+      insert into public.project_tasks (project_id, title, due_date, created_by)
+        values ('${projectId}', 'Rendre le plan ${token}', current_date + 1, '${owner.id}');
+      select private.notify_due_tasks()
+    `);
+
+    // --- La route d'envoi n'existe que pour la tâche planifiée -----------------------
+    const route = "/api/cron/notification-digest";
+    expect((await request.get(route)).status()).toBe(404);
+    expect((await request.get(route, { headers: { authorization: "Bearer inconnu" } })).status()).toBe(404);
+    const run = await request.get(route, { headers: { authorization: `Bearer ${e2eCron.value}` } });
+    expect(run.status()).toBe(200);
+    const report = await run.text();
+    expect(report).toContain('"status":"ok"');
+    // Deux nombres : ni adresse, ni jeton.
+    expect(report).not.toMatch(/@|[0-9a-f]{20,}/);
+
+    // --- Le courriel ne dit rien du projet et ne porte que le lien de désabonnement ---
+    const html = await waitForEmailHtml(owner.email, "Nouvelles notifications");
+    expect(html).not.toContain(token);
+    expect(html).not.toContain(projectId);
+    const link = /href="[^"]*(\/fr\/unsubscribe\/[0-9a-f]{64})"/.exec(html)?.[1] ?? "";
+    expect(link).not.toBe("");
+    expect(html.match(/<a\b/g)).toHaveLength(2);
+
+    // --- La notification, elle, se lit dans l'application ------------------------------
+    await page.goto("/fr/notifications");
+    const notification = page.getByTestId("notification");
+    await expect(notification).toContainText(`Échéance proche sur « Mémoire ${token} »`);
+    await notification.getByRole("link").click();
+    await expect(page).toHaveURL(new RegExp(`/fr/projects/${projectId}/tasks$`));
+
+    // --- Désabonnement sans connexion ---------------------------------------------------
+    const context = await browser.newContext();
+    const visitor = await context.newPage();
+    await visitor.goto(link);
+    await expect(visitor.getByRole("heading", { level: 1 })).toHaveText("Courriels de notification");
+    // Ouvrir la page ne désabonne pas : il faut le demander.
+    expect(preference()).toBe("t");
+    await visitor.getByRole("button", { name: "Ne plus recevoir ces courriels" }).click();
+    await expect(visitor).toHaveURL(/\/fr\/unsubscribe\/done$/);
+    await expect(visitor.getByRole("main").getByRole("status")).toHaveText(
+      "Si ce lien était valable, vous ne recevrez plus ces courriels.",
+    );
+    expect(preference()).toBe("f");
+
+    // Une adresse qui n'a pas la forme d'un lien n'existe pas.
+    expect((await visitor.goto("/fr/unsubscribe/abc"))?.status()).toBe(404);
+    // Un lien inconnu, bien formé, reçoit la même réponse qu'un lien valable.
+    await visitor.goto(`/fr/unsubscribe/${"0".repeat(64)}`);
+    await visitor.getByRole("button", { name: "Ne plus recevoir ces courriels" }).click();
+    await expect(visitor).toHaveURL(/\/fr\/unsubscribe\/done$/);
+    await context.close();
+
+    await page.goto("/fr/notifications");
+    await expect(digestState).toHaveText("Vous ne recevez pas de courriel pour vos notifications.");
+
+    // --- Réactivé puis coupé depuis le compte ---------------------------------------------
+    await page.getByRole("button", { name: "Recevoir un courriel" }).click();
+    await expect(page).toHaveURL(/notice=email-on$/);
+    await page.getByRole("button", { name: "Ne plus recevoir de courriel" }).click();
+    await expect(page).toHaveURL(/notice=email-off$/);
+    expect(preference()).toBe("f");
   });
 
   test("les pages de partage exigent une session", async ({ page }) => {

@@ -170,3 +170,44 @@ export function buildInvitation(link: string, inviterEmail: string | null): Noti
 
   return { subject: "EduScholar — Invitation à suivre un projet / Invitation to follow a project", text, html };
 }
+
+/**
+ * Le courriel des notifications : il dit qu'il y a du nouveau, rien de plus.
+ * Ni le projet, ni son titre, ni ce qui s'y est passé n'y figurent, et il ne
+ * porte aucun lien vers le compte. Le seul lien est celui du désabonnement,
+ * que la personne doit pouvoir suivre sans se connecter.
+ */
+export function buildDigest(unsubscribeFr: string, unsubscribeEn: string): NoticeMessage {
+  const fr = [
+    "De nouvelles notifications vous attendent sur EduScholar, à propos d'un projet que vous écrivez ou que vous suivez.",
+    "Pour les lire, ouvrez EduScholar comme vous le faites d'habitude, puis la page « Notifications ». Ce message ne contient aucun lien vers votre compte et ne vous demande aucun code.",
+    "Vous recevez ce courriel parce que vous l'avez demandé, au plus une fois par jour. Pour ne plus le recevoir, ouvrez le lien ci-dessous.",
+  ];
+  const en = [
+    "New notifications are waiting for you on EduScholar, about a project you are writing or following.",
+    "To read them, open EduScholar as you usually do, then the “Notifications” page. This message contains no link to your account and asks you for no code.",
+    "You are receiving this email because you asked for it, at most once a day. To stop receiving it, open the link below.",
+  ];
+
+  const text = [
+    "EduScholar", "", "Bonjour,", ...fr, unsubscribeFr, "", "----", "", "Hello,", ...en, unsubscribeEn,
+  ].join("\n");
+  const block = (lang: "fr" | "en", greeting: string, paragraphs: string[], link: string, label: string) =>
+    [
+      `<p lang="${lang}">${greeting}</p>`,
+      ...paragraphs.map((p) => `<p lang="${lang}">${escape(p)}</p>`),
+      `<p lang="${lang}" style="font-size: 14px"><a href="${escape(link)}">${label}</a></p>`,
+    ].join("\n    ");
+  const html = `<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+    ${block("fr", "Bonjour,", fr, unsubscribeFr, "Ne plus recevoir ces courriels")}
+    <hr />
+    ${block("en", "Hello,", en, unsubscribeEn, "Stop receiving these emails")}
+  </body>
+</html>
+`;
+
+  return { subject: "EduScholar — Nouvelles notifications / New notifications", text, html };
+}

@@ -366,6 +366,22 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   figure dans l'adresse de la page ; l'accord du propriétaire donne l'accès complet, au
   rôle que proposait le lien au moment de la demande. Ces corrections n'ont pas fait
   l'objet d'une seconde revue.
+- 8 octobre 2026 — Courriel des notifications, désabonnement par lien et rappel
+  d'échéance relus par l'agent sécurité : aucun constat critique ou élevé ; 2 moyens et
+  9 faibles. Corrigés : les deux fonctions du rôle de service ne laissaient aucune trace
+  (une ligne d'audit par envoi, un événement lisible par le titulaire au désabonnement) ;
+  un compte banni ou supprimé auprès du service d'authentification restait prévenu ;
+  activer le courriel prévenait de notifications anciennes ; un rappel d'échéance qui ne
+  pouvait pas s'écrire était perdu ; la page de désabonnement acceptait n'importe quel
+  segment et n'interdisait pas le cache ; l'adresse du destinataire pouvait être lue
+  comme une liste ; les envois échoués n'étaient pas comptés au journal ; la limite de
+  débit du désabonnement, trop basse, pouvait fermer cette voie à tous quand l'adresse
+  du client n'est pas connue (portée à 300 par quart d'heure). Acceptés : le jeton de
+  désabonnement est durable et figure dans l'adresse de la page — il ne permet que de
+  couper ces courriels, ce que le titulaire annule depuis son compte ; les destinataires
+  sont marqués avant l'envoi ; `APP_URL` n'est pas contraint à `https` par le code — à
+  vérifier au déploiement ; la route planifiée se distingue d'une page absente. Ces
+  corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

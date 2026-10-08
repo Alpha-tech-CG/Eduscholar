@@ -1232,13 +1232,33 @@
       "version_submitted": "Une version de « {project} » vous est soumise",
       "version_decided": "Décision rendue sur une version de « {project} »",
       "task_added": "Nouvelle tâche sur « {project} »",
-      "access_requested": "Quelqu'un demande à suivre « {project} »"
+      "access_requested": "Quelqu'un demande à suivre « {project} »",
+      "task_due": "Échéance proche sur « {project} »"
     },
     "new": "non lue",
     "read": "lue",
     "separator": " · ",
     "markRead": "Tout marquer comme lu",
     "pending": "Un instant…",
-    "noticeRead": "Vos notifications sont marquées comme lues."
+    "noticeRead": "Vos notifications sont marquées comme lues.",
+    "email": {
+      "title": "Courriel",
+      "on": "Vous recevez un courriel quand de nouvelles notifications vous attendent.",
+      "off": "Vous ne recevez pas de courriel pour vos notifications.",
+      "hint": "Au plus un courriel par jour. Il dit seulement qu'il y a du nouveau : ni le projet, ni ce qui s'y est passé n'y figurent. Chaque courriel permet de s'en désabonner.",
+      "enable": "Recevoir un courriel",
+      "disable": "Ne plus recevoir de courriel",
+      "noticeOn": "Vous recevrez un courriel quand de nouvelles notifications vous attendront.",
+      "noticeOff": "Vous ne recevrez plus de courriel pour vos notifications."
+    }
+  },
+  "Unsubscribe": {
+    "title": "Courriels de notification",
+    "intro": "Vous pouvez cesser de recevoir les courriels qui vous préviennent de nouvelles notifications. Vos notifications restent lisibles dans EduScholar.",
+    "confirm": "Ne plus recevoir ces courriels",
+    "pending": "Un instant…",
+    "done": "Si ce lien était valable, vous ne recevrez plus ces courriels.",
+    "reactivate": "Vous pouvez les demander de nouveau depuis la page « Notifications » de votre compte.",
+    "toHome": "Retour à l'accueil"
   }
 }
