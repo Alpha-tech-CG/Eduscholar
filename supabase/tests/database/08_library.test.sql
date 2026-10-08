@@ -152,8 +152,12 @@ select lives_ok(
   'Retirer un favori qu''on n''a pas est sans effet'
 );
 reset role;
-select is((select count(*) from public.resource_favorites), 1::bigint, 'Le favori de A est intact');
-select is((select count(*) from public.collection_items), 2::bigint, 'La collection de A est intacte');
+select is((select count(*) from public.resource_favorites where user_id = 'a0000000-0000-0000-0000-0000000011b1'), 1::bigint, 'Le favori de A est intact');
+select is(
+  (select count(*) from public.collection_items i join public.collections c on c.id = i.collection_id
+   where c.owner_id = 'a0000000-0000-0000-0000-0000000011b1'),
+  2::bigint, 'La collection de A est intacte'
+);
 
 select tests.login('d0000000-0000-0000-0000-0000000011b4', 'aal2');
 select is_empty($$ select 1 from public.resource_favorites $$, 'La modération ne lit pas les favoris');

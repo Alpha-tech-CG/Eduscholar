@@ -450,6 +450,31 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   l'organisation, les interdits reposent sur des faits durables, l'administrateur de
   reprise est en observation trente jours. Risque accepté : deux super-administrateurs de
   connivence. La troisième migration de correction n'a pas été relue.
+- 8 octobre 2026 — Mode faible connexion (F-01) relu par l'agent sécurité : aucun
+  constat critique ou élevé ; 4 moyens et 8 faibles. Corrigés et consignés dans
+  l'ADR-0012. Accepté : une faille d'injection de script pourrait placer un faux fichier
+  dans le cache du service worker ; la réponse à un tel incident comprend le changement
+  de sa version.
+- 8 octobre 2026 — Écrans des organisations (F-02) relus par l'agent sécurité : aucun
+  constat critique ou élevé ; 2 moyens et 8 faibles, sans changement de code. Le jeton
+  d'invitation figure dans le chemin de retour vers la connexion quand la personne n'est
+  pas connectée, comme pour les invitations de projet : accepté, l'en-tête
+  `Referrer-Policy` ne transmet à un tiers que l'origine. La base répond déjà de façon
+  uniforme pour une organisation inconnue, tierce ou dont on est simple membre. Non
+  traités : confirmation avant le retrait d'un membre ou sa promotion en administrateur ;
+  bandeaux de succès pilotés par un paramètre d'adresse.
+- 9 octobre 2026 — Référentiels administrables (F-03) et assistance documentaire
+  (Phase 6), partie base, relus par l'agent sécurité : aucun constat critique ou élevé ;
+  un moyen par lot. Corrigés : une filière pouvait se retrouver sans aucune matière
+  proposable ; les types de fiche qu'écrit le connecteur pouvaient être désactivés, ce
+  qui aurait cassé l'import ; les enfants d'un parent désactivé restaient proposés ; un
+  libellé pouvait commencer par un signe de formule ; le décompte d'usage d'une filière
+  comptait les projets de recherche ; le rapport de cohérence révélait à un membre
+  l'existence des fiches de lecture, privées ; deux liens distincts par la casse du
+  chemin passaient pour un doublon certain. Acceptés : deux fonctions pures de
+  normalisation de texte sont exécutables par le rôle serveur ; le coût de trois des
+  quatre fonctions d'assistance n'est pas mesuré au volume cible. Ces corrections n'ont
+  pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

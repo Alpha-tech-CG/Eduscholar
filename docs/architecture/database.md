@@ -111,6 +111,11 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006007300_organization_admin_invitation.sql` | Un administrateur d'organisation s'invite, il ne se désigne pas |
 | `20261006007400_organization_hardening.sql` | Corrections de revue : reprise réservée, motifs, traces |
 | `20261006007500_organization_recovery_rules.sql` | Seconde revue : reprise définie par l'état, interdits durables, période d'observation |
+| `20261006007600_reference_administration.sql` | Référentiels administrables par la plateforme |
+| `20261006007700_reference_administration_lint.sql` | Deux corrections du contrôle statique, sans changement de règle |
+| `20261006007800_document_intelligence.sql` | Doublons, classification assistée, cohérence d'un projet, recommandations |
+| `20261006007900_document_intelligence_index_rights.sql` | Le rôle serveur exécute les fonctions des index : l'import n'est pas cassé |
+| `20261006008000_reference_and_intelligence_hardening.sql` | Corrections de revue des deux lots |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -749,6 +754,26 @@ par des fonctions sous la session de l'appelant (détail des droits dans
   administrateur entré par reprise ne touche pas aux administrateurs antérieurs.
 - Tâche `eduscholar-org-invitations-purge` : invitations expirées ou closes depuis trente
   jours.
+
+### Référentiels administrables (F-03)
+
+`admin_reference_items`, `admin_save_reference_item` et `admin_set_reference_active`
+(administration, second facteur récent, refus consigné et rendu en 403). Rien ne se
+supprime ; un code ne change jamais ; une ligne créée naît inactive ; les licences ne
+s'écrivent pas. Une ligne désactivée, et les enfants d'un parent désactivé, ne sont plus
+rendus par `reference_data()` ni acceptés comme NOUVEAU choix ; les profils et fiches
+qui la portent déjà la gardent. Protégés contre la désactivation : la dernière ligne
+active d'une table, la dernière matière et la dernière spécialité d'une filière active,
+les types `article`, `book` et `thesis` qu'écrit le connecteur, les langues d'interface.
+
+### Assistance documentaire (Phase 6, ADR-0013)
+
+`similar_resources` et `suggest_resource_classification` (modération),
+`project_coherence_report` (propriétaire, membre à accès complet),
+`recommended_resources` (tout compte au profil complété). Lectures seules, sans table
+nouvelle. `private.fold_text` et `private.normalize_url`, pures, servent deux index sur
+`resources` ; le rôle serveur les exécute, parce que l'import par connecteur écrit des
+fiches.
 
 ## Fonctions du schéma `private`
 

@@ -566,6 +566,10 @@ depuis le serveur) :
 | `invite_org_member`, `revoke_org_invitation`, `set_org_member_role`, `remove_org_member`, `org_members` | `org_admin` de cette organisation, non suspendue ; jamais le dernier `org_admin` |
 | `org_invitation_preview`, `accept_org_invitation` | L'appelant connecté sous l'adresse invitée, confirmée, profil complété ; second facteur présenté pour le rôle `org_admin` ; toute autre situation reçoit la même réponse vide |
 | `leave_organization`, `my_organizations`, `my_organization_memberships` | Le membre ; le dernier `org_admin` ne part que d'une organisation suspendue |
+| `admin_reference_items`, `admin_save_reference_item`, `admin_set_reference_active` | `platform_admin` ou `super_admin`, second facteur récent ; refus de droit consigné et rendu en 403 ; licences en lecture seule |
+| `similar_resources`, `suggest_resource_classification` | `moderator`, second facteur présenté ; fiches de visibilité publique seulement ; ne modifient rien |
+| `project_coherence_report` | Le propriétaire du projet, ou un membre à accès complet ; le constat tiré des fiches de lecture n'est rendu qu'au propriétaire ; aucun texte de mémoire |
+| `recommended_resources` | Tout compte actif au profil complété ; fiches publiées et publiques seulement ; d'après ses seules données |
 | `recovery_codes_status`, `generate_recovery_codes`, `discard_recovery_codes`, `last_recovery_code_use` | Le titulaire, compte actif ; générer exige le second facteur présenté depuis moins de dix minutes |
 | `redeem_recovery_code` | Le titulaire, dans la session ouverte par le seul mot de passe d'un compte à second facteur ; refusée en session `aal2`, à un compte suspendu et au dernier super-administrateur effectif ; cinq essais erronés par quart d'heure |
 | `my_account_events`, `my_deleted_projects` | Le titulaire, compte actif : ses seuls événements (date et nature) et ses seuls projets supprimés en attente de purge |

@@ -105,11 +105,24 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | # | Tâche | Dépend de | État |
 |---|---|---|---|
 | F-01 | Mode faible connexion : application installable, service worker sans donnée privée, page hors ligne, bandeau de connexion, reprise de l'enregistrement dans l'éditeur, audit à 360 px (ADR-0012) | — | fait |
-| F-02 | Écrans des organisations : plateforme (créer, vérifier, suspendre, renommer, dissoudre, inviter le premier administrateur) et organisation (membres, invitations, rôles) | D-01, D-04 | à faire |
-| F-03 | Référentiels configurables par l'administration : pays, niveaux, programmes, spécialités, matières (activer, désactiver, libellés par langue) | D-15 | à faire |
+| F-02 | Écrans des organisations : plateforme (créer, vérifier, suspendre, renommer, dissoudre, inviter le premier administrateur) et organisation (membres, invitations, rôles) | D-01, D-04 | fait |
+| F-03 | Référentiels configurables par l'administration : pays, niveaux, programmes, spécialités, matières (activer, désactiver, libellés par langue) | D-15 | fait — rien ne se supprime, un code ne change jamais, les licences restent en lecture seule. Non fait : programmes versionnés par pays et par année (§14.2) |
 | F-04 | Troisième langue d'interface (portugais) et vérification que rien n'est figé à deux langues ; formats de date et de nombre localisés | — | à faire |
 | F-05 | Aide et documentation dans les langues de l'interface | F-04 | à faire |
 | F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | à faire |
+
+## Phase 6 — Intelligence documentaire
+
+Décision (ADR-0013) : cette phase est algorithmique et déterministe. Aucun modèle de
+langage, aucun service externe, aucun texte généré ; tout est suggestion, un humain décide.
+
+| # | Tâche | Dépend de | État |
+|---|---|---|---|
+| G-01 | Doublons d'une fiche du catalogue (même DOI, même lien, titre proche) pour la modération | B-11 | fait pour la base ; écran en cours |
+| G-02 | Classification assistée : matières suggérées d'après les mots de la fiche | F-03 | fait pour la base ; écran en cours |
+| G-03 | Contrôles de cohérence d'un projet et alertes de lacunes de la littérature | C-09 | fait pour la base ; écran en cours |
+| G-04 | Recommandations tirées du seul profil et du seul projet de l'appelant | B-16 | fait pour la base ; écran en cours |
+| G-05 | Résumés sourcés générés par un modèle de langage | décision du porteur de projet | **non fait** — demande le choix d'un fournisseur, un consentement par projet, et de ne jamais envoyer un mémoire privé hors de la plateforme sans cet accord |
 
 ## Phases suivantes (non détaillées)
 
@@ -117,7 +130,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 - Phase 3 — Atelier de recherche : projet de mémoire, fiches de lecture, bibliographie, export.
 - Phase 4 — Encadrement : découpée ci-dessus (E-01 à E-06).
 - Phase 5 — Internationalisation et mobile : découpée ci-dessus (F-01 à F-06).
-- Phase 6 — Intelligence documentaire.
+- Phase 6 — Intelligence documentaire : découpée ci-dessus (G-01 à G-05).
 
 ## Décisions en attente du porteur de projet
 

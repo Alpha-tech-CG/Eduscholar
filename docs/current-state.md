@@ -170,6 +170,9 @@ Détail dans `docs/security/initial-audit.md`.
 - Organisations administrées par des fonctions de la base (D-01, D-04) ; leurs écrans
   restent à faire (F-02).
 - Phase 5 commencée : mode faible connexion et audit des petits écrans (F-01, ADR-0012).
+- Écrans des organisations (F-02) et des référentiels (F-03) ; assistance documentaire
+  déterministe en base (Phase 6, ADR-0013), ses écrans en cours ; les résumés générés
+  attendent une décision du porteur de projet (G-05).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.
