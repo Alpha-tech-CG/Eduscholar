@@ -30,7 +30,9 @@ insert into auth.users (id, instance_id, aud, role, email, email_confirmed_at) v
   ('50000000-0000-0000-0000-000000007903', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-s@test.invalid', now()),
   ('c0000000-0000-0000-0000-000000007904', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-l@test.invalid', now()),
   ('f0000000-0000-0000-0000-000000007905', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-f@test.invalid', now()),
-  ('d0000000-0000-0000-0000-000000007906', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-n@test.invalid', now());
+  ('d0000000-0000-0000-0000-000000007906', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-n@test.invalid', now()),
+  ('c1000000-0000-0000-0000-000000007907', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-mo@test.invalid', now()),
+  ('b1000000-0000-0000-0000-000000007908', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ia-pa@test.invalid', now());
 
 -- Une filière propre au test : le vivier des recommandations ne contient ainsi
 -- que les fiches du test, quoi que la base locale contienne d'autre.
@@ -48,7 +50,13 @@ update public.profiles
 update public.profiles set level_code = 'bachelor_1', subject_codes = array['zz_s3']
   where user_id = 'b0000000-0000-0000-0000-000000007902';
 insert into auth.mfa_factors (id, user_id, friendly_name, factor_type, status, created_at, updated_at, secret)
-values ('fa000000-0000-0000-0000-000000007905', 'f0000000-0000-0000-0000-000000007905', 'test', 'totp', 'verified', now(), now(), 'x');
+values ('fa000000-0000-0000-0000-000000007905', 'f0000000-0000-0000-0000-000000007905', 'test', 'totp', 'verified', now(), now(), 'x'),
+       ('fa000000-0000-0000-0000-000000007907', 'c1000000-0000-0000-0000-000000007907', 'test', 'totp', 'verified', now() - interval '1 day', now(), 'x'),
+       ('fa000000-0000-0000-0000-000000007908', 'b1000000-0000-0000-0000-000000007908', 'test', 'totp', 'verified', now() - interval '1 day', now(), 'x');
+-- Mo : modératrice. Pa : administrateur de plateforme. Ni l'un ni l'autre n'est membre d'un projet.
+insert into public.platform_roles (user_id, role) values
+  ('c1000000-0000-0000-0000-000000007907', 'moderator'),
+  ('b1000000-0000-0000-0000-000000007908', 'platform_admin');
 
 insert into public.organizations (id, slug, name, status) values
   ('79000000-0000-0000-0000-0000000000f1', 'ia-test-org-2', 'Organisation du test IA', 'verified');
@@ -180,6 +188,14 @@ reset role;
 select tests.login('c0000000-0000-0000-0000-000000007904');
 select throws_ok($$ select public.project_coherence_report('79000000-0000-0000-0000-0000000000a1') $$, 'P0001', 'not_found', 'Un membre à accès limité non plus : même réponse');
 reset role;
+select tests.login('c1000000-0000-0000-0000-000000007907', 'aal2');
+select ok(private.has_platform_role(array['moderator']), 'La modératrice du test a bien son rôle');
+select throws_ok($$ select public.project_coherence_report('79000000-0000-0000-0000-0000000000a1') $$, 'P0001', 'not_found', 'Une modératrice ne lit pas le rapport d''un projet : même réponse qu''à un tiers');
+reset role;
+select tests.login('b1000000-0000-0000-0000-000000007908', 'aal2');
+select ok(private.has_platform_role(array['platform_admin']), 'L''administrateur du test a bien son rôle');
+select throws_ok($$ select public.project_coherence_report('79000000-0000-0000-0000-0000000000a1') $$, 'P0001', 'not_found', 'Un administrateur de plateforme non plus');
+reset role;
 select tests.login('f0000000-0000-0000-0000-000000007905', 'aal1');
 select throws_ok($$ select public.project_coherence_report('79000000-0000-0000-0000-0000000000a1') $$, '42501', 'forbidden', 'Compte à second facteur, session au seul mot de passe : refusé');
 select throws_ok($$ select * from public.recommended_resources() $$, '42501', 'forbidden', 'De même pour les recommandations');
@@ -198,10 +214,32 @@ reset role;
 
 select is((select report ->> 'role' from tests.reports where label = 'p1'), 'owner', 'Le propriétaire lit le rapport de son projet');
 select is((select report ->> 'role' from tests.reports where label = 's'), 'supervisor', 'Un membre à accès complet aussi');
+-- Contenu exact du rapport d'un membre à accès complet : tout ce qu'il lit déjà
+-- par le document partagé et les tâches ; rien des fiches de lecture.
+select results_eq(
+  $$ select f.value ->> 'code' from tests.reports r, jsonb_array_elements(r.report -> 'findings') f
+     where r.label = 's' order by 1 $$,
+  $$ values ('citation_without_pages'), ('literature_mostly_old'), ('literature_none_recent'),
+            ('project_incomplete'), ('project_overdue'), ('section_empty'), ('section_short'),
+            ('section_single_source'), ('section_without_citation'), ('source_duplicate'),
+            ('source_incomplete'), ('source_never_cited'), ('task_overdue') $$,
+  'Un membre à accès complet reçoit treize constats : pas celui qui vient des fiches de lecture'
+);
 select is(
   (select report -> 'findings' from tests.reports where label = 's'),
-  (select report -> 'findings' from tests.reports where label = 'p1'),
-  'Il y lit les mêmes constats'
+  (select jsonb_agg(f.value order by f.ordinality)
+   from tests.reports r, jsonb_array_elements(r.report -> 'findings') with ordinality f
+   where r.label = 'p1' and f.value ->> 'code' <> 'cited_source_without_note'),
+  'Ces constats sont, à l''identique, ceux du propriétaire'
+);
+select is(
+  (select report - 'findings' - 'role' from tests.reports where label = 's'),
+  (select report - 'findings' - 'role' from tests.reports where label = 'p1'),
+  'Le reste du rapport est le même'
+);
+select ok(
+  (select report::text !~ 'cited_source_without_note|note' from tests.reports where label = 's'),
+  'Rien n''y parle des fiches de lecture'
 );
 
 -- ---------------------------------------------------------------------------
@@ -304,6 +342,12 @@ reset role;
 select tests.login('b0000000-0000-0000-0000-000000007902');
 insert into tests.reco select 'b', row_number() over (), * from public.recommended_resources();
 reset role;
+select tests.login('50000000-0000-0000-0000-000000007903');
+select throws_ok(
+  $$ select * from public.recommended_resources('{"project_id": "79000000-0000-0000-0000-0000000000a1"}') $$,
+  'P0001', 'not_found', 'Un membre, même à accès complet, ne désigne pas le projet d''un autre'
+);
+reset role;
 select tests.login('d0000000-0000-0000-0000-000000007906');
 select throws_ok($$ select * from public.recommended_resources() $$, '42501', 'forbidden', 'Un compte au profil non complété ne reçoit pas de recommandations');
 reset role;
@@ -385,6 +429,24 @@ select results_eq(
   $$ select id, score, reasons from tests.reco where label = 'a-p1-bis' order by place $$,
   $$ select id, score, reasons from tests.reco where label = 'a-p1' order by place $$,
   'Ni à celles de son projet'
+);
+
+-- Une fiche qui n'est plus publiée n'est plus recommandée.
+update public.resources set editorial_status = 'suspended' where id = '79000000-0000-0000-0000-000000000002';
+select tests.login('a0000000-0000-0000-0000-000000007901');
+insert into tests.reco select 'a-apres', row_number() over (), * from public.recommended_resources();
+reset role;
+select results_eq(
+  $$ select id from tests.reco where label = 'a-apres' order by place $$,
+  $$ values ('79000000-0000-0000-0000-000000000001'::uuid), ('79000000-0000-0000-0000-000000000003'::uuid),
+            ('79000000-0000-0000-0000-000000000009'::uuid) $$,
+  'Une fiche repassée en non publiée disparaît des recommandations'
+);
+-- Un profil complété a toujours une filière : le cas « sans filière » ne peut
+-- pas se présenter à la fonction, qui refuse déjà un profil non complété.
+select throws_ok(
+  $$ update public.profiles set program_code = null, subject_codes = '{}' where user_id = 'a0000000-0000-0000-0000-000000007901' $$,
+  '23514', null, 'Un profil complété ne perd pas sa filière'
 );
 
 -- ---------------------------------------------------------------------------

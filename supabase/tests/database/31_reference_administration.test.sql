@@ -552,6 +552,136 @@ select throws_ok($$ select public.admin_set_reference_active('academic_domains',
 reset role;
 
 -- ---------------------------------------------------------------------------
+-- Relecture de sécurité : parents inactifs, planchers par filière, codes
+-- câblés, libellés, usages
+-- ---------------------------------------------------------------------------
+-- Le domaine d'origine est désactivé : sa filière, et tout ce qu'elle porte,
+-- ne sont plus rendus.
+select tests.login('e0000000-0000-0000-0000-000000007604');
+select ok(
+  not (public.reference_data() -> 'academic_programs' @> '[{"code": "computer_science"}]'::jsonb)
+  and not (public.reference_data() -> 'subjects' @> '[{"program_code": "computer_science"}]'::jsonb)
+  and not (public.reference_data() -> 'program_specialties' @> '[{"program_code": "computer_science"}]'::jsonb),
+  'Domaine désactivé : ni sa filière, ni les matières et spécialités de celle-ci ne sont rendues'
+);
+reset role;
+-- Un compte ordinaire n'appelle pas les fonctions internes.
+select tests.login('e0000000-0000-0000-0000-000000007604');
+select throws_ok($$ select private.admin_reference_items('subjects') $$, '42501', 'forbidden', 'Un compte ordinaire n''appelle pas directement la lecture d''administration');
+select throws_ok($$ select private.admin_save_reference_item('countries', '{"code": "SN", "labels": {"fr": "Faux", "en": "Fake"}}') $$, '42501', 'forbidden', 'Ni l''écriture');
+select throws_ok($$ select private.admin_set_reference_active('countries', 'CI', false) $$, '42501', 'forbidden', 'Ni la désactivation');
+reset role;
+
+select tests.login('b0000000-0000-0000-0000-000000007601', 'aal2', 30);
+-- Codes câblés dans le connecteur d'import.
+select throws_ok($$ select public.admin_set_reference_active('resource_types', 'article', false) $$, 'P0001', 'protected_reference', 'Le type « article », écrit par le connecteur d''import, ne se désactive pas');
+select throws_ok($$ select public.admin_set_reference_active('resource_types', 'book', false) $$, 'P0001', 'protected_reference', 'Ni le type « book »');
+-- Une filière active garde sa dernière matière et sa dernière spécialité.
+select is(public.admin_set_reference_active('academic_programs', 'zz_filiere', true), null, 'La filière du test est activée');
+select is(public.admin_set_reference_active('program_specialties', 'zz_specialite', true, 'zz_filiere'), null, 'Sa spécialité aussi');
+select is(public.admin_set_reference_active('subjects', 'zz_test_subject', true, 'zz_filiere'), null, 'Et sa matière');
+select throws_ok($$ select public.admin_set_reference_active('program_specialties', 'zz_specialite', false, 'zz_filiere') $$, 'P0001', 'last_active', 'La dernière spécialité active d''une filière active ne se désactive pas');
+select throws_ok($$ select public.admin_set_reference_active('subjects', 'zz_test_subject', false, 'zz_filiere') $$, 'P0001', 'last_active', 'Ni sa dernière matière active');
+reset role;
+select tests.login('e0000000-0000-0000-0000-000000007604');
+select ok(
+  public.reference_data() -> 'academic_programs' @> '[{"code": "zz_filiere", "domain_code": "zz_domaine"}]'::jsonb
+  and public.reference_data() -> 'program_specialties' @> '[{"program_code": "zz_filiere", "code": "zz_specialite"}]'::jsonb
+  and public.reference_data() -> 'subjects' @> '[{"program_code": "zz_filiere", "code": "zz_test_subject"}]'::jsonb,
+  'Filière active d''un domaine actif : elle est rendue avec sa spécialité et sa matière'
+);
+reset role;
+
+-- Un profil et une fiche rejoignent la filière tant qu'elle est active.
+select tests.login('e1000000-0000-0000-0000-000000007605');
+select lives_ok(
+  $$ update public.profiles set program_code = 'zz_filiere', subject_codes = '{}', specialty_code = null where user_id = 'e1000000-0000-0000-0000-000000007605' $$,
+  'Un compte choisit la filière active'
+);
+reset role;
+select set_config('request.jwt.claims', '', true);
+insert into public.resources
+  (id, type_code, title, authors, tags, language_code, program_code, source_kind, source_name,
+   official_url, access_status, editorial_status, visibility)
+values
+  ('76000000-0000-0000-0000-000000000003', 'article', 'Fiche de la filière du test 76', array['Awa Diop'], '{}', 'fr',
+   'zz_filiere', 'connector', 'test', 'https://exemple.invalid/r76-f', 'open_access', 'pending', 'public');
+
+select tests.login('b0000000-0000-0000-0000-000000007601', 'aal2', 30);
+select is(public.admin_set_reference_active('academic_programs', 'zz_filiere', false), null, 'La filière est désactivée');
+select is(public.admin_set_reference_active('program_specialties', 'zz_specialite', false, 'zz_filiere'), null, 'Filière désactivée : sa dernière spécialité peut l''être aussi');
+select is(public.admin_set_reference_active('program_specialties', 'zz_specialite', true, 'zz_filiere'), null, 'Et se réactiver');
+reset role;
+select tests.login('e0000000-0000-0000-0000-000000007604');
+select ok(
+  not (public.reference_data() -> 'academic_programs' @> '[{"code": "zz_filiere"}]'::jsonb)
+  and not (public.reference_data() -> 'program_specialties' @> '[{"program_code": "zz_filiere"}]'::jsonb)
+  and not (public.reference_data() -> 'subjects' @> '[{"program_code": "zz_filiere"}]'::jsonb),
+  'Filière désactivée : ni elle, ni ses spécialités, ni ses matières, pourtant actives, ne sont rendues'
+);
+select is(
+  (select array_agg(k order by k) from jsonb_object_keys(public.reference_data()) as k),
+  array['academic_domains', 'academic_programs', 'countries', 'education_levels', 'languages', 'licenses',
+        'program_specialties', 'resource_types', 'subjects'],
+  'La forme de reference_data n''a pas changé'
+);
+reset role;
+select tests.login('e1000000-0000-0000-0000-000000007605');
+select is((select program_code from public.profiles), 'zz_filiere', 'Le profil qui porte la filière désactivée se lit toujours');
+select lives_ok($$ update public.profiles set institution_name = 'Institut du test 76' where user_id = 'e1000000-0000-0000-0000-000000007605' $$, 'Et se modifie sur un autre champ');
+select throws_ok($$ update public.profiles set subject_codes = array['zz_test_subject'] where user_id = 'e1000000-0000-0000-0000-000000007605' $$, '23514', null, 'Mais aucune matière ne s''ajoute sous une filière désactivée');
+select throws_ok($$ update public.profiles set specialty_code = 'zz_specialite' where user_id = 'e1000000-0000-0000-0000-000000007605' $$, '23514', null, 'Ni aucune spécialité');
+reset role;
+select set_config('request.jwt.claims', '', true);
+select lives_ok($$ update public.resources set title = 'Fiche de la filière du test 76, retouchée' where id = '76000000-0000-0000-0000-000000000003' $$, 'La fiche d''une filière désactivée se modifie sur un autre champ');
+select throws_ok($$ update public.resources set subject_codes = array['zz_test_subject'] where id = '76000000-0000-0000-0000-000000000003' $$, '23514', 'invalid_subject', 'Mais aucune matière ne s''y ajoute');
+
+-- Libellés : formules de tableur, absence de lettre, caractères invisibles.
+create function tests.invisible_refused()
+returns setof text language plpgsql as $f$
+declare
+  v_code integer;
+begin
+  foreach v_code in array array[128, 159, 173, 1564, 4447, 4448, 6158, 8203, 8207, 8232, 8234, 8238, 8288,
+                                8294, 8297, 12644, 65279, 65440, 917504, 917505, 917631] loop
+    return next throws_ok(
+      format('select public.admin_save_reference_item(''academic_domains'', %L::jsonb)',
+        jsonb_build_object('code', 'zz_invisible', 'labels',
+          jsonb_build_object('fr', 'ab' || chr(v_code) || 'cd', 'en', 'Good'))::text),
+      '22023', 'invalid_payload', 'Caractère U+' || lpad(upper(to_hex(v_code)), 4, '0') || ' refusé dans un libellé');
+  end loop;
+end $f$;
+grant execute on function tests.invisible_refused() to authenticated;
+select tests.login('b0000000-0000-0000-0000-000000007601', 'aal2', 30);
+select throws_ok($$ select public.admin_save_reference_item('academic_domains', '{"code": "zz_formule", "labels": {"fr": "=SOMME(A1:A9)", "en": "Sum"}}') $$, '22023', 'invalid_payload', 'Libellé qui commence par « = » : refusé');
+select throws_ok($$ select public.admin_save_reference_item('academic_domains', '{"code": "zz_formule", "labels": {"fr": "+33 Indicatif", "en": "Plus"}}') $$, '22023', 'invalid_payload', 'Par « + » : refusé');
+select throws_ok($$ select public.admin_save_reference_item('academic_domains', '{"code": "zz_formule", "labels": {"fr": "Bon", "en": "-cmd arguments"}}') $$, '22023', 'invalid_payload', 'Par « - » : refusé');
+select throws_ok($$ select public.admin_save_reference_item('academic_domains', '{"code": "zz_formule", "labels": {"fr": "  @SUM(A1)", "en": "At"}}') $$, '22023', 'invalid_payload', 'Par « @ », même après des espaces : refusé');
+select throws_ok($$ select public.admin_save_reference_item('academic_domains', '{"code": "zz_formule", "labels": {"fr": "2024 / 2025", "en": "Years"}}') $$, '22023', 'invalid_payload', 'Libellé sans aucune lettre : refusé');
+select tests.invisible_refused();
+select is(
+  public.admin_save_reference_item('academic_domains', '{"code": "zz_propre", "labels": {"fr": "Licence 3 - parcours A+B (L3)", "en": "Year 3 @ campus"}}'),
+  '{"created": true}'::jsonb, 'Ces signes restent permis ailleurs qu''en tête'
+);
+-- Usages d'une filière : profils et fiches, pas les projets.
+reset role;
+insert into public.research_projects (id, owner_id, title, program_code) values
+  ('76000000-0000-0000-0000-0000000000a1', 'e0000000-0000-0000-0000-000000007604', 'Projet du test 76', 'computer_science');
+create table tests.usage (usage_count bigint);
+grant all on tests.usage to authenticated;
+select tests.login('b0000000-0000-0000-0000-000000007601', 'aal2', 30);
+insert into tests.usage
+select (e ->> 'usage_count')::bigint from jsonb_array_elements(public.admin_reference_items('academic_programs')) e
+where e ->> 'code' = 'computer_science';
+reset role;
+select is(
+  (select usage_count from tests.usage),
+  (select count(*) from public.profiles where program_code = 'computer_science')
+  + (select count(*) from public.resources where program_code = 'computer_science'),
+  'Le nombre d''usages d''une filière compte les profils et les fiches, pas les projets de recherche'
+);
+
+-- ---------------------------------------------------------------------------
 -- Journal d'audit : table et code en cible, noms des champs, jamais un libellé
 -- ---------------------------------------------------------------------------
 select results_eq(

@@ -101,6 +101,34 @@ values
    null, 'https://exemple.invalid/zz/doublon', 'organization', 'test', 'open_access',
    'pending', 'organization', '78000000-0000-0000-0000-0000000000f1', null, null);
 
+-- R9 : même lien, au protocole et à la casse de l'hôte près. R10 : même lien
+-- seulement une fois le chemin mis en minuscules. R11 : même DOI, mais réservée
+-- à une organisation.
+insert into public.resources
+  (id, type_code, title, authors, tags, language_code, program_code, publication_year, doi, official_url,
+   source_kind, source_name, access_status, editorial_status, visibility, organization_id)
+values
+  ('78000000-0000-0000-0000-000000000009', 'article', 'Intitulé zzautre neuf', array['Jane Roe'], '{}', 'fr', 'zz_ia_prog', 2013,
+   null, 'http://WWW.EXEMPLE.INVALID/zz/doublon/', 'connector', 'test', 'open_access', 'pending', 'public', null),
+  ('78000000-0000-0000-0000-00000000000a', 'article', 'Intitulé zzautre dix', array['Jane Roe'], '{}', 'fr', 'zz_ia_prog', 2014,
+   null, 'https://www.exemple.invalid/ZZ/Doublon/', 'connector', 'test', 'open_access', 'pending', 'public', null),
+  ('78000000-0000-0000-0000-00000000000b', 'article', 'Fiche réservée zzautre onze', array['Jane Roe'], '{}', 'fr', 'zz_ia_prog', 2015,
+   '10.1234/zz.doublon.1', 'https://exemple.invalid/zz/autre-11', 'organization', 'test', 'open_access', 'pending', 'organization',
+   '78000000-0000-0000-0000-0000000000f1');
+
+-- Valeurs figées des deux fonctions d'index : si l'une change (montée de
+-- version de PostgreSQL ou de l'extension unaccent), les index sont à refaire.
+select is(private.fold_text('  L''Été — Données, RÉSEAUX & « IA » !'), 'l ete donnees reseaux ia', 'fold_text : accents, casse, ponctuation');
+select is(private.fold_text('Œuvre straße naïve Ça'), 'oeuvre strasse naive ca', 'fold_text : ligatures et lettres composées');
+select is(private.fold_text('Алгоритмы и СТРУКТУРЫ данных'), 'алгоритмы и структуры данных', 'fold_text : le cyrillique est gardé, en minuscules');
+select is(private.fold_text('خوارزميات البيانات'), 'خوارزميات البيانات', 'fold_text : l''arabe est gardé');
+select is(private.fold_text('機械学習 入門'), '機械学習 入門', 'fold_text : le japonais est gardé');
+select is(private.fold_text(null), '', 'fold_text : rien donne rien');
+select is(private.normalize_url('HTTPS://WWW.Exemple.INVALID/Chemin/Page/?Q=Un#ancre'), 'exemple.invalid/chemin/page/?q=un', 'normalize_url : protocole, www, casse, ancre');
+select is(private.normalize_url('http://exemple.invalid'), 'exemple.invalid', 'normalize_url : hôte seul');
+select is(private.normalize_url(null), null, 'normalize_url : rien donne rien');
+select is(private.url_exact_form('HTTP://WWW.Exemple.INVALID/Chemin/#a'), 'www.exemple.invalid/Chemin/#a', 'url_exact_form : seuls le protocole et la casse de l''hôte sont ignorés');
+
 -- ---------------------------------------------------------------------------
 -- Droits
 -- ---------------------------------------------------------------------------
@@ -165,8 +193,10 @@ select results_eq(
   $$ select id, editorial_status, reason, score, confidence from tests.found
      where label = 'r1' and id::text like '78000000-%' and reason <> 'similar_title' order by id $$,
   $$ values ('78000000-0000-0000-0000-000000000002'::uuid, 'pending', 'same_doi', 1.00, 'high'),
-            ('78000000-0000-0000-0000-000000000003'::uuid, 'rejected', 'same_url', 1.00, 'high') $$,
-  'Même DOI sans égard à la casse, même lien une fois normalisé : confiance haute, quel que soit le statut'
+            ('78000000-0000-0000-0000-000000000003'::uuid, 'rejected', 'same_url', 1.00, 'medium'),
+            ('78000000-0000-0000-0000-000000000009'::uuid, 'pending', 'same_url', 1.00, 'high'),
+            ('78000000-0000-0000-0000-00000000000a'::uuid, 'pending', 'same_url', 1.00, 'medium') $$,
+  'Même DOI : confiance haute. Même lien au protocole et à la casse de l''hôte près : haute ; égal seulement une fois normalisé (www, ancre, casse du chemin) : moyenne'
 );
 select results_eq(
   $$ select id, reason, confidence from tests.found
@@ -195,8 +225,9 @@ select is(
 select is_empty(
   $$ select 1 from tests.found where label = 'r1' and id in (
        '78000000-0000-0000-0000-000000000001', '78000000-0000-0000-0000-000000000006',
-       '78000000-0000-0000-0000-000000000007', '78000000-0000-0000-0000-000000000008') $$,
-  'Ni la fiche elle-même, ni un titre identique sans année ni auteur communs, ni un titre sans rapport, ni une fiche réservée'
+       '78000000-0000-0000-0000-000000000007', '78000000-0000-0000-0000-000000000008',
+       '78000000-0000-0000-0000-00000000000b') $$,
+  'Ni la fiche elle-même, ni un titre identique sans année ni auteur communs, ni un titre sans rapport, ni une fiche réservée de même lien ou de même DOI'
 );
 select is(
   (select count(*) from tests.found where label = 'r1'),
@@ -219,6 +250,7 @@ select tests.login('c0000000-0000-0000-0000-000000007801', 'aal2');
 insert into tests.suggested select * from public.suggest_resource_classification('78000000-0000-0000-0000-000000000001');
 select throws_ok($$ select * from public.suggest_resource_classification('78000000-0000-0000-0000-00000000dead') $$, 'P0001', 'not_found', 'Fiche inconnue');
 select throws_ok($$ select * from public.suggest_resource_classification('78000000-0000-0000-0000-000000000008') $$, 'P0001', 'not_found', 'Fiche réservée : même réponse');
+select throws_ok($$ select * from public.similar_resources('78000000-0000-0000-0000-00000000000b') $$, 'P0001', 'not_found', 'Une fiche réservée ne s''examine pas davantage par son DOI');
 select results_eq(
   $$ select confidence from public.suggest_resource_classification('78000000-0000-0000-0000-000000000001') limit 2 $$,
   $$ values ('high'), ('high') $$,
