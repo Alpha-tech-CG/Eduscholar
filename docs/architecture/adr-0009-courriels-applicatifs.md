@@ -63,6 +63,13 @@ Qui le demande reçoit un courriel quand de nouvelles notifications l'attendent 
 - **Par lot de cinquante** : au-delà, les personnes restantes sont prévenues à l'appel
   suivant. À reprendre (transport partagé, file d'attente) si le volume le demande.
 
+## Complément du 8 octobre 2026 : l'avis de nouvelle connexion
+
+Un cinquième avis, « Nouvelle connexion », part quand le mot de passe d'un compte ouvre
+une session depuis un navigateur qu'il ne connaissait pas (D-09). Comme les autres :
+contenu constant, sans lien ni code, envoyé après l'action. Il ne dit ni d'où, ni avec
+quoi : la plateforme ne le relève pas.
+
 ## Écarté
 
 - **Confirmation par courriel avant de lever le second facteur** : fermerait la voie de

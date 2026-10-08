@@ -956,7 +956,21 @@
     "noticeSuspended": "The account has been suspended: its sessions are closed and it cannot open a new one.",
     "noticeRestored": "The account has been restored.",
     "truncated": "The list is too long to be shown in full: it is incomplete. Use the search by address.",
-    "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator."
+    "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator.",
+    "authEvents": {
+      "heading": "Authentication: last seven days",
+      "intro": "Failed sign-ins and rate limits reached, per day (universal time). Numbers only: no address, no account.",
+      "empty": "No event over the period.",
+      "day": "Day",
+      "nature": "Kind",
+      "operation": "Operation",
+      "total": "Count",
+      "natures": {
+        "failed": "Failure",
+        "limited": "Limit reached",
+        "new-device": "New browser"
+      }
+    }
   },
   "Sharing": {
     "title": "Project sharing",

@@ -57,7 +57,7 @@ export async function directSignUp(email: string, password: string): Promise<voi
 
 type MailboxSummary = { ID: string; Subject: string };
 
-async function messagesFor(email: string): Promise<MailboxSummary[]> {
+export async function messagesFor(email: string): Promise<MailboxSummary[]> {
   const search = await fetch(
     `${mailboxUrl}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
   );

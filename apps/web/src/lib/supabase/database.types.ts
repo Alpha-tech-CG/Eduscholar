@@ -114,6 +114,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"known_devices": {
+                  Row: {
+                    "device_hash": string,"first_seen_at": string,"last_seen_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "device_hash": string,"first_seen_at"?: string,"last_seen_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "device_hash"?: string,"first_seen_at"?: string,"last_seen_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"languages": {
                   Row: {
                     "code": string,"is_active": boolean,"is_interface": boolean,"labels": NonNullable<Json>
@@ -778,6 +791,11 @@ isOneToOne: false
 "add_thesis_section":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
+"admin_auth_events":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "day": string,"kind": string,"total": number
+            }[]
+                           },
 "admin_find_user":
 { Args: { "email": string }; Returns: {
               "confirmed": boolean,"created_at": string,"email": string,"has_second_factor": boolean,"roles": (string)[],"suspended": boolean,"suspension_reason": string,"user_id": string
@@ -896,6 +914,11 @@ isOneToOne: false
 "my_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: Json[]
                            },
+"my_known_devices":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "first_seen_at": string,"last_seen_at": string
+            }[]
+                           },
 "my_notification_preferences":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -954,6 +977,9 @@ isOneToOne: false
 "purge_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"record_auth_event":
+{ Args: { "p_kind": string }; Returns: undefined
+                           },
 "recovery_codes_status":
 { Args: Record<PropertyKey, never>; Returns: {
               "generated_at": string,"remaining": number
@@ -961,6 +987,9 @@ isOneToOne: false
                            },
 "redeem_recovery_code":
 { Args: { "code": string }; Returns: boolean
+                           },
+"register_sign_in_device":
+{ Args: { "p_device_hash": string,"p_user_id": string }; Returns: boolean
                            },
 "remove_project_member":
 { Args: { "project_id": string,"user_id": string }; Returns: undefined

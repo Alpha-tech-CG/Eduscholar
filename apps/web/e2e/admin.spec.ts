@@ -61,6 +61,10 @@ test.describe("administration des rôles et des comptes", () => {
     await page.getByRole("link", { name: "Administration" }).click();
     await expect(page).toHaveURL(/\/fr\/admin/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Administration");
+    // Les compteurs de l'authentification : des nombres, jamais une adresse.
+    const authEvents = page.getByRole("heading", { name: "Authentification : sept derniers jours" });
+    await expect(authEvents).toBeVisible();
+    for (const row of await page.getByTestId("auth-event").allTextContents()) expect(row).not.toContain("@");
 
     // --- Recherche -----------------------------------------------------------
     await lookup(page, "inconnu-" + candidate.email);

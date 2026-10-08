@@ -1,10 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 import {
   awayFromWindowBoundary,
+  completeProfileDirectly,
   createConfirmedUser,
   directSignUp,
   expectSignedIn,
+  messagesFor,
   signInThroughForm,
+  sqlValue,
   strongPassword,
   uniqueEmail,
   waitForEmailLink,
@@ -176,6 +179,50 @@ test.describe("inscription", () => {
 });
 
 test.describe("connexion", () => {
+  test("une connexion depuis un navigateur inconnu prévient le titulaire", async ({ page, browser }) => {
+    const email = uniqueEmail("nouvel-appareil");
+    const password = strongPassword();
+    const userId = await createConfirmedUser(email, password);
+    completeProfileDirectly(userId);
+    const devices = () => sqlValue(`select count(*) from public.known_devices where user_id = '${userId}'`);
+    const alerts = async () =>
+      (await messagesFor(email)).filter(({ Subject }) => Subject.includes("Nouvelle connexion")).length;
+
+    // Première connexion d'un compte tout juste créé : le navigateur est retenu, sans avis.
+    await signInThroughForm(page, email, password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    expect(devices()).toBe("1");
+    expect(await alerts()).toBe(0);
+
+    // Un autre navigateur : le titulaire est prévenu, sans détail ni lien.
+    const context = await browser.newContext();
+    const other = await context.newPage();
+    await signInThroughForm(other, email, password);
+    await expect(other).toHaveURL(/\/fr\/account/);
+    await waitForEmailSubject(email, "Nouvelle connexion");
+    expect(devices()).toBe("2");
+    // La base ne garde qu'une empreinte : le témoin du navigateur n'y est pas.
+    const witness = (await context.cookies()).find(({ name }) => name.endsWith("es-device"));
+    expect(witness?.httpOnly).toBe(true);
+    expect(sqlValue(`select count(*) from public.known_devices where device_hash = '${witness?.value}'`)).toBe("0");
+    // Et aucun utilisateur ne l'écrit par lui-même.
+    expect(
+      sqlValue(
+        `select has_function_privilege('authenticated', 'public.register_sign_in_device(uuid, text)', 'execute')`,
+      ),
+    ).toBe("f");
+
+    // Le même navigateur, de nouveau : ni nouvel enregistrement, ni second avis.
+    await other.goto("/fr/account");
+    await other.getByRole("button", { name: "Se déconnecter" }).click();
+    await expect(other).toHaveURL(/\/fr$/);
+    await signInThroughForm(other, email, password);
+    await expect(other).toHaveURL(/\/fr\/account/);
+    expect(devices()).toBe("2");
+    expect(await alerts()).toBe(1);
+    await context.close();
+  });
+
   test("le message est identique pour un compte inconnu et un mauvais mot de passe", async ({
     page,
   }) => {

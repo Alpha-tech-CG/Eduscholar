@@ -1,5 +1,7 @@
 "use server";
 
+import { noteSignInDevice } from "./device";
+import { recordAuthEvent } from "./events";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { createSessionClient } from "@/lib/supabase/server";
@@ -119,11 +121,18 @@ export async function signIn(
     }
 
     const supabase = await createSessionClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
     });
-    return error ? invalid : null;
+    if (error || !data.user) {
+      await recordAuthEvent("failed:sign-in");
+      return invalid;
+    }
+    // Le mot de passe est accepté : un navigateur inconnu du compte prévient
+    // le titulaire, à l'adresse que le service d'authentification lui connaît.
+    await noteSignInDevice(data.user);
+    return null;
   });
   if (failure) return failure;
 

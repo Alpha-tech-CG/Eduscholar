@@ -182,6 +182,36 @@ est activée, et quand il la désactive lui-même avec son code. À l'activation
 sessions du compte sont fermées. Les deux notifications sont déclarées dans
 `supabase/config.toml` : elles sont à reproduire sur chaque projet hébergé.
 
+### Alerte de nouvelle connexion
+
+Une connexion depuis un navigateur que le compte ne connaît pas envoie au titulaire
+l'avis « Nouvelle connexion » (ADR-0009) : contenu constant, sans lien ni code.
+
+- Le navigateur est reconnu à un témoin aléatoire (`es-device`, illisible par les
+  scripts, valable un an). La base n'en garde que l'empreinte, rattachée au compte ; ni
+  adresse IP, ni nom d'appareil, ni lieu ne sont relevés.
+- La première connexion d'un compte créé depuis moins d'une heure ne prévient pas. Passé
+  ce délai, un compte sans navigateur connu prévient : c'est le cas d'un compte resté six
+  mois sans connexion, et de tout compte existant au jour où l'alerte est déployée.
+- Changer de mot de passe fait oublier les navigateurs connus : la connexion suivante
+  prévient, y compris depuis le navigateur habituel.
+- Trois avis au plus par jour et par compte.
+- L'enregistrement est fait par le serveur, après la réponse du service
+  d'authentification ; l'avis part une fois la page rendue, sans retarder la connexion.
+- L'avis part dès le mot de passe accepté, avant le second facteur : que quelqu'un
+  d'autre tienne le mot de passe est ce que le titulaire doit apprendre.
+- Effacer ses témoins, changer de navigateur ou naviguer en privé fait de la connexion
+  suivante une « nouvelle connexion ».
+- Limite : une connexion faite par appel direct au service d'authentification ne passe
+  pas par l'application et ne prévient pas. L'alerte est un complément, pas une barrière.
+
+### Compteurs des échecs et des limites atteintes
+
+Chaque échec de connexion et chaque limite de débit atteinte ajoute un à un compteur
+horaire (`failed:sign-in`, `limited:password-reset`…). Ce sont des nombres : aucune
+adresse, aucun compte. L'écran d'administration montre les sept derniers jours ; les
+compteurs sont gardés trois mois. Compter ne retarde ni n'empêche jamais la réponse.
+
 ### Profil exigé à la première connexion
 
 Tant que le profil minimal (pays, niveau, filière) et la déclaration d'âge ne sont pas

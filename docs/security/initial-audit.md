@@ -382,6 +382,22 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   sont marqués avant l'envoi ; `APP_URL` n'est pas contraint à `https` par le code — à
   vérifier au déploiement ; la route planifiée se distingue d'une page absente. Ces
   corrections n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Alerte de nouvelle connexion et compteurs de l'authentification
+  (D-09, partie) relus par l'agent sécurité : aucun constat critique ou élevé ; 3 moyens
+  et 9 faibles. Corrigés : l'enregistrement d'un navigateur était appelable par
+  l'utilisateur, ce qui permettait à qui tenait le mot de passe de faire connaître son
+  navigateur sans avis, d'évincer ceux du titulaire ou de rendre l'alerte muette (réservé
+  au rôle de service) ; un compte sans navigateur connu passait pour neuf (il prévient
+  dès qu'il a plus d'une heure) ; les navigateurs connus survivaient au changement de mot
+  de passe ; la même empreinte reliait les comptes d'un poste partagé ; deux connexions
+  simultanées donnaient deux avis ; l'envoi retardait la connexion ; l'avis partait à
+  l'adresse du formulaire plutôt qu'à celle du compte ; les avis n'étaient pas plafonnés
+  (trois par jour). Acceptés : une connexion par appel direct au service
+  d'authentification ne prévient pas ; les compteurs sont des agrégats, qu'un anonyme
+  peut gonfler et où une attaque lente sur un seul compte ne se voit pas ; une panne du
+  service d'authentification est comptée comme un échec ; l'usage d'un code de secours
+  ne fait pas oublier les navigateurs connus. Ces corrections n'ont pas fait l'objet
+  d'une seconde revue.
 
 ## Suivi
 

@@ -956,7 +956,21 @@
     "noticeSuspended": "Le compte est suspendu : ses sessions sont fermées et il ne peut plus en ouvrir.",
     "noticeRestored": "Le compte est rétabli.",
     "truncated": "La liste est trop longue pour être affichée en entier : elle est incomplète. Utilisez la recherche par adresse.",
-    "ruleRank": "Une suspension décidée par un super-administrateur ne se lève que par un super-administrateur."
+    "ruleRank": "Une suspension décidée par un super-administrateur ne se lève que par un super-administrateur.",
+    "authEvents": {
+      "heading": "Authentification : sept derniers jours",
+      "intro": "Échecs de connexion et limites de débit atteintes, par jour (temps universel). Des nombres seulement : ni adresse, ni compte.",
+      "empty": "Aucun événement sur la période.",
+      "day": "Jour",
+      "nature": "Nature",
+      "operation": "Opération",
+      "total": "Nombre",
+      "natures": {
+        "failed": "Échec",
+        "limited": "Limite atteinte",
+        "new-device": "Nouveau navigateur"
+      }
+    }
   },
   "Sharing": {
     "title": "Partage du projet",

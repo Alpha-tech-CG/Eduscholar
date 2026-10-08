@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/server";
 import { clientAddress } from "./client-address";
+import { recordAuthEvent } from "./events";
 
 // Limitation de débit des opérations d'authentification (modèle de menaces
 // M-01, M-35). Les compteurs sont en base : ils valent pour toutes les
@@ -133,17 +134,23 @@ export async function checkAttempt(
   // Une règle sans compteur d'adresse ni de couple ne lit pas l'adresse.
   const address = rules.ip || rules.pair ? clientAddress(await headers()) : "";
 
+  let verdict: RateLimitVerdict = "allowed";
   if (rules.ip && !(await consume(fingerprint(action, "ip", address), rules.ip))) {
-    return "client_limited";
+    verdict = "client_limited";
+  } else if (
+    email &&
+    rules.pair &&
+    !(await consume(fingerprint(action, "pair", `${address}|${email}`), rules.pair))
+  ) {
+    verdict = "client_limited";
+  } else if (
+    email &&
+    rules.account &&
+    !(await consume(fingerprint(action, "account", email), rules.account))
+  ) {
+    verdict = "account_limited";
   }
-  if (email && rules.pair) {
-    const pairKey = fingerprint(action, "pair", `${address}|${email}`);
-    if (!(await consume(pairKey, rules.pair))) return "client_limited";
-  }
-  if (email && rules.account) {
-    if (!(await consume(fingerprint(action, "account", email), rules.account))) {
-      return "account_limited";
-    }
-  }
-  return "allowed";
+  // Une limite atteinte est comptée : l'administration voit une attaque en cours.
+  if (verdict !== "allowed") await recordAuthEvent(`limited:${action}`);
+  return verdict;
 }

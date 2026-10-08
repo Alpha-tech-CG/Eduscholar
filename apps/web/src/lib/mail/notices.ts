@@ -11,6 +11,7 @@ export const NOTICE_KINDS = [
   "recovery_codes_generated",
   "account_suspended",
   "account_restored",
+  "new_sign_in",
 ] as const;
 export type NoticeKind = (typeof NOTICE_KINDS)[number];
 
@@ -45,6 +46,14 @@ const FR: Record<NoticeKind, Text> = {
       "Votre compte a été rétabli par l'administration de la plateforme. Vous pouvez de nouveau vous connecter avec votre mot de passe.",
     ],
   },
+  new_sign_in: {
+    subject: "Nouvelle connexion",
+    paragraphs: [
+      "Votre mot de passe vient d'ouvrir une connexion à votre compte depuis un navigateur que nous ne connaissions pas.",
+      "Si c'est vous, vous n'avez rien à faire.",
+      "Si ce n'est pas vous, changez votre mot de passe sans attendre, puis activez la validation en deux étapes depuis « Sécurité du compte ».",
+    ],
+  },
 };
 
 const EN: Record<NoticeKind, Text> = {
@@ -74,6 +83,14 @@ const EN: Record<NoticeKind, Text> = {
     subject: "Account restored",
     paragraphs: [
       "Your account has been restored by the platform's administrators. You can sign in again with your password.",
+    ],
+  },
+  new_sign_in: {
+    subject: "New sign-in",
+    paragraphs: [
+      "Your password just opened a sign-in to your account from a browser we did not know.",
+      "If this was you, there is nothing to do.",
+      "If this was not you, change your password right away, then turn on two-step verification from “Account security”.",
     ],
   },
 };

@@ -96,6 +96,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006005800_scope_and_links_hardening.sql` | Corrections de revue : invitations annulées à chaque décision sur un membre, fiche réduite pour un accès limité, délai après refus |
 | `20261006005900_notification_emails.sql` | Courriel facultatif des notifications, désabonnement par jeton, rappel d'échéance |
 | `20261006006000_notification_emails_hardening.sql` | Corrections de revue : traces d'audit, comptes bannis, rappel retenté |
+| `20261006006100_sign_in_alert_and_auth_events.sql` | Navigateurs connus d'un compte, compteurs des échecs et limites de l'authentification |
+| `20261006006200_sign_in_alert_hardening.sql` | Corrections de revue : enregistrement par le serveur seul, compte ancien sans navigateur connu, oubli au changement de mot de passe |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -668,6 +670,31 @@ attendent. Désactivé par défaut ; aucun droit direct, pour aucun rôle de l'A
   retient l'échéance déjà rappelée : la déplacer la rappelle de nouveau. Un rappel non lu
   vaut pour toutes les tâches proches du projet ; un rappel qui n'a pas pu s'écrire est
   retenté le lendemain.
+
+### Alerte de nouvelle connexion et compteurs de l'authentification (D-09)
+
+`known_devices (user_id, device_hash, first_seen_at, last_seen_at)` : navigateurs depuis
+lesquels un compte s'est déjà connecté — l'empreinte d'un témoin aléatoire et deux dates,
+rien d'autre. `private.auth_event_counters (hour, kind, total)` : échecs et limites
+atteintes, par heure et par nature. Aucun droit direct sur l'une ni l'autre.
+
+- `register_sign_in_device` (rôle de service, pour le compte dont le mot de passe vient
+  d'être accepté) retient le navigateur et rend vrai si le titulaire doit être prévenu :
+  navigateur inconnu d'un compte qui en connaît d'autres, ou d'un compte créé depuis plus
+  d'une heure qui n'en connaît aucun. Aucun utilisateur ne l'appelle. Vingt navigateurs
+  au plus par compte ; trois avis par jour, au-delà le navigateur est retenu sans
+  courriel. L'empreinte mêle le témoin et le compte : deux comptes ouverts depuis le même
+  poste ne sont pas reliés ;
+- changer de mot de passe fait oublier les navigateurs connus du compte (déclencheur sur
+  `auth.users`), que le changement passe par l'application ou non ;
+- `my_known_devices` (le titulaire, compte actif) : les dates seulement, pour la copie de
+  ses données ;
+- `record_auth_event` (rôle de service) ajoute un à un compteur ; une nature qui n'a pas
+  la forme attendue est ignorée, de sorte qu'aucune adresse ne peut s'y glisser ;
+- `admin_auth_events` (administration, second facteur récent) : les nombres des sept
+  derniers jours ;
+- navigateurs non revus depuis six mois et compteurs de plus de trois mois sont effacés
+  chaque nuit (tâche `eduscholar-auth-traces-purge`).
 
 ## Fonctions du schéma `private`
 

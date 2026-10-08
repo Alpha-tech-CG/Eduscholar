@@ -58,3 +58,27 @@ export async function listAdminAccounts(): Promise<AdminAccountList | null> {
   // recherche par adresse reste le moyen d'atteindre n'importe quel compte.
   return { accounts, truncated: accounts.length === ACCOUNT_LIST_SIZE };
 }
+
+export type AuthEventCount = {
+  /** Jour, en temps universel (AAAA-MM-JJ). */
+  day: string;
+  /** « failed », « limited » ou « new-device ». */
+  nature: string;
+  /** Opération concernée (« sign-in », « password-reset »…). */
+  operation: string;
+  total: number;
+};
+
+/**
+ * Échecs et limites atteintes de l'authentification sur sept jours : des
+ * nombres, sans adresse ni compte. `null` si la lecture échoue.
+ */
+export async function listAuthEvents(): Promise<AuthEventCount[] | null> {
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase.rpc("admin_auth_events");
+  if (error) return null;
+  return (data ?? []).map((row) => {
+    const [nature = "", operation = ""] = row.kind.split(":");
+    return { day: row.day, nature, operation, total: row.total };
+  });
+}

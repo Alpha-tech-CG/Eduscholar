@@ -74,7 +74,8 @@ async function ownRows(
     | "my_project_comments"
     | "my_thesis_versions"
     | "my_project_tasks"
-    | "my_version_decisions",
+    | "my_version_decisions"
+    | "my_known_devices",
 ): Promise<unknown[]> {
   const rows: unknown[] = [];
   for (let from = 0; ; from += PAGE) {
@@ -194,6 +195,8 @@ export async function buildPersonalDataExport(
     const versionDecisions = await ownRows(supabase, "my_version_decisions");
     // Tâches de ses projets, et celles qu'il a posées sur les projets des autres.
     const projectTasks = await ownRows(supabase, "my_project_tasks");
+    // Navigateurs depuis lesquels il s'est connecté : deux dates chacun.
+    const knownDevices = await ownRows(supabase, "my_known_devices");
     // Son choix de recevoir, ou non, le courriel des notifications.
     const emailDigest = await supabase.rpc("my_notification_preferences");
     if (emailDigest.error) throw new ExportError("my_notification_preferences");
@@ -220,6 +223,7 @@ export async function buildPersonalDataExport(
         tasks: projectTasks,
       },
       preferences: { notification_email: emailDigest.data === true },
+      known_browsers: knownDevices,
       // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
       account_events: accountEvents,
       catalogue: { submissions, submission_history: submissionHistory, reports },

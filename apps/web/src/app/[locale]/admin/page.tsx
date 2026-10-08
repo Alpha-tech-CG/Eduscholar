@@ -8,7 +8,7 @@ import { UserLookup } from "@/components/admin/user-lookup";
 import { AuthForm, TextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { confirmAdminIdentity } from "@/lib/admin/actions";
-import { getAdminSession, listAdminAccounts } from "@/lib/admin/queries";
+import { getAdminSession, listAdminAccounts, listAuthEvents } from "@/lib/admin/queries";
 import { requireUser } from "@/lib/auth/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -60,7 +60,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
     );
   }
 
-  const listing = await listAdminAccounts();
+  const [listing, authEvents] = await Promise.all([listAdminAccounts(), listAuthEvents()]);
+  const natures: Record<string, string> = {
+    failed: t("authEvents.natures.failed"),
+    limited: t("authEvents.natures.limited"),
+    "new-device": t("authEvents.natures.new-device"),
+  };
   const accounts = listing?.accounts ?? null;
 
   return (
@@ -128,6 +133,47 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
           )}
         </section>
       </NextIntlClientProvider>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">{t("authEvents.heading")}</h2>
+        <p className="text-sm opacity-80">{t("authEvents.intro")}</p>
+        {authEvents === null ? (
+          <p role="alert">{t("loadFailed")}</p>
+        ) : authEvents.length === 0 ? (
+          <p className="opacity-70">{t("authEvents.empty")}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-foreground/20">
+                  <th scope="col" className="py-2 pe-4 font-medium">{t("authEvents.day")}</th>
+                  <th scope="col" className="py-2 pe-4 font-medium">{t("authEvents.nature")}</th>
+                  <th scope="col" className="py-2 pe-4 font-medium">{t("authEvents.operation")}</th>
+                  <th scope="col" className="py-2 font-medium">{t("authEvents.total")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {authEvents.map((event) => (
+                  <tr
+                    key={`${event.day}:${event.nature}:${event.operation}`}
+                    data-testid="auth-event"
+                    className="border-b border-foreground/10"
+                  >
+                    <td className="py-2 pe-4">{event.day}</td>
+                    <td className="py-2 pe-4">
+                      {Object.hasOwn(natures, event.nature) ? natures[event.nature] : event.nature}
+                    </td>
+                    <td className="py-2 pe-4">
+                      <code>{event.operation}</code>
+                    </td>
+                    <td className="py-2">{event.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </AuthPageShell>
   );
 }
