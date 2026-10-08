@@ -1,4 +1,5 @@
 import type { ResourceFieldErrorCode } from "@/lib/catalogue/schemas";
+import type { OrganizationFieldErrorCode } from "@/lib/organizations/schemas";
 import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
 import type { ProjectFieldErrorCode } from "@/lib/projects/schemas";
 import type { SourceFieldErrorCode } from "@/lib/projects/source-schemas";
@@ -55,6 +56,13 @@ export type AuthErrorCode =
   | "source_unavailable"
   | "source_paused"
   | "source_daily_limit"
+  // Organisations
+  | "own_organization"
+  | "slug_taken"
+  | "org_admin_exists"
+  | "organization_has_resources"
+  | "org_suspension_required"
+  | "second_factor_setup_required"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";
@@ -71,6 +79,7 @@ export type AuthFormState =
         | ResourceFieldErrorCode
         | ProjectFieldErrorCode
         | SourceFieldErrorCode
+        | OrganizationFieldErrorCode
       >;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;

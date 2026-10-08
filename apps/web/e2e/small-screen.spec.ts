@@ -170,6 +170,40 @@ test.describe("petit écran", () => {
     await page.getByRole("button", { name: "Vérifier" }).click();
     await expect(page).toHaveURL(/\/fr\/account/);
 
-    expect(await findings(page, ["/fr/admin", "/fr/moderation"])).toEqual({});
+    // Une organisation au nom long, que ce compte administre : ses écrans aussi.
+    const organizationId = randomUUID();
+    const long = `Organisation ${"anticonstitutionnellement".repeat(4)}`;
+    // L'identifiant commence par un compteur décroissant : la liste, triée par
+    // identifiant, montre cette organisation sur sa première page.
+    const slug = `0${9_999_999_999_999 - Date.now()}-petit-${organizationId.slice(0, 8)}`;
+    sql(`
+      insert into public.organizations (id, slug, name, status)
+        values ('${organizationId}', '${slug}', '${long}', 'verified');
+      insert into public.organization_members (organization_id, user_id, role)
+        values ('${organizationId}', '${id}', 'org_admin')
+    `);
+    try {
+      expect(
+        await findings(page, [
+          "/fr/admin",
+          "/fr/moderation",
+          "/fr/admin/organizations",
+          "/fr/organizations",
+          `/fr/organizations/${organizationId}`,
+        ]),
+      ).toEqual({});
+    } finally {
+      // L'organisation ne reste pas dans la base locale.
+      try {
+        sql(`
+          update public.organizations set status = 'suspended' where id = '${organizationId}';
+          select set_config('eduscholar.organization_dissolution', '${organizationId}', true);
+          delete from public.organization_members where organization_id = '${organizationId}';
+          delete from public.organizations where id = '${organizationId}'
+        `);
+      } catch {
+        // Le ménage est un confort.
+      }
+    }
   });
 });

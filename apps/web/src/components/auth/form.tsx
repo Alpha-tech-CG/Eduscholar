@@ -145,6 +145,9 @@ export function CheckboxField({ name, label }: CheckboxFieldProps) {
   const t = useTranslations("Auth");
   const { state } = useContext(FormStateContext);
   const error = state.status === "error" ? state.fields?.[name] : undefined;
+  // Identifiant propre à cette case : une page peut porter plusieurs
+  // formulaires ayant une case du même nom (une confirmation par ligne).
+  const id = `${name}-${useId()}`;
 
   return (
     <div className="flex flex-col gap-1">
@@ -154,13 +157,13 @@ export function CheckboxField({ name, label }: CheckboxFieldProps) {
           name={name}
           required
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${name}-error` : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
           className="mt-1 size-4"
         />
         <span>{label}</span>
       </label>
       {error ? (
-        <p id={`${name}-error`} className="text-sm text-red-800 dark:text-red-300">
+        <p id={`${id}-error`} className="text-sm text-red-800 dark:text-red-300">
           {t(`fieldErrors.${error}`)}
         </p>
       ) : null}

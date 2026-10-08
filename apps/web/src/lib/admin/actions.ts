@@ -86,7 +86,10 @@ export async function confirmAdminIdentity(
   }
 
   const locale = await getLocale();
-  return redirect({ href: { pathname: "/admin", query: { notice: "confirmed" } }, locale });
+  // Retour à l'écran d'où vient la demande : deux destinations fixes, jamais
+  // une adresse lue dans le formulaire.
+  const pathname = text(formData, "from") === "organizations" ? "/admin/organizations" : "/admin";
+  return redirect({ href: { pathname, query: { notice: "confirmed" } }, locale });
 }
 
 export type FoundUser = {

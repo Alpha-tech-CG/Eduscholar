@@ -125,6 +125,11 @@ export default async function AccountPage({
           </Link>
         </li>
         <li>
+          <Link href="/organizations" className="underline underline-offset-4">
+            {t("organizations")}
+          </Link>
+        </li>
+        <li>
           <Link href="/notifications" className="underline underline-offset-4" data-testid="notifications-link">
             {t("notifications", { count: unreadNotifications })}
           </Link>

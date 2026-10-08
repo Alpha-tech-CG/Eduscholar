@@ -75,7 +75,8 @@ async function ownRows(
     | "my_thesis_versions"
     | "my_project_tasks"
     | "my_version_decisions"
-    | "my_known_devices",
+    | "my_known_devices"
+    | "my_organization_memberships",
 ): Promise<unknown[]> {
   const rows: unknown[] = [];
   for (let from = 0; ; from += PAGE) {
@@ -197,6 +198,8 @@ export async function buildPersonalDataExport(
     const projectTasks = await ownRows(supabase, "my_project_tasks");
     // Navigateurs depuis lesquels il s'est connecté : deux dates chacun.
     const knownDevices = await ownRows(supabase, "my_known_devices");
+    // Organisations dont il est membre : leur nom, son rôle, la date d'entrée.
+    const organizationMemberships = await ownRows(supabase, "my_organization_memberships");
     // Son choix de recevoir, ou non, le courriel des notifications.
     const emailDigest = await supabase.rpc("my_notification_preferences");
     if (emailDigest.error) throw new ExportError("my_notification_preferences");
@@ -223,6 +226,7 @@ export async function buildPersonalDataExport(
         tasks: projectTasks,
       },
       preferences: { notification_email: emailDigest.data === true },
+      organizations: { memberships: organizationMemberships },
       known_browsers: knownDevices,
       // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
       account_events: accountEvents,
@@ -232,7 +236,6 @@ export async function buildPersonalDataExport(
         "documents_of_submitted_versions",
         "notifications",
         "rights_declaration_and_comments_sent_with_submissions",
-        "organization_memberships",
       ],
     };
   } catch (error) {

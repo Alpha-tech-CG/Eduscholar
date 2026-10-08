@@ -1,8 +1,9 @@
 // Courriels que l'application envoie elle-même au titulaire d'un compte
 // (ADR-0009) : des avis de sécurité que le service d'authentification n'émet
 // pas. Comme ses propres messages, ils sont bilingues et ne portent ni lien ni
-// code : un avis ne demande jamais de cliquer. Seule l'invitation à suivre un
-// projet, en fin de fichier, porte un lien — celui de la plateforme.
+// code : un avis ne demande jamais de cliquer. Seules les invitations (à suivre
+// un projet, à rejoindre une organisation), en fin de fichier, portent un lien
+// — celui de la plateforme.
 //
 // Aucune donnée du compte n'entre dans le texte : tout y est constant.
 
@@ -186,6 +187,50 @@ export function buildInvitation(link: string, inviterEmail: string | null): Noti
 `;
 
   return { subject: "EduScholar — Invitation à suivre un projet / Invitation to follow a project", text, html };
+}
+
+/**
+ * L'invitation à rejoindre une organisation. Tout y est constant, hors le
+ * lien : ni le nom de l'organisation — un texte choisi par quelqu'un, qui ne
+ * servira pas à faire passer un autre message —, ni le rôle, ni l'adresse de
+ * la personne qui invite. La page ouverte par le lien les montre à la seule
+ * personne invitée, une fois connectée.
+ */
+export function buildOrganizationInvitation(link: string): NoticeMessage {
+  const fr = [
+    "Vous êtes invité à rejoindre une organisation sur EduScholar.",
+    "Pour voir de quelle organisation il s'agit et accepter, ouvrez le lien ci-dessous et connectez-vous avec cette adresse électronique. Le lien est valable sept jours et ne sert qu'une fois.",
+    "Si vous n'attendiez pas cette invitation, ignorez ce message : sans votre accord, vous ne rejoignez rien et rien ne vous est demandé.",
+  ];
+  const en = [
+    "You are invited to join an organisation on EduScholar.",
+    "To see which organisation it is and accept, open the link below and sign in with this email address. The link is valid for seven days and works only once.",
+    "If you were not expecting this invitation, ignore this message: without your agreement, you join nothing and nothing is asked of you.",
+  ];
+
+  const text = ["EduScholar", "", "Bonjour,", ...fr, link, "", "----", "", "Hello,", ...en, link].join("\n");
+  const block = (lang: "fr" | "en", greeting: string, paragraphs: string[], label: string) =>
+    [
+      `<p lang="${lang}">${greeting}</p>`,
+      ...paragraphs.map((p) => `<p lang="${lang}">${escape(p)}</p>`),
+      `<p lang="${lang}"><a href="${escape(link)}">${label}</a></p>`,
+    ].join("\n    ");
+  const html = `<!doctype html>
+<html lang="fr">
+  <body style="font-family: system-ui, sans-serif; color: #171717; line-height: 1.5">
+    <h1 style="font-size: 20px">EduScholar</h1>
+    ${block("fr", "Bonjour,", fr, "Voir l'invitation")}
+    <hr />
+    ${block("en", "Hello,", en, "See the invitation")}
+  </body>
+</html>
+`;
+
+  return {
+    subject: "EduScholar — Invitation à rejoindre une organisation / Invitation to join an organisation",
+    text,
+    html,
+  };
 }
 
 /**

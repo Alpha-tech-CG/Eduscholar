@@ -1,7 +1,14 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import { serverEnv } from "@/lib/env.server";
-import { buildDigest, buildInvitation, buildNotice, type NoticeKind, type NoticeMessage } from "./notices";
+import {
+  buildDigest,
+  buildInvitation,
+  buildNotice,
+  buildOrganizationInvitation,
+  type NoticeKind,
+  type NoticeMessage,
+} from "./notices";
 import { transportOptions } from "./transport";
 
 // Envoi des avis de sécurité de l'application (ADR-0009).
@@ -60,6 +67,14 @@ export function sendProjectInvitation(
   inviterEmail: string | null,
 ): Promise<boolean> {
   return send(to, buildInvitation(link, inviterEmail), "Invitation");
+}
+
+/**
+ * Envoie l'invitation à rejoindre une organisation. Le lien porte le jeton :
+ * il n'est consigné nulle part, pas même en cas d'échec.
+ */
+export function sendOrganizationInvitation(to: string, link: string): Promise<boolean> {
+  return send(to, buildOrganizationInvitation(link), "Invitation d'organisation");
 }
 
 /**

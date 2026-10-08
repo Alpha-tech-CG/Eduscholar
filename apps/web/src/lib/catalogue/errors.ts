@@ -38,6 +38,13 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
     case "account_suspended":
     case "second_factor_missing":
       return message;
+    // Organisations
+    case "last_org_admin":
+    case "own_organization":
+    case "slug_taken":
+    case "org_admin_exists":
+    case "organization_has_resources":
+      return message;
     case "source_not_allowed":
       return "forbidden";
     case "duplicate_doi":
