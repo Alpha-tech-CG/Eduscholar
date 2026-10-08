@@ -355,6 +355,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   Acceptés : « tout marquer comme lu » marque aussi une notification arrivée entre
   l'affichage et le clic ; les notifications ne figurent pas dans la copie des données
   (déclaré dans le fichier). Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Portée limitée et lien de partage (E-06) relus par l'agent sécurité :
+  aucun constat critique ou élevé ; 3 moyens et 5 faibles. Corrigés : un membre
+  élargissait sa portée ou son rôle en acceptant une invitation plus ancienne restée en
+  attente (toute décision sur un membre annule désormais ses invitations en attente) ;
+  la fiche rendue à un membre limité dépassait le modèle (titre, statut et échéance
+  seulement) ; une demande refusée se répétait aussitôt ; désactiver le lien laissait
+  les demandes en attente ; la copie des données rendait le passage cité d'une section
+  refermée. Acceptés : qui tient un lien peut savoir s'il vaut encore ; le jeton du lien
+  figure dans l'adresse de la page ; l'accord du propriétaire donne l'accès complet, au
+  rôle que proposait le lien au moment de la demande. Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
 
 ## Suivi
 

@@ -48,6 +48,7 @@ export default async function InvitationPage({ params }: PageProps<"/[locale]/in
             })}
           </p>
           <p className="text-sm opacity-80">{t(`roleHelp.${preview.role}`)}</p>
+          {preview.fullAccess ? null : <p className="text-sm opacity-80">{t("scope.limitedInvitationHelp")}</p>}
           <AuthForm action={acceptInvitation} submitLabel={t("accept")} pendingLabel={t("pending")}>
             <input type="hidden" name="token" value={token} />
           </AuthForm>

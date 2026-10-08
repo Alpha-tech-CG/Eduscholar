@@ -49,7 +49,7 @@ export default async function SharedSectionPage({
   return (
     <AuthPageShell
       wide
-      title={`${section.number} ${section.title}`}
+      title={loaded.project.fullAccess ? `${section.number} ${section.title}` : section.title}
       intro={t("sharedIntro", { project: loaded.project.title })}
       footer={
         <p>

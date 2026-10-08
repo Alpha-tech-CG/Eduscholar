@@ -544,6 +544,137 @@ test.describe("partage d'un projet avec un encadreur", () => {
     expect(sqlValue(`select count(*) from public.project_tasks where project_id = '${projectId}'`)).toBe("1");
   });
 
+  test("portée limitée et lien de partage soumis à l'accord du propriétaire", async ({ page, browser }) => {
+    const owner = await createMember("portee-etudiante");
+    const supervisor = await createMember("portee-encadreur");
+    const stranger = await createMember("portee-demandeur");
+    const { projectId, sectionId, token } = seedProject(owner.id);
+    const closedSectionId = randomUUID();
+    sql(`
+      insert into public.thesis_sections (id, project_id, position, level, title, body)
+        values ('${closedSectionId}', '${projectId}', 2, 1, 'Chapitre réservé', 'Texte réservé ${token}.')
+    `);
+
+    await signInThroughForm(page, owner.email, owner.password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+
+    // --- Invitation limitée à une section ---------------------------------------
+    await page.goto(`/fr/projects/${projectId}/sharing`);
+    await page.getByLabel("Adresse électronique de la personne").fill(supervisor.email);
+    await page
+      .getByRole("group", { name: /Limiter l'accès à ces sections/ })
+      .getByLabel("Introduction")
+      .check();
+    await page.getByRole("button", { name: "Envoyer l'invitation" }).click();
+    await expect(page).toHaveURL(/notice=invited$/);
+    await expect(page.getByTestId("invitation")).toContainText("accès limité");
+
+    const invitation = await waitForInvitation(supervisor.email);
+    const guide = await openSession(browser, supervisor);
+    await guide.page.goto(invitation.path);
+    await expect(guide.page.getByRole("main")).toContainText("ne vous ouvre que certaines sections");
+    await guide.page.getByRole("button", { name: "Accepter l'invitation" }).click();
+    await expect(guide.page).toHaveURL(new RegExp(`/fr/shared/${projectId}\\?notice=joined`));
+
+    // --- Ce que lit un membre limité ----------------------------------------------
+    await expect(guide.page.getByTestId("limited-access")).toBeVisible();
+    await expect(guide.page.getByRole("heading", { level: 1 })).toHaveText(`Mémoire ${token}`);
+    // La description détaillée du projet reste réservée à l'accès complet.
+    await expect(guide.page.getByRole("main")).not.toContainText(`Problématique ${token}`);
+    await expect(guide.page.getByTestId("shared-section")).toHaveText(["Introduction"]);
+    await expect(guide.page.getByRole("main")).not.toContainText("Chapitre réservé");
+    await expect(guide.page.getByRole("main")).not.toContainText("Texte réservé");
+    await expect(guide.page.getByTestId("document")).toHaveCount(0);
+    await expect(guide.page.getByRole("link", { name: "Versions soumises et décisions" })).toHaveCount(0);
+    await expect(guide.page.getByRole("link", { name: "Tâches et échéances" })).toHaveCount(0);
+    for (const path of ["versions", "tasks", `sections/${closedSectionId}`]) {
+      expect((await guide.page.goto(`/fr/shared/${projectId}/${path}`))?.status(), path).toBe(404);
+    }
+    // La section ouverte se lit et se commente.
+    await guide.page.goto(`/fr/shared/${projectId}/sections/${sectionId}`);
+    await expect(guide.page.getByTestId("section-text")).toContainText(`Texte du mémoire ${token}.`);
+    await guide.page.getByLabel("Votre commentaire").fill(`Remarque sur la section ouverte ${token}.`);
+    await guide.page.getByRole("button", { name: "Publier le commentaire" }).click();
+    await expect(guide.page).toHaveURL(/notice=commented/);
+
+    // --- La propriétaire voit la portée, puis ouvre tout le projet -------------------
+    await page.goto(`/fr/projects/${projectId}/sharing`);
+    const member = page.getByTestId("member").filter({ hasText: supervisor.email });
+    await expect(member).toContainText("accès limité à 1 section");
+    await member.getByText("Modifier ce que cette personne peut lire").click();
+    // Un accès limité sans aucune section : refusé.
+    await member.getByLabel("Introduction").uncheck();
+    await member.getByRole("button", { name: "Enregistrer l'accès" }).click();
+    await expect(member.getByRole("alert")).toContainText("Cochez au moins une section");
+    await member.getByLabel("Accès").selectOption({ label: "Tout le projet" });
+    await member.getByRole("button", { name: "Enregistrer l'accès" }).click();
+    await expect(page).toHaveURL(/notice=scope-changed$/);
+    await expect(page.getByTestId("member").filter({ hasText: supervisor.email })).toContainText("accès complet");
+
+    // Effet immédiat : le document entier, versions et tâches.
+    await guide.page.goto(`/fr/shared/${projectId}`);
+    await expect(guide.page.getByTestId("limited-access")).toHaveCount(0);
+    await expect(guide.page.getByRole("main")).toContainText(`Problématique ${token}`);
+    await expect(guide.page.getByTestId("document")).toContainText(`Texte réservé ${token}.`);
+    await expect(guide.page.getByRole("link", { name: "Versions soumises et décisions" })).toBeVisible();
+    await guide.close();
+
+    // --- Lien de partage : affiché une seule fois ------------------------------------
+    await page.getByRole("button", { name: "Créer un lien de partage" }).click();
+    const linkField = page.getByTestId("share-link");
+    await expect(linkField).toHaveValue(/\/fr\/join\/[0-9a-f]{64}$/);
+    const joinPath = new URL(await linkField.inputValue()).pathname;
+    const secret = joinPath.split("/").pop() ?? "";
+    await page.goto(`/fr/projects/${projectId}/sharing`);
+    await expect(page.getByTestId("active-link")).toContainText("Un lien est actif (Lecture seule)");
+    expect(await page.content()).not.toContain(secret);
+    expect(sqlValue(`select count(*) from public.project_share_links where token_hash = '${secret}'`)).toBe("0");
+
+    // --- Le lien ne donne aucun droit et ne dit rien du projet ------------------------
+    const asker = await openSession(browser, stranger);
+    await asker.page.goto(joinPath);
+    await expect(asker.page.getByRole("heading", { level: 1 })).toHaveText("Demander à suivre un projet");
+    await expect(asker.page.getByRole("main")).not.toContainText(token);
+    await expect(asker.page.getByRole("main")).toContainText(stranger.email);
+    await asker.page.getByRole("button", { name: "Envoyer la demande" }).click();
+    await expect(asker.page).toHaveURL(/\/fr\/shared\?notice=requested$/);
+    await expect(status(asker.page)).toContainText("Si ce lien est valable, votre demande est envoyée.");
+    await expect(asker.page.getByTestId("pending-requests")).toHaveText("1 demande en attente de réponse.");
+    await expect(asker.page.getByTestId("shared-project")).toHaveCount(0);
+    expect((await asker.page.goto(`/fr/shared/${projectId}`))?.status()).toBe(404);
+
+    // Un lien inconnu reçoit exactement la même réponse, sans créer de demande.
+    await asker.page.goto(`/fr/join/${"0".repeat(64)}`);
+    await expect(asker.page.getByRole("heading", { level: 1 })).toHaveText("Demander à suivre un projet");
+    await asker.page.getByRole("button", { name: "Envoyer la demande" }).click();
+    await expect(asker.page).toHaveURL(/\/fr\/shared\?notice=requested$/);
+    await expect(asker.page.getByTestId("pending-requests")).toHaveText("1 demande en attente de réponse.");
+
+    // --- La propriétaire est avertie, voit qui demande, et accepte ---------------------
+    await page.goto("/fr/notifications");
+    await expect(
+      page.getByTestId("notification").filter({ hasText: "Quelqu'un demande à suivre" }),
+    ).toHaveCount(1);
+    await page.getByTestId("notification").filter({ hasText: "Quelqu'un demande à suivre" }).getByRole("link").click();
+    await expect(page).toHaveURL(new RegExp(`/fr/projects/${projectId}/sharing$`));
+    const request = page.getByTestId("access-request");
+    await expect(request).toContainText(stranger.email);
+    await request.getByRole("button", { name: "Accepter (accès à tout le projet)" }).click();
+    await expect(page).toHaveURL(/notice=request-approved$/);
+    await expect(page.getByTestId("member").filter({ hasText: stranger.email })).toContainText("Lecture seule");
+    await expect(page.getByTestId("access-request")).toHaveCount(0);
+
+    await asker.page.goto("/fr/shared");
+    await expect(asker.page.getByTestId("shared-project")).toContainText(`Mémoire ${token}`);
+    await expect(asker.page.getByTestId("pending-requests")).toHaveCount(0);
+    await asker.close();
+
+    // --- Le lien se désactive -----------------------------------------------------------
+    await page.getByRole("button", { name: "Désactiver le lien" }).click();
+    await expect(page).toHaveURL(/notice=link-revoked$/);
+    await expect(page.getByTestId("active-link")).toHaveCount(0);
+  });
+
   test("les pages de partage exigent une session", async ({ page }) => {
     for (const path of ["/fr/shared", `/fr/shared/${randomUUID()}`, `/fr/projects/${randomUUID()}/sharing`]) {
       await page.goto(path);

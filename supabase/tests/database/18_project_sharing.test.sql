@@ -162,7 +162,7 @@ select is(
 select tests.login('50000000-0000-0000-0000-000000004502');
 select is(
   public.invitation_preview((select token from tests.tokens where label = 's1')),
-  '{"project_title": "Mémoire de A", "role": "supervisor", "owner_email": "partage-a@test.invalid"}'::jsonb,
+  '{"project_title": "Mémoire de A", "role": "supervisor", "owner_email": "partage-a@test.invalid", "full_access": true}'::jsonb,
   'La personne invitée voit ce qu''elle accepte'
 );
 select is(

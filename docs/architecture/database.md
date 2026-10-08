@@ -91,6 +91,9 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006005300_project_tasks_hardening.sql` | Corrections de revue des tâches : copie des données après retrait, plafond par membre, quota des modifications à part, intitulé sur une ligne |
 | `20261006005400_notifications.sql` | Notifications internes du suivi d'un projet, écrites par déclencheurs |
 | `20261006005500_notifications_hardening.sql` | Corrections de revue des notifications : pas de doublon, plafond par projet, effacement au retrait d'un membre |
+| `20261006005600_member_scope.sql` | Portée d'un membre limitée à certaines sections |
+| `20261006005700_share_links.sql` | Lien de partage et demandes soumises à l'accord du propriétaire |
+| `20261006005800_scope_and_links_hardening.sql` | Corrections de revue : invitations annulées à chaque décision sur un membre, fiche réduite pour un accès limité, délai après refus |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -609,6 +612,35 @@ dit ce qui s'est passé et où.
   `eduscholar-notifications-purge`) ;
 - pas d'envoi par courriel dans cette tranche : il demande des préférences et un
   désabonnement.
+
+### Portée d'un membre et liens de partage (E-06)
+
+`research_project_member_sections (project_id, user_id, section_id)` : sections ouvertes
+à un membre dont `full_access` est faux. `project_invitations.section_ids` : portée
+proposée par une invitation limitée. `project_share_links` : lien de partage (empreinte du
+jeton, rôle proposé, sept jours, un seul actif par projet). `project_access_requests` :
+demandes faites par lien (`pending`, `approved`, `refused`).
+
+- `private.project_access` rend la place de l'appelant et s'il a l'accès complet ;
+  `private.section_access` la rend pour une section, si elle lui est ouverte — section
+  inconnue, d'un projet fermé ou hors portée : même refus ;
+- un membre limité lit le titre, le statut et l'échéance du projet, et ses sections
+  ouvertes avec leurs commentaires ; un encadreur limité les commente. Il ne lit ni le
+  titre des autres sections, ni la description détaillée du projet, ni sources et
+  citations, ni versions, ni tâches : `private.project_role`, qui garde versions et
+  tâches, exige toujours l'accès complet ;
+- `set_member_scope` (propriétaire) fixe la portée ; elle prend effet à la requête
+  suivante. Toute création ou modification d'une appartenance annule les invitations en
+  attente vers l'adresse du membre : seule vaut la dernière décision du propriétaire ;
+- lien de partage : `create_project_link` rend le jeton une seule fois ;
+  `request_project_access` ne rend ni ne lève rien selon le lien, et ne dit rien du
+  projet ; `decide_access_request` (propriétaire) accepte — accès complet, au rôle que
+  proposait le lien — ou refuse. Une demande refusée ne se répète pas avant trente
+  jours ; désactiver le lien refuse les demandes en attente ;
+- plafonds : 10 liens et 10 demandes par jour et par compte, 20 demandes en attente par
+  projet, une seule par personne et par projet ;
+- liens expirés ou désactivés et demandes closes sont effacés après trente jours, les
+  demandes sans réponse après quatre-vingt-dix (tâche `eduscholar-invitations-purge`).
 
 ## Fonctions du schéma `private`
 

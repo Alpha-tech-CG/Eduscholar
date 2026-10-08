@@ -543,10 +543,13 @@ depuis le serveur) :
 | `my_account_events`, `my_deleted_projects` | Le titulaire, compte actif : ses seuls événements (date et nature) et ses seuls projets supprimés en attente de purge |
 | `invite_project_member`, `revoke_project_invitation`, `remove_project_member`, `project_sharing` | Le propriétaire du projet, compte actif au profil complété |
 | `invitation_preview`, `accept_project_invitation` | L'appelant connecté sous l'adresse invitée, confirmée ; accepter exige en outre un profil complété ; toute autre situation reçoit la même réponse vide |
-| `shared_projects`, `shared_project_document`, `leave_project` | Le membre du projet, compte actif ; le document exige l'accès complet |
-| `add_project_comment`, `resolve_project_thread` | Le propriétaire du projet ou un membre `supervisor` à accès complet, compte actif |
-| `update_project_comment`, `delete_project_comment` | L'auteur du commentaire, tant qu'il est propriétaire ou `supervisor` du projet |
-| `project_comments` | Le propriétaire et tout membre à accès complet, lecteur compris |
+| `shared_projects`, `leave_project` | Tout membre du projet, compte actif |
+| `shared_project_document` | Tout membre : en accès complet, le projet entier ; en accès limité, le titre, le statut, l'échéance et les seules sections ouvertes, sans sources ni citations |
+| `set_member_scope`, `create_project_link`, `revoke_project_link`, `decide_access_request` | Le propriétaire du projet, compte actif au profil complété |
+| `request_project_access`, `my_pending_access_requests` | Tout compte actif au profil complété ; la demande ne dit rien du projet et ne donne aucun droit |
+| `add_project_comment`, `resolve_project_thread` | Le propriétaire du projet, ou un membre `supervisor` à qui la section est ouverte (accès complet, ou section dans sa portée) |
+| `update_project_comment`, `delete_project_comment` | L'auteur du commentaire, tant qu'il est propriétaire ou `supervisor` et que la section lui est ouverte |
+| `project_comments` | Le propriétaire et tout membre, lecteur compris : en accès limité, les commentaires des seules sections ouvertes |
 | `my_project_comments` | Le titulaire : ses propres commentaires, pour la copie de ses données |
 | `submit_thesis_version`, `erase_thesis_version` | Le propriétaire du projet, compte actif au profil complété |
 | `decide_thesis_version` | Un membre `supervisor` à accès complet ; jamais le propriétaire |
@@ -577,7 +580,7 @@ et refuse le rejeu.
 | Lecture de l'adresse d'un compte pour l'avis de suspension ou de rétablissement (`auth.admin.getUserById`) | `admin_set_account_status` acceptée juste avant sous la session de l'administrateur ; l'adresse ne sert qu'à l'envoi, n'est ni affichée ni journalisée |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
-| Création de notifications — **hors rôle serveur** : déclencheurs de la base, dans la transaction de l'événement | Aucun appel ne peut en écrire ; le destinataire est déduit du projet (propriétaire, ou encadreurs à accès complet) |
+| Création de notifications — **hors rôle serveur** : déclencheurs de la base, dans la transaction de l'événement | Aucun appel ne peut en écrire ; le destinataire est déduit du projet (propriétaire, ou encadreurs à qui ce que désigne la notification est ouvert) |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
 | Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Ne lit rien, ne renvoie qu'un nombre ; sources, fiches de lecture, sections et citations partent en cascade. |

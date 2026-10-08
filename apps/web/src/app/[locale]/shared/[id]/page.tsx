@@ -65,6 +65,7 @@ export default async function SharedProjectPage({
 
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
+      {/* Accès limité : la section se lit sur sa propre page ; le document entier n'est pas montré. */}
       <div className="flex flex-col gap-4 print:hidden">
         {notice === "joined" ? (
           <p role="status" className="rounded border border-foreground/20 p-3">
@@ -75,6 +76,11 @@ export default async function SharedProjectPage({
         <p className="opacity-80" data-testid="shared-role">
           {t("readOnly", { role: t(`roles.${project.role}`) })}
         </p>
+        {project.fullAccess ? null : (
+          <p data-testid="limited-access" className="rounded border border-foreground/20 p-3">
+            {t("scope.limitedNotice")}
+          </p>
+        )}
         {facts.map(([heading, value]) =>
           value ? (
             <section key={heading} className="flex flex-col gap-1">
@@ -94,7 +100,7 @@ export default async function SharedProjectPage({
                     href={`/shared/${id}/sections/${section.id}`}
                     className="underline underline-offset-4"
                   >
-                    {section.number} {section.title}
+                    {project.fullAccess ? `${section.number} ${section.title}` : section.title}
                   </Link>
                   {(openThreads.get(section.id) ?? 0) > 0 ? (
                     <span className="ms-2 text-sm opacity-80">
@@ -106,16 +112,20 @@ export default async function SharedProjectPage({
             </ul>
           </section>
         ) : null}
-        <p>
-          <Link href={`/shared/${id}/versions`} className="underline underline-offset-4">
-            {t("toVersions")}
-          </Link>
-        </p>
-        <p>
-          <Link href={`/shared/${id}/tasks`} className="underline underline-offset-4">
-            {t("toTasks")}
-          </Link>
-        </p>
+        {project.fullAccess ? (
+          <>
+            <p>
+              <Link href={`/shared/${id}/versions`} className="underline underline-offset-4">
+                {t("toVersions")}
+              </Link>
+            </p>
+            <p>
+              <Link href={`/shared/${id}/tasks`} className="underline underline-offset-4">
+                {t("toTasks")}
+              </Link>
+            </p>
+          </>
+        ) : null}
         <p>
           <Link href="/shared" className="underline underline-offset-4">
             {t("backToShared")}
@@ -128,7 +138,7 @@ export default async function SharedProjectPage({
         <p role="alert" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">
           {t("tooLarge")}
         </p>
-      ) : (
+      ) : !project.fullAccess ? null : (
         <DocumentArticle
           document={loaded.document}
           locale={locale}

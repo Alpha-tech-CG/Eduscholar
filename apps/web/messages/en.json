@@ -119,7 +119,8 @@
       "code_wait": "A code was just accepted for this account. For your security, wait a minute and a half, then enter the code your app shows at that moment.",
       "source_paused": "The source has asked for a pause: too many requests were sent to it. Nothing was imported; try again in a few minutes.",
       "source_daily_limit": "The platform has reached the number of imports it allows itself per day from this source. Try again tomorrow.",
-      "nothing_to_submit": "Your project has no section yet: there is nothing to submit."
+      "nothing_to_submit": "Your project has no section yet: there is nothing to submit.",
+      "scope_required": "Tick at least one section, or choose access to the whole project."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -1029,7 +1030,51 @@
     "sectionsIntro": "Open a section to read it and comment on it.",
     "openThreads": "{count, plural, one {# open thread} other {# open threads}}",
     "toVersions": "Submitted versions and decisions",
-    "toTasks": "Tasks and deadlines"
+    "toTasks": "Tasks and deadlines",
+    "scope": {
+      "full": "full access",
+      "limited": "{count, plural, =0 {no section open} one {access limited to # section} other {access limited to # sections}}",
+      "limitedInvitation": "limited access",
+      "change": "Change what this person can read",
+      "access": "Access",
+      "fullChoice": "The whole project",
+      "limitedChoice": "Only the ticked sections",
+      "sections": "Open sections (if access is limited)",
+      "save": "Save the access",
+      "inviteSections": "Limit access to these sections (tick nothing to open the whole project)",
+      "limitedNotice": "Your access is limited to some sections of this project. Its detailed description, the other sections, the sources, the submitted versions and the tasks are not open to you.",
+      "limitedInvitationHelp": "This invitation only opens some sections of the project to you."
+    },
+    "requests": {
+      "heading": "{count, plural, =0 {No pending request} one {# pending request} other {# pending requests}}",
+      "askedOn": "requested on {date}",
+      "approve": "Accept (access to the whole project)",
+      "refuse": "Refuse"
+    },
+    "link": {
+      "heading": "Sharing link",
+      "intro": "A link you pass on yourself. It gives no rights and says nothing about your project: the person who opens it can only ask to follow it, and nothing is open to them until you accept. Valid for seven days.",
+      "active": "A link is active ({role}), until {date}.",
+      "role": "What the person will be able to do, once accepted",
+      "create": "Create a sharing link",
+      "replace": "Create a new link (the old one will stop working)",
+      "revoke": "Disable the link",
+      "created": "The link has been created. Copy it now: it will not be shown again.",
+      "linkLabel": "Link to pass on",
+      "keepSafe": "Do not publish it: anyone who opens it can send you a request."
+    },
+    "join": {
+      "title": "Ask to follow a project",
+      "intro": "This link lets you ask to follow a research project. Its owner will decide; until then, nothing is open to you.",
+      "disclosure": "By sending the request, you share your address ({email}) and your display name with them.",
+      "request": "Send the request",
+      "requested": "If this link is valid, your request has been sent. The project will appear here once accepted.",
+      "pending": "{count, plural, one {# request awaiting an answer.} other {# requests awaiting an answer.}}"
+    },
+    "noticeScopeChanged": "This person's access has been changed.",
+    "noticeLinkRevoked": "The link has been disabled.",
+    "noticeRequestApproved": "The request has been accepted: this person now follows your project.",
+    "noticeRequestRefused": "The request has been refused."
   },
   "Comments": {
     "sectionTitle": "Section of a shared project",
@@ -1186,7 +1231,8 @@
       "reply": "Reply to a comment on “{project}”",
       "version_submitted": "A version of “{project}” has been submitted to you",
       "version_decided": "Decision given on a version of “{project}”",
-      "task_added": "New task on “{project}”"
+      "task_added": "New task on “{project}”",
+      "access_requested": "Someone is asking to follow “{project}”"
     },
     "new": "unread",
     "read": "read",

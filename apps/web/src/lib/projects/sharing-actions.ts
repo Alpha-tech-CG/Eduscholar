@@ -4,7 +4,7 @@ import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { getFullySignedInUser } from "@/lib/auth/session";
-import type { AuthFormState } from "@/lib/auth/state";
+import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
 import { serverEnv } from "@/lib/env.server";
 import { sendProjectInvitation } from "@/lib/mail/send";
@@ -29,6 +29,13 @@ const inviteSchema = z.object({
   role: z.enum(MEMBER_ROLES),
 });
 
+/** Sections cochées dans un formulaire : des identifiants, soixante au plus. */
+function checkedSections(formData: FormData): string[] | null {
+  const values = formData.getAll("sections").filter((value): value is string => typeof value === "string");
+  const parsed = z.array(z.uuid()).max(60).safeParse(values);
+  return parsed.success ? parsed.data : null;
+}
+
 export async function inviteMember(
   _previous: AuthFormState,
   formData: FormData,
@@ -49,10 +56,18 @@ export async function inviteMember(
     };
   }
 
+  // Des sections cochées : l'accès est limité à celles-là. Aucune : accès complet.
+  const sections = checkedSections(formData);
+  if (!sections) return { status: "error", error: "validation", values };
+
   const supabase = await createSessionClient();
   const { data: token, error } = await supabase.rpc("invite_project_member", {
     project_id: parsed.data.projectId,
-    payload: { email: parsed.data.email, role: parsed.data.role },
+    payload: {
+      email: parsed.data.email,
+      role: parsed.data.role,
+      ...(sections.length > 0 ? { section_ids: sections } : {}),
+    },
   });
   if (error || typeof token !== "string") {
     return { status: "error", error: error ? catalogueErrorCode(error) : "unavailable", values };
@@ -151,4 +166,133 @@ export async function leaveProject(
 
   const locale = await getLocale();
   return redirect({ href: { pathname: "/shared", query: { notice: "left" } }, locale });
+}
+
+/** Fixe la portée d'un membre : tout le projet, ou les seules sections cochées. */
+export async function setMemberScope(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  if (!(await getFullySignedInUser())) return expired;
+  const projectId = z.uuid().safeParse(text(formData, "projectId"));
+  const userId = z.uuid().safeParse(text(formData, "userId"));
+  const access = z.enum(["full", "limited"]).safeParse(text(formData, "access"));
+  const sections = checkedSections(formData);
+  if (!projectId.success || !userId.success || !sections) return invalid;
+  if (!access.success) {
+    return { status: "error", error: "validation", fields: { access: "invalid_choice" } };
+  }
+  if (access.data === "limited" && sections.length === 0) {
+    return { status: "error", error: "scope_required", values: { access: "limited" } };
+  }
+
+  const supabase = await createSessionClient();
+  const { error } = await supabase.rpc("set_member_scope", {
+    project_id: projectId.data,
+    user_id: userId.data,
+    payload: access.data === "full" ? { full_access: true } : { full_access: false, section_ids: sections },
+  });
+  if (error) return { status: "error", error: catalogueErrorCode(error) };
+
+  const locale = await getLocale();
+  return redirect({
+    href: { pathname: `/projects/${projectId.data}/sharing`, query: { notice: "scope-changed" } },
+    locale,
+  });
+}
+
+export type ShareLinkState =
+  | { status: "idle" }
+  | { status: "error"; error: AuthErrorCode }
+  /** Le lien n'est remis qu'ici, une seule fois : la base n'en garde que l'empreinte. */
+  | { status: "created"; link: string };
+
+/** Crée le lien de partage du projet ; le précédent, s'il existe, ne vaut plus. */
+export async function createShareLink(
+  _previous: ShareLinkState,
+  formData: FormData,
+): Promise<ShareLinkState> {
+  if (!(await getFullySignedInUser())) return { status: "error", error: "session_expired" };
+  const projectId = z.uuid().safeParse(text(formData, "projectId"));
+  const role = z.enum(MEMBER_ROLES).safeParse(text(formData, "role"));
+  if (!projectId.success || !role.success) return { status: "error", error: "validation" };
+
+  const supabase = await createSessionClient();
+  const { data: token, error } = await supabase.rpc("create_project_link", {
+    project_id: projectId.data,
+    payload: { role: role.data },
+  });
+  if (error || typeof token !== "string") {
+    return { status: "error", error: error ? catalogueErrorCode(error) : "unavailable" };
+  }
+  const locale = await getLocale();
+  return { status: "created", link: `${serverEnv().APP_URL}/${locale}/join/${token}` };
+}
+
+export async function revokeShareLink(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  if (!(await getFullySignedInUser())) return expired;
+  const projectId = z.uuid().safeParse(text(formData, "projectId"));
+  if (!projectId.success) return invalid;
+
+  const supabase = await createSessionClient();
+  const { error } = await supabase.rpc("revoke_project_link", { project_id: projectId.data });
+  if (error) return { status: "error", error: catalogueErrorCode(error) };
+
+  const locale = await getLocale();
+  return redirect({
+    href: { pathname: `/projects/${projectId.data}/sharing`, query: { notice: "link-revoked" } },
+    locale,
+  });
+}
+
+/** Accepte ou refuse une demande de suivi faite par lien. */
+export async function decideAccessRequest(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  if (!(await getFullySignedInUser())) return expired;
+  const projectId = z.uuid().safeParse(text(formData, "projectId"));
+  const requestId = z.uuid().safeParse(text(formData, "requestId"));
+  const approve = z.enum(["true", "false"]).safeParse(text(formData, "approve"));
+  if (!projectId.success || !requestId.success || !approve.success) return invalid;
+
+  const supabase = await createSessionClient();
+  const { error } = await supabase.rpc("decide_access_request", {
+    request_id: requestId.data,
+    approve: approve.data === "true",
+  });
+  if (error) return { status: "error", error: catalogueErrorCode(error) };
+
+  const locale = await getLocale();
+  return redirect({
+    href: {
+      pathname: `/projects/${projectId.data}/sharing`,
+      query: { notice: approve.data === "true" ? "request-approved" : "request-refused" },
+    },
+    locale,
+  });
+}
+
+/**
+ * Demande à suivre le projet que désigne un lien. La réponse est la même que
+ * le lien soit valable ou non : rien n'est dit du projet.
+ */
+export async function requestAccess(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  if (!(await getFullySignedInUser())) return expired;
+  const token = text(formData, "token");
+
+  const supabase = await createSessionClient();
+  const { error } = await supabase.rpc("request_project_access", {
+    token: INVITATION_TOKEN.test(token) ? token : "",
+  });
+  if (error) return { status: "error", error: catalogueErrorCode(error) };
+
+  const locale = await getLocale();
+  return redirect({ href: { pathname: "/shared", query: { notice: "requested" } }, locale });
 }

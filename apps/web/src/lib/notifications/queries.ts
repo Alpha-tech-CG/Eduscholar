@@ -11,6 +11,7 @@ export const NOTIFICATION_KINDS = [
   "version_submitted",
   "version_decided",
   "task_added",
+  "access_requested",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -43,6 +44,7 @@ function hrefOf(row: Row): string {
     return `${base}/versions/${row.version_id}`;
   }
   if (row.kind === "task_added") return `${base}/tasks`;
+  if (row.kind === "access_requested" && owner) return `${base}/sharing`;
   return base;
 }
 

@@ -60,7 +60,7 @@ membre lit par des fonctions nommées qui revérifient son appartenance à chaqu
 | E-03 | Versions : instantané du document, soumission, décision de l'encadreur (acceptée, refusée, à corriger), historique immuable (lignes 11 à 13) | E-01 | fait — version figée à la soumission, décisions en historique, sections ajoutées, modifiées ou retirées depuis la version précédente ; le propriétaire peut effacer le contenu d'une version soumise par erreur |
 | E-04 | Tâches et échéances (lignes 18 à 20) | E-01 | fait — tâches avec échéance, posées par l'étudiant ou l'encadreur ; retard signalé ; l'encadreur ne modifie que les siennes |
 | E-05 | Notifications internes et par courriel : commentaire, décision, échéance proche (§6.12) | E-02, E-03, E-04 | fait pour les notifications internes (commentaire, réponse, version soumise, décision, tâche) ; restent le courriel — avec préférences et désabonnement — et le rappel d'échéance proche |
-| E-06 | Portée limitée à certaines sections ; invitation par lien avec confirmation du propriétaire | E-02 | à faire |
+| E-06 | Portée limitée à certaines sections ; invitation par lien avec confirmation du propriétaire | E-02 | fait — portée fixée à l'invitation ou sur un membre ; lien de partage sans droit ni information, demande soumise à l'accord du propriétaire |
 
 ## Dette de sécurité à solder avant la production
 

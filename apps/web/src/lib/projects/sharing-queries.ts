@@ -20,16 +20,52 @@ const role = z.enum(MEMBER_ROLES);
 
 const sharingSchema = z.object({
   members: z.array(
-    z.object({ user_id: z.uuid(), email: z.string().nullable(), role, joined_at: z.string() }),
+    z.object({
+      user_id: z.uuid(),
+      email: z.string().nullable(),
+      role,
+      joined_at: z.string(),
+      full_access: z.boolean(),
+      section_ids: z.array(z.uuid()),
+    }),
   ),
   invitations: z.array(
-    z.object({ id: z.uuid(), email: z.string(), role, expires_at: z.string(), created_at: z.string() }),
+    z.object({
+      id: z.uuid(),
+      email: z.string(),
+      role,
+      expires_at: z.string(),
+      created_at: z.string(),
+      full_access: z.boolean(),
+    }),
+  ),
+  link: z.object({ role, expires_at: z.string() }).nullable(),
+  requests: z.array(
+    z.object({
+      id: z.uuid(),
+      email: z.string().nullable(),
+      display_name: z.string().nullable(),
+      role,
+      created_at: z.string(),
+    }),
   ),
 });
 
 export type ProjectSharing = {
-  members: { userId: string; email: string | null; role: MemberRole; joinedAt: string }[];
-  invitations: { id: string; email: string; role: MemberRole; expiresAt: string }[];
+  members: {
+    userId: string;
+    email: string | null;
+    role: MemberRole;
+    joinedAt: string;
+    /** Faux : le membre ne lit que les sections de `sectionIds`. */
+    fullAccess: boolean;
+    sectionIds: string[];
+  }[];
+  invitations: { id: string; email: string; role: MemberRole; expiresAt: string; fullAccess: boolean }[];
+  /** Lien de partage actif : son jeton n'est connu qu'à sa création. */
+  link: { role: MemberRole; expiresAt: string } | null;
+  /** Demandes faites par lien, en attente de l'accord du propriétaire. */
+  requests: { id: string; email: string | null; displayName: string | null; role: MemberRole; createdAt: string }[];
 };
 
 /** Membres et invitations en attente d'un projet, pour son propriétaire. `null` sinon. */
@@ -46,12 +82,23 @@ export async function getProjectSharing(projectId: string): Promise<ProjectShari
       email: member.email,
       role: member.role,
       joinedAt: member.joined_at,
+      fullAccess: member.full_access,
+      sectionIds: member.section_ids,
     })),
     invitations: parsed.data.invitations.map((invitation) => ({
       id: invitation.id,
       email: invitation.email,
       role: invitation.role,
       expiresAt: invitation.expires_at,
+      fullAccess: invitation.full_access,
+    })),
+    link: parsed.data.link ? { role: parsed.data.link.role, expiresAt: parsed.data.link.expires_at } : null,
+    requests: parsed.data.requests.map((request) => ({
+      id: request.id,
+      email: request.email,
+      displayName: request.display_name,
+      role: request.role,
+      createdAt: request.created_at,
     })),
   };
 }
@@ -84,9 +131,15 @@ const previewSchema = z.object({
   project_title: z.string(),
   role,
   owner_email: z.string().nullable(),
+  full_access: z.boolean(),
 });
 
-export type InvitationPreview = { projectTitle: string; role: MemberRole; ownerEmail: string | null };
+export type InvitationPreview = {
+  projectTitle: string;
+  role: MemberRole;
+  ownerEmail: string | null;
+  fullAccess: boolean;
+};
 
 /**
  * Ce que désigne un jeton d'invitation, s'il est valable et adressé à
@@ -102,12 +155,21 @@ export async function getInvitationPreview(token: string): Promise<InvitationPre
     projectTitle: parsed.data.project_title,
     role: parsed.data.role,
     ownerEmail: parsed.data.owner_email,
+    fullAccess: parsed.data.full_access,
   };
+}
+
+/** Nombre de demandes de suivi que l'utilisateur a faites et qui attendent encore. */
+export async function getPendingAccessRequestCount(): Promise<number> {
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase.rpc("my_pending_access_requests");
+  return error || typeof data !== "number" ? 0 : data;
 }
 
 const text = z.string().nullable();
 const documentSchema = z.object({
   role,
+  full_access: z.boolean(),
   project: z.object({
     id: z.uuid(),
     title: z.string(),
@@ -143,6 +205,8 @@ const documentSchema = z.object({
 
 export type SharedProject = {
   role: MemberRole;
+  /** Faux : seules quelques sections sont ouvertes ; ni sources, ni versions, ni tâches. */
+  fullAccess: boolean;
   title: string;
   status: string;
   dueDate: string | null;
@@ -169,6 +233,7 @@ export async function loadSharedDocument(
   const { project: row, sections, sources: sourceRows, citations: citationRows } = parsed.data;
   const project: SharedProject = {
     role: parsed.data.role,
+    fullAccess: parsed.data.full_access,
     title: row.title,
     status: row.status,
     dueDate: row.due_date,

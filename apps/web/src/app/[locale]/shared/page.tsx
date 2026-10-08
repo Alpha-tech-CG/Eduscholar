@@ -3,7 +3,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { AuthPageShell } from "@/components/auth/page-shell";
 import { Link } from "@/i18n/navigation";
 import { requireOnboardedUser } from "@/lib/profile/guard";
-import { getSharedProjects } from "@/lib/projects/sharing-queries";
+import { getPendingAccessRequestCount, getSharedProjects } from "@/lib/projects/sharing-queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sharing");
@@ -13,11 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Projets que d'autres ont partagés avec l'utilisateur. */
 export default async function SharedProjectsPage({ searchParams }: PageProps<"/[locale]/shared">) {
   await requireOnboardedUser("/shared");
-  const [t, tStatus, format, projects, { notice }] = await Promise.all([
+  const [t, tStatus, format, projects, pendingRequests, { notice }] = await Promise.all([
     getTranslations("Sharing"),
     getTranslations("Projects.status"),
     getFormatter(),
     getSharedProjects(),
+    getPendingAccessRequestCount(),
     searchParams,
   ]);
 
@@ -37,6 +38,17 @@ export default async function SharedProjectsPage({ searchParams }: PageProps<"/[
       {notice === "left" ? (
         <p role="status" className="rounded border border-foreground/20 p-3">
           {t("noticeLeft")}
+        </p>
+      ) : null}
+
+      {notice === "requested" ? (
+        <p role="status" className="rounded border border-foreground/20 p-3">
+          {t("join.requested")}
+        </p>
+      ) : null}
+      {pendingRequests > 0 ? (
+        <p data-testid="pending-requests" className="opacity-80">
+          {t("join.pending", { count: pendingRequests })}
         </p>
       ) : null}
 

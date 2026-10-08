@@ -119,7 +119,8 @@
       "code_wait": "Un code vient d'être accepté pour ce compte. Par sécurité, patientez une minute et demie, puis saisissez le code que votre application affiche à ce moment-là.",
       "source_paused": "La source demande une pause : trop de requêtes lui ont été adressées. Rien n'a été importé ; réessayez dans quelques minutes.",
       "source_daily_limit": "Le nombre d'imports que la plateforme s'autorise par jour auprès de cette source est atteint. Réessayez demain.",
-      "nothing_to_submit": "Votre projet n'a encore aucune section : il n'y a rien à soumettre."
+      "nothing_to_submit": "Votre projet n'a encore aucune section : il n'y a rien à soumettre.",
+      "scope_required": "Cochez au moins une section, ou choisissez l'accès à tout le projet."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -1029,7 +1030,51 @@
     "sectionsIntro": "Ouvrez une section pour la lire et la commenter.",
     "openThreads": "{count, plural, one {# fil ouvert} other {# fils ouverts}}",
     "toVersions": "Versions soumises et décisions",
-    "toTasks": "Tâches et échéances"
+    "toTasks": "Tâches et échéances",
+    "scope": {
+      "full": "accès complet",
+      "limited": "{count, plural, =0 {aucune section ouverte} one {accès limité à # section} other {accès limité à # sections}}",
+      "limitedInvitation": "accès limité",
+      "change": "Modifier ce que cette personne peut lire",
+      "access": "Accès",
+      "fullChoice": "Tout le projet",
+      "limitedChoice": "Seulement les sections cochées",
+      "sections": "Sections ouvertes (si l'accès est limité)",
+      "save": "Enregistrer l'accès",
+      "inviteSections": "Limiter l'accès à ces sections (ne rien cocher pour ouvrir tout le projet)",
+      "limitedNotice": "Votre accès est limité à certaines sections de ce projet. Sa description détaillée, les autres sections, les sources, les versions soumises et les tâches ne vous sont pas ouvertes.",
+      "limitedInvitationHelp": "Cette invitation ne vous ouvre que certaines sections du projet."
+    },
+    "requests": {
+      "heading": "{count, plural, =0 {Aucune demande en attente} one {# demande en attente} other {# demandes en attente}}",
+      "askedOn": "demandé le {date}",
+      "approve": "Accepter (accès à tout le projet)",
+      "refuse": "Refuser"
+    },
+    "link": {
+      "heading": "Lien de partage",
+      "intro": "Un lien que vous transmettez vous-même. Il ne donne aucun droit et ne dit rien de votre projet : la personne qui l'ouvre peut seulement demander à le suivre, et rien ne lui est ouvert tant que vous n'avez pas accepté. Valable sept jours.",
+      "active": "Un lien est actif ({role}), jusqu'au {date}.",
+      "role": "Ce que la personne pourra faire, une fois acceptée",
+      "create": "Créer un lien de partage",
+      "replace": "Créer un nouveau lien (l'ancien ne vaudra plus)",
+      "revoke": "Désactiver le lien",
+      "created": "Le lien est créé. Copiez-le maintenant : il ne sera plus affiché.",
+      "linkLabel": "Lien à transmettre",
+      "keepSafe": "Ne le publiez pas : toute personne qui l'ouvre peut vous envoyer une demande."
+    },
+    "join": {
+      "title": "Demander à suivre un projet",
+      "intro": "Ce lien vous permet de demander à suivre un projet de recherche. Sa propriétaire ou son propriétaire décidera ; tant que ce n'est pas fait, rien ne vous est ouvert.",
+      "disclosure": "En envoyant la demande, vous lui communiquez votre adresse ({email}) et votre nom d'affichage.",
+      "request": "Envoyer la demande",
+      "requested": "Si ce lien est valable, votre demande est envoyée. Le projet apparaîtra ici une fois acceptée.",
+      "pending": "{count, plural, one {# demande en attente de réponse.} other {# demandes en attente de réponse.}}"
+    },
+    "noticeScopeChanged": "L'accès de cette personne est modifié.",
+    "noticeLinkRevoked": "Le lien est désactivé.",
+    "noticeRequestApproved": "La demande est acceptée : cette personne suit maintenant votre projet.",
+    "noticeRequestRefused": "La demande est refusée."
   },
   "Comments": {
     "sectionTitle": "Section d'un projet partagé",
@@ -1186,7 +1231,8 @@
       "reply": "Réponse à un commentaire sur « {project} »",
       "version_submitted": "Une version de « {project} » vous est soumise",
       "version_decided": "Décision rendue sur une version de « {project} »",
-      "task_added": "Nouvelle tâche sur « {project} »"
+      "task_added": "Nouvelle tâche sur « {project} »",
+      "access_requested": "Quelqu'un demande à suivre « {project} »"
     },
     "new": "non lue",
     "read": "lue",

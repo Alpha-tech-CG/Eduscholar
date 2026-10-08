@@ -154,6 +154,8 @@ Détail dans `docs/security/initial-audit.md`.
 - Tâches et échéances partagées entre l'étudiant et son encadreur (E-04).
 - Notifications internes : chacun est averti de ce que l'autre a fait sur le projet
   (E-05, sans courriel pour l'instant).
+- Portée d'un membre limitée à certaines sections, et lien de partage soumis à l'accord
+  du propriétaire (E-06) : la Phase 4 est complète, hors courriels de notification.
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

@@ -298,6 +298,25 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"project_access_requests": {
+                  Row: {
+                    "created_at": string,"decided_at": string | null,"id": string,"project_id": string,"role": string,"status": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"decided_at"?: string | null,"id"?: string,"project_id": string,"role": string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"decided_at"?: string | null,"id"?: string,"project_id"?: string,"role"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_access_requests_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"project_comments": {
                   Row: {
                     "author_id": string | null,"body": string | null,"created_at": string,"deleted_at": string | null,"edited_at": string | null,"id": string,"parent_id": string | null,"project_id": string,"quote": string | null,"resolved_at": string | null,"resolved_by": string | null,"section_id": string
@@ -331,17 +350,36 @@ isOneToOne: false
                   ]
                 },"project_invitations": {
                   Row: {
-                    "accepted_by": string | null,"created_at": string,"created_by": string | null,"email": string,"expires_at": string,"full_access": boolean,"id": string,"project_id": string,"role": string,"status": string,"token_hash": string
+                    "accepted_by": string | null,"created_at": string,"created_by": string | null,"email": string,"expires_at": string,"full_access": boolean,"id": string,"project_id": string,"role": string,"section_ids": (string)[] | null,"status": string,"token_hash": string
                   }
                   Insert: {
-                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email": string,"expires_at": string,"full_access"?: boolean,"id"?: string,"project_id": string,"role": string,"status"?: string,"token_hash": string
+                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email": string,"expires_at": string,"full_access"?: boolean,"id"?: string,"project_id": string,"role": string,"section_ids"?: (string)[] | null,"status"?: string,"token_hash": string
                   }
                   Update: {
-                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email"?: string,"expires_at"?: string,"full_access"?: boolean,"id"?: string,"project_id"?: string,"role"?: string,"status"?: string,"token_hash"?: string
+                    "accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email"?: string,"expires_at"?: string,"full_access"?: boolean,"id"?: string,"project_id"?: string,"role"?: string,"section_ids"?: (string)[] | null,"status"?: string,"token_hash"?: string
                   }
                   Relationships: [
                     {
       foreignKeyName: "project_invitations_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"project_share_links": {
+                  Row: {
+                    "created_at": string,"expires_at": string,"id": string,"project_id": string,"revoked_at": string | null,"role": string,"token_hash": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"expires_at": string,"id"?: string,"project_id": string,"revoked_at"?: string | null,"role": string,"token_hash": string
+                  }
+                  Update: {
+                    "created_at"?: string,"expires_at"?: string,"id"?: string,"project_id"?: string,"revoked_at"?: string | null,"role"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_share_links_project_id_fkey"
       columns: ["project_id"]
 isOneToOne: false
       referencedRelation: "research_projects"
@@ -389,6 +427,31 @@ isOneToOne: false
       columns: ["project_id"]
 isOneToOne: false
       referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"research_project_member_sections": {
+                  Row: {
+                    "project_id": string,"section_id": string,"user_id": string
+                  }
+                  Insert: {
+                    "project_id": string,"section_id": string,"user_id": string
+                  }
+                  Update: {
+                    "project_id"?: string,"section_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "research_project_member_sections_project_id_user_id_fkey"
+      columns: ["project_id","user_id"]
+isOneToOne: false
+      referencedRelation: "research_project_members"
+      referencedColumns: ["project_id","user_id"]
+    },{
+      foreignKeyName: "research_project_member_sections_section_id_fkey"
+      columns: ["section_id"]
+isOneToOne: false
+      referencedRelation: "thesis_sections"
       referencedColumns: ["id"]
     }
                   ]
@@ -738,6 +801,12 @@ isOneToOne: false
 "create_project":
 { Args: { "payload": Json }; Returns: string
                            },
+"create_project_link":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
+"decide_access_request":
+{ Args: { "approve": boolean,"request_id": string }; Returns: undefined
+                           },
 "decide_thesis_version":
 { Args: { "payload": Json,"version_id": string }; Returns: undefined
                            },
@@ -814,6 +883,9 @@ isOneToOne: false
               "created_at": string,"id": string,"is_read": boolean,"kind": string,"project_id": string,"project_title": string,"scope": string,"section_id": string,"version_id": string
             }[]
                            },
+"my_pending_access_requests":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "my_project_comments":
 { Args: Record<PropertyKey, never>; Returns: {
               "body": string,"created_at": string,"id": string,"project_id": string,"quote": string,"section_id": string
@@ -875,6 +947,9 @@ isOneToOne: false
 "report_resource":
 { Args: { "details"?: string,"reason": string,"resource_id": string }; Returns: string
                            },
+"request_project_access":
+{ Args: { "token": string }; Returns: undefined
+                           },
 "resolve_project_thread":
 { Args: { "comment_id": string,"resolved": boolean }; Returns: undefined
                            },
@@ -883,6 +958,9 @@ isOneToOne: false
                            },
 "revoke_project_invitation":
 { Args: { "invitation_id": string }; Returns: undefined
+                           },
+"revoke_project_link":
+{ Args: { "project_id": string }; Returns: undefined
                            },
 "save_literature_note":
 { Args: { "payload": Json,"source_id": string }; Returns: undefined
@@ -900,6 +978,9 @@ isOneToOne: false
                            },
 "set_favorite":
 { Args: { "favorite": boolean,"resource_id": string }; Returns: undefined
+                           },
+"set_member_scope":
+{ Args: { "payload": Json,"project_id": string,"user_id": string }; Returns: undefined
                            },
 "set_section_citation":
 { Args: { "pages"?: string,"present": boolean,"section_id": string,"source_id": string }; Returns: undefined

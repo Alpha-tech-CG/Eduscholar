@@ -44,6 +44,7 @@ export type AuthErrorCode =
   | "conflict"
   | "duplicate_name"
   | "nothing_to_submit"
+  | "scope_required"
   // Import par connecteur
   | "doi_not_found"
   | "unsupported_type"
