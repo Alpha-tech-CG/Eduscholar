@@ -89,6 +89,8 @@ export type SectionEditorLabels = {
 type Props = {
   projectId: string;
   sectionId: string;
+  /** Compte sous lequel la page a été chargée : le serveur n'enregistre pas pour un autre. */
+  editorId: string;
   initial: Draft & { updatedAt: string };
   labels: SectionEditorLabels;
 };
@@ -112,7 +114,7 @@ const stored = (draft: Draft): Draft => ({
 const fieldClass =
   "rounded border border-foreground/30 bg-background px-3 py-2 aria-[invalid=true]:border-red-700";
 
-export function SectionEditor({ projectId, sectionId, initial, labels }: Props) {
+export function SectionEditor({ projectId, sectionId, editorId, initial, labels }: Props) {
   const locale = useLocale();
   const id = useId();
   // Sans script : l'envoi du formulaire passe par l'action d'origine.
@@ -142,9 +144,12 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
   /** Échecs consécutifs : ils allongent le délai avant l'essai suivant. */
   const failures = useRef(0);
   const saveRef = useRef<() => Promise<boolean>>(async () => true);
+  /** La page est quittée : plus aucun envoi ni aucune reprise ne part. */
+  const disposed = useRef(false);
 
   const schedule = useCallback((delay: number) => {
     if (timer.current) clearTimeout(timer.current);
+    if (disposed.current) return;
     const wait = Math.max(delay, lastSave.current + MIN_INTERVAL_MS - Date.now(), 0);
     timer.current = setTimeout(() => void saveRef.current(), wait);
   }, []);
@@ -156,6 +161,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
 
   /** Un envoi du texte présent à l'écran, et le traitement de sa réponse. */
   const send = useCallback(async (): Promise<void> => {
+    if (disposed.current) return;
     const sent = draftRef.current;
     lastSave.current = Date.now();
     setStatus({ kind: "saving" });
@@ -170,7 +176,13 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
 
     let result: Awaited<ReturnType<typeof saveSectionDraft>>;
     try {
-      result = await saveSectionDraft({ projectId, sectionId, ...sent, updatedAt: versionRef.current });
+      result = await saveSectionDraft({
+        projectId,
+        sectionId,
+        editorId,
+        ...sent,
+        updatedAt: versionRef.current,
+      });
     } catch {
       return lost();
     }
@@ -240,7 +252,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     };
     setConflict(theirs.version);
     setStatus({ kind: "unsaved" });
-  }, [projectId, sectionId, schedule, settle]);
+  }, [projectId, sectionId, editorId, schedule, settle]);
 
   /** Enregistre ce qui ne l'est pas encore. Rend vrai si plus rien n'est en attente. */
   const save = useCallback(async (): Promise<boolean> => {
@@ -348,9 +360,20 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       const submitter = event.submitter instanceof HTMLElement ? event.submitter : undefined;
       lastSave.current = 0;
       void saveRef.current().then((done) => {
-        if (done) target.requestSubmit(submitter);
-        else form.current?.scrollIntoView({ block: "start" });
+        // Enregistrement impossible (hors ligne, conflit) : comme pour un lien,
+        // la personne choisit. Elle doit toujours pouvoir se déconnecter.
+        if (done || window.confirm(leaveLabel)) {
+          savedRef.current = draftRef.current;
+          target.requestSubmit(submitter);
+        } else {
+          form.current?.scrollIntoView({ block: "start" });
+        }
       });
+    };
+    // Page rendue par le cache de retour arrière du navigateur : son texte et
+    // ses minuteurs datent d'une autre visite, peut-être d'une autre session.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
     };
 
     // Retour du réseau : l'envoi part tout de suite, sans attendre le délai en cours.
@@ -364,6 +387,8 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       if (networkRef.current === "unreachable") settle("offline");
     };
 
+    disposed.current = false;
+    window.addEventListener("pageshow", onPageShow);
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
     window.addEventListener("beforeunload", warn);
@@ -379,6 +404,8 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       document.removeEventListener("visibilitychange", flush);
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("submit", onSubmit, true);
+      window.removeEventListener("pageshow", onPageShow);
+      disposed.current = true;
       if (timer.current) clearTimeout(timer.current);
     };
   }, [leaveLabel, settle]);

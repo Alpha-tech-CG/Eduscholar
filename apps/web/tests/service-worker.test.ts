@@ -88,6 +88,7 @@ function boot(options: { retired?: boolean; existing?: string[] } = {}) {
       }
     },
     fetch: network,
+    Headers,
     caches: {
       open: async (name: string) => open(name),
       keys: async () => [...stores.keys()],
@@ -128,8 +129,11 @@ function boot(options: { retired?: boolean; existing?: string[] } = {}) {
         response = promise;
       },
     });
+    // Le worker peut annoncer du travail après avoir rendu sa réponse
+    // (écriture dans le cache) : la réponse d'abord, puis ce travail.
+    const result = response ? await response : undefined;
     await Promise.all(work);
-    return response ? await response : undefined;
+    return result;
   };
 
   return {
@@ -138,6 +142,7 @@ function boot(options: { retired?: boolean; existing?: string[] } = {}) {
     state,
     dispatch,
     strategyFor: (context as { strategyFor: Strategy }).strategyFor,
+    isCacheable: (context as { isCacheable: (response: unknown) => boolean }).isCacheable,
     setReply: (next: typeof reply) => {
       reply = next;
     },
@@ -365,6 +370,36 @@ describe("requêtes", () => {
     expect(paths).not.toContain("/_next/static/chunks/0.js");
     expect(paths).toContain("/_next/static/chunks/229.js");
   });
+
+  it("rend la réponse du réseau quand le cache refuse l'écriture", async () => {
+    const worker = boot();
+    await worker.dispatch("install");
+    // Stockage plein : toute écriture échoue désormais.
+    for (const store of worker.stores.values()) {
+      (store as unknown as { put: unknown }).put = async () => {
+        throw new Error("QuotaExceededError");
+      };
+    }
+    const response = await worker.dispatch("fetch", get("/_next/static/chunks/plein.js"));
+    expect(response?.status).toBe(200);
+  });
+
+  it("n'admet au cache ni une réponse redirigée, ni une réponse qui varie selon la session", () => {
+    const worker = boot();
+    const reply = (extra: Record<string, unknown>, headers: Record<string, string> = {}) => ({
+      status: 200,
+      type: "basic",
+      redirected: false,
+      headers: { get: (name: string) => headers[name] ?? null },
+      ...extra,
+    });
+    expect(worker.isCacheable(reply({}))).toBe(true);
+    expect(worker.isCacheable(reply({ redirected: true }))).toBe(false);
+    expect(worker.isCacheable(reply({}, { Vary: "Cookie" }))).toBe(false);
+    expect(worker.isCacheable(reply({}, { Vary: "*" }))).toBe(false);
+    expect(worker.isCacheable(reply({}, { "Cache-Control": "private" }))).toBe(false);
+    expect(worker.strategyFor(get("/_next/static/%2e%2e%2fsecret.js"), ORIGIN)).toBe("bypass");
+  });
 });
 
 describe("retrait du service worker", () => {
@@ -385,6 +420,6 @@ describe("retrait du service worker", () => {
 describe("contenu du fichier", () => {
   it("n'utilise ni stockage persistant de données, ni script importé, ni synchronisation en arrière-plan", () => {
     const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
-    expect(code).not.toMatch(/indexedDB|localStorage|sessionStorage|importScripts|eval\(|\bsync\b|SyncManager|\bpush\b|cookie/i);
+    expect(code).not.toMatch(/indexedDB|localStorage|sessionStorage|importScripts|eval\(|\bsync\b|SyncManager|\bpush\b|document\.cookie|cookieStore/i);
   });
 });

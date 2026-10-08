@@ -126,6 +126,8 @@ const draftSchema = z.object({
   level: z.string().max(2),
   body: z.string().max(40000),
   updatedAt: z.iso.datetime({ offset: true }),
+  /** Compte sous lequel l'éditeur a été ouvert. */
+  editorId: z.uuid(),
 });
 
 /**
@@ -135,10 +137,14 @@ const draftSchema = z.object({
  * l'éditeur présente à l'enregistrement suivant.
  */
 export async function saveSectionDraft(input: unknown): Promise<SectionSaveResult> {
-  if (!(await getFullySignedInUser())) return { status: "error", error: "session_expired" };
+  const user = await getFullySignedInUser();
+  if (!user) return { status: "error", error: "session_expired" };
 
   const draft = draftSchema.safeParse(input);
   if (!draft.success) return { status: "error", error: "validation" };
+  // L'onglet a été ouvert par quelqu'un d'autre (appareil partagé, session
+  // changée entre-temps) : son texte ne s'enregistre pas sous cette session.
+  if (draft.data.editorId !== user.id) return { status: "error", error: "session_expired" };
   const body = draft.data.body.replace(/\r\n?/g, "\n");
   const parsed = sectionSchema.safeParse({ title: draft.data.title, level: draft.data.level, body });
   if (!parsed.success) {

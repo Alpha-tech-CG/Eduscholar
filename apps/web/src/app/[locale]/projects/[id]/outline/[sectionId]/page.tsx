@@ -39,7 +39,7 @@ export default async function ProjectSectionPage({
   searchParams,
 }: PageProps<"/[locale]/projects/[id]/outline/[sectionId]">) {
   const { id, sectionId } = await params;
-  await requireOnboardedUser(`/projects/${id}/outline/${sectionId}`);
+  const { user } = await requireOnboardedUser(`/projects/${id}/outline/${sectionId}`);
 
   // La section d'un autre, d'un autre projet ou inexistante : même réponse.
   const section = await getSection(id, sectionId);
@@ -92,6 +92,7 @@ export default async function ProjectSectionPage({
         <SectionEditor
           projectId={section.projectId}
           sectionId={section.id}
+          editorId={user.id}
           initial={{
             title: section.title,
             level: String(section.level),

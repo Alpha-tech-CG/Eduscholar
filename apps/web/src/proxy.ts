@@ -1,3 +1,4 @@
+import { isSessionCookie } from "@/lib/supabase/cookies";
 import { isCaptchaConfigured } from "@/lib/auth/captcha-shared";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextRequest } from "next/server";
@@ -43,8 +44,10 @@ export default async function proxy(request: NextRequest) {
   for (const { name, value, options } of sessionCookies) {
     response.cookies.set(name, value, options);
   }
-  if (sessionCookies.length > 0) {
-    // Une réponse qui pose une session ne doit être mise en cache nulle part (M-51).
+  if (sessionCookies.length > 0 || request.cookies.getAll().some(({ name }) => isSessionCookie(name))) {
+    // Une réponse qui pose une session, ou qui est faite pour une session, ne
+    // doit être gardée nulle part : ni cache partagé, ni cache du navigateur
+    // sur un appareil prêté (M-51).
     response.headers.set("Cache-Control", "private, no-store");
   }
 

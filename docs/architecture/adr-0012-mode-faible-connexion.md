@@ -158,3 +158,26 @@ mots plus larges que l'écran (titres, adresses, DOI).
 - Invitation à installer sur iOS, qui ne la propose pas de lui-même.
 - Inscrire les variables et écrans nouveaux dans `docs/current-state.md` et
   `docs/security/threat-model.md` (cache du navigateur, service worker).
+
+## Relecture de sécurité du 8 octobre 2026
+
+Aucun constat critique ou élevé. Corrigés :
+
+- un stockage plein sur l'appareil faisait échouer le chargement des fichiers du build,
+  alors que le réseau les avait fournis : l'écriture dans le cache se fait désormais après
+  la réponse, et son échec est sans effet ;
+- le cache n'admet ni une réponse redirigée, ni une réponse qui varie selon la session ;
+- la reprise de l'enregistrement survivait au départ de la page, et pouvait partir sous la
+  session d'une autre personne sur un appareil partagé : elle s'arrête quand la page est
+  quittée, et le serveur n'enregistre que pour le compte qui a ouvert l'éditeur ;
+- un enregistrement impossible bloquait en silence les autres formulaires de la page,
+  dont la déconnexion : la personne choisit, comme pour un lien ;
+- une page rendue par le cache de retour arrière du navigateur est rechargée ;
+- toute réponse faite pour une session porte `Cache-Control: private, no-store`.
+
+Risque accepté, à connaître en cas d'incident : le cache du service worker est inscriptible
+par tout script de l'origine. Une faille d'injection de script pourrait y placer un faux
+fichier du build, qui survivrait à la correction de la faille. La réponse à un tel incident
+comprend donc le changement de `VERSION` dans `public/sw.js`, qui vide ce cache partout.
+
+Ces corrections n'ont pas fait l'objet d'une seconde revue.

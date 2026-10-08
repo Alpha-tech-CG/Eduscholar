@@ -56,6 +56,8 @@ function strategyFor(request, origin) {
   // Une adresse avec paramètres n'est jamais un fichier statique connu.
   if (url.search !== "") return "bypass";
   if (url.pathname.includes("..") || url.pathname.includes("//")) return "bypass";
+  // Point, barre ou barre inverse écrits en code : jamais un fichier du build.
+  if (/%2e|%2f|%5c/i.test(url.pathname)) return "bypass";
   if (url.pathname.startsWith(IMMUTABLE_PREFIX)) return "static";
   if (PRECACHE.includes(url.pathname)) return "static";
   return "bypass";
@@ -64,6 +66,11 @@ function strategyFor(request, origin) {
 /** Seule une réponse complète, de l'origine, et non privée entre dans le cache. */
 function isCacheable(response) {
   if (!response || response.status !== 200 || response.type !== "basic") return false;
+  // Une réponse obtenue après redirection n'est pas le fichier demandé.
+  if (response.redirected) return false;
+  // Une réponse qui varie selon la session ou l'appelant n'est pas la même pour tous.
+  const vary = (response.headers.get("Vary") || "").toLowerCase();
+  if (vary.includes("*") || vary.includes("cookie") || vary.includes("authorization")) return false;
   const cacheControl = (response.headers.get("Cache-Control") || "").toLowerCase();
   return !cacheControl.includes("no-store") && !cacheControl.includes("private");
 }
@@ -76,14 +83,32 @@ async function trim(cache) {
   for (let index = 0; index < excess; index += 1) await cache.delete(builds[index]);
 }
 
-async function fromCacheThenNetwork(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request, { ignoreVary: true });
-  if (cached) return cached;
+// Le cache est un confort : s'il ne s'ouvre pas ou refuse une écriture
+// (stockage plein sur un petit téléphone), la réponse du réseau est rendue
+// quand même. L'écriture se fait après la réponse, jamais sur son chemin.
+async function fromCacheThenNetwork(event) {
+  const request = event.request;
+  let cache;
+  try {
+    cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request, { ignoreVary: true });
+    if (cached) return cached;
+  } catch {
+    cache = undefined;
+  }
   const response = await fetch(request);
-  if (isCacheable(response)) {
-    await cache.put(request, response.clone());
-    await trim(cache);
+  if (cache && isCacheable(response)) {
+    const copy = response.clone();
+    event.waitUntil(
+      (async () => {
+        try {
+          await cache.put(request, copy);
+          await trim(cache);
+        } catch {
+          // Écriture refusée : rien à faire, le fichier a été servi.
+        }
+      })(),
+    );
   }
   return response;
 }
@@ -97,7 +122,9 @@ async function fromNetworkOrOfflinePage(request) {
     const page = await cache.match(OFFLINE_URL);
     if (!page) return Response.error();
     // 503 : ni le navigateur ni un outil ne prend cette page pour la page demandée.
-    return new Response(page.body, { status: 503, headers: page.headers });
+    const headers = new Headers(page.headers);
+    headers.set("Cache-Control", "no-store");
+    return new Response(page.body, { status: 503, headers });
   }
 }
 
@@ -142,7 +169,7 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (RETIRED) return;
   const strategy = strategyFor(event.request, self.location.origin);
-  if (strategy === "static") event.respondWith(fromCacheThenNetwork(event.request));
+  if (strategy === "static") event.respondWith(fromCacheThenNetwork(event));
   else if (strategy === "navigate") event.respondWith(fromNetworkOrOfflinePage(event.request));
   // « bypass » : pas de `respondWith`, le navigateur traite la requête lui-même.
 });
