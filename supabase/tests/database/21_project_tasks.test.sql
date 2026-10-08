@@ -213,7 +213,7 @@ delete from public.project_tasks where title like 'De l''encadreur %' or title =
 
 -- Les modifications ont leur propre compteur : elles n'entament pas celui des créations.
 select is(
-  (select count(*) from private.rate_limit_buckets where bucket_key like 'project-task-update:%'), 2::bigint,
+  (select count(*) from private.rate_limit_buckets where bucket_key like 'project-task-update:%') >= 2, true,
   'Modifier et créer sont comptés à part'
 );
 

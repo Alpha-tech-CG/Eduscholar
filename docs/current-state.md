@@ -152,6 +152,8 @@ Détail dans `docs/security/initial-audit.md`.
 - L'étudiant soumet des versions figées de son document ; l'encadreur rend sa décision
   (E-03).
 - Tâches et échéances partagées entre l'étudiant et son encadreur (E-04).
+- Notifications internes : chacun est averti de ce que l'autre a fait sur le projet
+  (E-05, sans courriel pour l'instant).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

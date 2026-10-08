@@ -347,6 +347,14 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   membre) ; quota commun aux créations et aux modifications ; intitulé non contrôlé en
   type ; verrou posé avant le contrôle de rôle. Accepté : le retard d'une échéance se
   calcule en temps universel. Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Notifications internes (E-05) relues par l'agent sécurité : aucun
+  constat critique ou élevé, aucune fuite ni fabrication possible ; 2 moyens et 4
+  faibles. Corrigés : un seul projet pouvait faire taire toutes les notifications d'une
+  personne (plus de doublon, plafond par projet, effacement au retrait d'un membre) ;
+  une notification impossible à écrire annulait l'événement ; tests complétés.
+  Acceptés : « tout marquer comme lu » marque aussi une notification arrivée entre
+  l'affichage et le clic ; les notifications ne figurent pas dans la copie des données
+  (déclaré dans le fichier). Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

@@ -556,6 +556,7 @@ depuis le serveur) :
 | `update_project_task`, `delete_project_task` | Le propriétaire pour toute tâche ; un `supervisor` pour celles qu'il a créées |
 | `project_tasks` | Le propriétaire et tout membre à accès complet, lecteur compris |
 | `my_project_tasks` | Le titulaire : les tâches de ses projets, et celles qu'il a posées là où il est encore membre |
+| `my_notifications`, `my_unread_notification_count`, `mark_notifications_read` | Le titulaire, compte actif : ses seules notifications, sur des projets qui lui sont encore ouverts |
 | `log_personal_data_export` | Le titulaire, compte actif ; écrit un événement de sécurité sans contenu, lisible de lui seul, avant la remise de la copie de ses données |
 | `add_thesis_section`, `update_thesis_section`, `move_thesis_section`, `delete_thesis_section`, `set_section_citation` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour la section ou le projet d'autrui, supprimés ou inexistants, avant tout examen de la requête ; une section ne cite qu'une source du même projet, et le retrait d'une citation ne révèle rien ; un texte modifié entre-temps n'est pas écrasé ; aucune ligne d'audit |
 | `add_project_source`, `add_project_source_from_resource`, `update_project_source`, `delete_project_source`, `save_literature_note` | Le propriétaire du projet, compte actif au profil complété ; même réponse pour le projet ou la source d'autrui, supprimés ou inexistants, avant tout examen de la requête ; seule une fiche publiée et publique se reprend, fiche cachée et fiche inexistante confondues ; reprise sans doublon ; aucune ligne d'audit |
@@ -576,7 +577,7 @@ et refuse le rejeu.
 | Lecture de l'adresse d'un compte pour l'avis de suspension ou de rétablissement (`auth.admin.getUserById`) | `admin_set_account_status` acceptée juste avant sous la session de l'administrateur ; l'adresse ne sert qu'à l'envoi, n'est ni affichée ni journalisée |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |
 | Import par connecteur (`import_connector_resource`) | Rôle et second facteur de l'appelant vérifiés sous sa session ; la fonction revérifie le rôle de l'acteur ; résultat au statut `pending` au plus |
-| Création de notifications | Tâche système |
+| Création de notifications — **hors rôle serveur** : déclencheurs de la base, dans la transaction de l'événement | Aucun appel ne peut en écrire ; le destinataire est déduit du projet (propriétaire, ou encadreurs à accès complet) |
 | Analyse antivirus d'un fichier | Tâche système ; n'écrit que `scan_status` |
 | Vérification des liens du catalogue | Tâche système ; ressources publiques seulement |
 | Purge des projets supprimés depuis plus de trente jours (`purge_deleted_projects`) | Ne lit rien, ne renvoie qu'un nombre ; sources, fiches de lecture, sections et citations partent en cascade. |

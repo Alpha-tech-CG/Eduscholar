@@ -222,6 +222,7 @@ export async function buildPersonalDataExport(
       // Ce que cette copie ne contient pas, pour qu'elle ne passe pas pour exhaustive.
       not_included: [
         "documents_of_submitted_versions",
+        "notifications",
         "rights_declaration_and_comments_sent_with_submissions",
         "organization_memberships",
       ],

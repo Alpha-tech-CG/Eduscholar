@@ -233,9 +233,23 @@ test.describe("partage d'un projet avec un encadreur", () => {
     await expect(guide.page.locator("#comments img")).toHaveCount(0);
     expect(await guide.page.title()).not.toBe("piege");
 
-    // --- L'étudiante le lit sur sa page de rédaction, répond, puis clôt ----------
+    // --- L'étudiante en est avertie ; la notification la mène à la section ---------
     await signInThroughForm(page, owner.email, owner.password);
     await expect(page).toHaveURL(/\/fr\/account/);
+    await expect(page.getByTestId("notifications-link")).toHaveText("Notifications (1 non lue)");
+    await page.getByTestId("notifications-link").click();
+    await expect(page.getByTestId("unread-count")).toHaveText("1 notification non lue.");
+    const notification = page.getByTestId("notification");
+    await expect(notification).toContainText(`Nouveau commentaire sur « Mémoire ${token} »`);
+    // Une notification ne porte pas le texte du commentaire.
+    await expect(notification).not.toContainText("Précisez");
+    await page.getByRole("button", { name: "Tout marquer comme lu" }).click();
+    await expect(page).toHaveURL(/notice=read$/);
+    await expect(page.getByTestId("unread-count")).toHaveText("Tout est lu.");
+    await page.getByTestId("notification").getByRole("link").click();
+    await expect(page).toHaveURL(new RegExp(`${ownerSection}$`));
+
+    // --- Elle lit le commentaire sur sa page de rédaction, répond, puis clôt ------
     await page.goto(ownerSection);
     const thread = page.getByTestId("thread");
     await expect(thread).toContainText(remark);
@@ -266,6 +280,14 @@ test.describe("partage d'un projet avec un encadreur", () => {
     }
     await reader.close();
 
+    // --- L'encadreur est averti de la réponse -----------------------------------------
+    await guide.page.goto("/fr/notifications");
+    await expect(guide.page.getByTestId("notification")).toContainText(
+      `Réponse à un commentaire sur « Mémoire ${token} »`,
+    );
+    await guide.page.getByTestId("notification").getByRole("link").click();
+    await expect(guide.page).toHaveURL(new RegExp(`${sharedSection}$`));
+
     // --- L'encadreur rouvre le fil, puis retire son commentaire --------------------
     await guide.page.goto(sharedSection);
     await expect(guide.page.getByTestId("thread")).toContainText("Fil clos");
@@ -289,6 +311,9 @@ test.describe("partage d'un projet avec un encadreur", () => {
       .click();
     await expect(page).toHaveURL(/notice=removed$/);
     expect((await guide.page.goto(sharedSection))?.status()).toBe(404);
+    // Retiré, il ne voit plus les notifications de ce projet.
+    await guide.page.goto("/fr/notifications");
+    await expect(guide.page.getByRole("main")).toContainText("Aucune notification.");
     await guide.close();
 
     // Son ancien commentaire reste dans le fil de l'étudiante, sans adresse.

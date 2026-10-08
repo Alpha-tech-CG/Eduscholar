@@ -227,7 +227,9 @@
     "projects": "Mes projets de recherche",
     "exportData": "Télécharger mes données",
     "administration": "Administration",
-    "recoveryUseWarning": "Un code de secours a été utilisé récemment sur votre compte, et la validation en deux étapes a été désactivée. Si ce n'était pas vous, changez de mot de passe sans attendre."
+    "recoveryUseWarning": "Un code de secours a été utilisé récemment sur votre compte, et la validation en deux étapes a été désactivée. Si ce n'était pas vous, changez de mot de passe sans attendre.",
+    "sharedProjects": "Projets partagés avec moi",
+    "notifications": "{count, plural, =0 {Notifications} one {Notifications (# non lue)} other {Notifications (# non lues)}}"
   },
   "Profile": {
     "title": "Mon profil",
@@ -1171,5 +1173,26 @@
     "noticeDone": "La tâche est marquée comme faite.",
     "noticeReopened": "La tâche est rouverte.",
     "noticeDeleted": "La tâche est supprimée."
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "intro": "Ce qui s'est passé sur les projets que vous écrivez ou que vous suivez.",
+    "backToAccount": "Retour à mon compte",
+    "empty": "Aucune notification.",
+    "loadFailed": "Les notifications n'ont pas pu être chargées. Réessayez dans un instant.",
+    "unread": "{count, plural, =0 {Tout est lu.} one {# notification non lue.} other {# notifications non lues.}}",
+    "kinds": {
+      "comment": "Nouveau commentaire sur « {project} »",
+      "reply": "Réponse à un commentaire sur « {project} »",
+      "version_submitted": "Une version de « {project} » vous est soumise",
+      "version_decided": "Décision rendue sur une version de « {project} »",
+      "task_added": "Nouvelle tâche sur « {project} »"
+    },
+    "new": "non lue",
+    "read": "lue",
+    "separator": " · ",
+    "markRead": "Tout marquer comme lu",
+    "pending": "Un instant…",
+    "noticeRead": "Vos notifications sont marquées comme lues."
   }
 }

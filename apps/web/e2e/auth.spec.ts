@@ -252,6 +252,9 @@ test.describe("limitation de débit", () => {
   test("les tentatives répétées d'un même client sur un compte sont refusées, sans bloquer le titulaire ailleurs", async ({
     browser,
   }) => {
+    // Les essais se comptent dans une même fenêtre de limite.
+    test.setTimeout(180_000);
+    await awayFromWindowBoundary(60);
     const email = uniqueEmail("force-brute");
     const password = strongPassword();
     await createConfirmedUser(email, password);

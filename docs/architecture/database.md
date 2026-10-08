@@ -89,6 +89,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006005100_thesis_versions_hardening.sql` | Corrections de revue des versions : tailles bornées, lecture autorisée avant chargement, garde d'immuabilité, effacement du contenu d'une version, copie des données |
 | `20261006005200_project_tasks.sql` | Tâches et échéances d'un projet partagé |
 | `20261006005300_project_tasks_hardening.sql` | Corrections de revue des tâches : copie des données après retrait, plafond par membre, quota des modifications à part, intitulé sur une ligne |
+| `20261006005400_notifications.sql` | Notifications internes du suivi d'un projet, écrites par déclencheurs |
+| `20261006005500_notifications_hardening.sql` | Corrections de revue des notifications : pas de doublon, plafond par projet, effacement au retrait d'un membre |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -583,6 +585,30 @@ une ligne), `details`, `due_date`, `created_by`, `done_at`, `done_by`.
   ailleurs tant qu'on y est encore membre ;
 - écart voulu, plus strict que le modèle : un membre à portée limitée ne lit pas les
   tâches tant que la portée par section n'existe pas (E-06).
+
+### `public.notifications`
+
+Notifications internes du suivi d'un projet (E-05) : `user_id` (destinataire), `kind`
+(`comment`, `reply`, `version_submitted`, `version_decided`, `task_added`),
+`project_id`, `section_id`, `version_id`, `read_at`. Aucun contenu : une notification
+dit ce qui s'est passé et où.
+
+- écrites par la base seulement, par des déclencheurs posés sur les commentaires, les
+  versions, les décisions et les tâches, dans la transaction de l'événement : aucun
+  appel ne peut en fabriquer ;
+- destinataire : le propriétaire si un membre a agi ; les encadreurs à accès complet si
+  c'est le propriétaire ; jamais l'auteur de l'événement, ni un simple lecteur ;
+- `my_notifications` (cinquante plus récentes) et `my_unread_notification_count` ne
+  rendent que les notifications de projets encore ouverts à l'appelant : retiré d'un
+  projet, on ne voit plus celles qui le concernent ; `mark_notifications_read` ne
+  touche que les siennes ;
+- une notification identique encore non lue n'est pas répétée ; cinquante non lues au
+  plus par destinataire et par projet, pour qu'un projet n'étouffe pas les autres ; les
+  notifications d'un membre partent avec son appartenance ; lues depuis trente jours ou
+  vieilles de six mois, elles sont effacées chaque nuit (tâche
+  `eduscholar-notifications-purge`) ;
+- pas d'envoi par courriel dans cette tranche : il demande des préférences et un
+  désabonnement.
 
 ## Fonctions du schéma `private`
 

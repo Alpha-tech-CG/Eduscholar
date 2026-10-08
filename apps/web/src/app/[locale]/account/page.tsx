@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/session";
 import { getAdminSession } from "@/lib/admin/queries";
 import { getLastRecoveryCodeUse } from "@/lib/auth/recovery-codes";
 import { isModerator } from "@/lib/catalogue/queries";
+import { getUnreadNotificationCount } from "@/lib/notifications/queries";
 import { getOwnProfile, getReferenceData, type Option } from "@/lib/profile/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,6 +37,7 @@ export default async function AccountPage({
   const moderator = await isModerator();
   const admin = (await getAdminSession()).rank >= 2;
   const lastRecoveryUse = await getLastRecoveryCodeUse();
+  const unreadNotifications = await getUnreadNotificationCount();
 
   const rows: Array<[string, string | null]> = [
     [t("email"), user.email ?? null],
@@ -115,6 +117,16 @@ export default async function AccountPage({
         <li>
           <Link href="/projects" className="underline underline-offset-4">
             {t("projects")}
+          </Link>
+        </li>
+        <li>
+          <Link href="/shared" className="underline underline-offset-4">
+            {t("sharedProjects")}
+          </Link>
+        </li>
+        <li>
+          <Link href="/notifications" className="underline underline-offset-4" data-testid="notifications-link">
+            {t("notifications", { count: unreadNotifications })}
           </Link>
         </li>
         <li>

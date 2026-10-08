@@ -159,6 +159,25 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"notifications": {
+                  Row: {
+                    "created_at": string,"id": string,"kind": string,"project_id": string,"read_at": string | null,"section_id": string | null,"user_id": string,"version_id": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"kind": string,"project_id": string,"read_at"?: string | null,"section_id"?: string | null,"user_id": string,"version_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"kind"?: string,"project_id"?: string,"read_at"?: string | null,"section_id"?: string | null,"user_id"?: string,"version_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notifications_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"organization_members": {
                   Row: {
                     "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"role_granted_at": string,"user_id": string
@@ -767,6 +786,9 @@ isOneToOne: false
 "log_personal_data_export":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"mark_notifications_read":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "moderate_resource":
 { Args: { "action": string,"reason"?: string,"resource_id": string }; Returns: string
                            },
@@ -786,6 +808,11 @@ isOneToOne: false
                            },
 "my_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: Json[]
+                           },
+"my_notifications":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"id": string,"is_read": boolean,"kind": string,"project_id": string,"project_title": string,"scope": string,"section_id": string,"version_id": string
+            }[]
                            },
 "my_project_comments":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -807,6 +834,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "created_at": string,"erased_at": string,"id": string,"label": string,"note": string,"number": number,"project_id": string,"section_count": number,"word_count": number
             }[]
+                           },
+"my_unread_notification_count":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "my_version_decisions":
 { Args: Record<PropertyKey, never>; Returns: {

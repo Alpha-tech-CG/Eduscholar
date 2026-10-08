@@ -227,7 +227,9 @@
     "projects": "My research projects",
     "exportData": "Download my data",
     "administration": "Administration",
-    "recoveryUseWarning": "A backup code was recently used on your account, and two-step verification was turned off. If this was not you, change your password right away."
+    "recoveryUseWarning": "A backup code was recently used on your account, and two-step verification was turned off. If this was not you, change your password right away.",
+    "sharedProjects": "Projects shared with me",
+    "notifications": "{count, plural, =0 {Notifications} one {Notifications (# unread)} other {Notifications (# unread)}}"
   },
   "Profile": {
     "title": "My profile",
@@ -1171,5 +1173,26 @@
     "noticeDone": "The task has been marked as done.",
     "noticeReopened": "The task has been reopened.",
     "noticeDeleted": "The task has been deleted."
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "intro": "What has happened on the projects you write or follow.",
+    "backToAccount": "Back to my account",
+    "empty": "No notification.",
+    "loadFailed": "Notifications could not be loaded. Try again in a moment.",
+    "unread": "{count, plural, =0 {Everything is read.} one {# unread notification.} other {# unread notifications.}}",
+    "kinds": {
+      "comment": "New comment on “{project}”",
+      "reply": "Reply to a comment on “{project}”",
+      "version_submitted": "A version of “{project}” has been submitted to you",
+      "version_decided": "Decision given on a version of “{project}”",
+      "task_added": "New task on “{project}”"
+    },
+    "new": "unread",
+    "read": "read",
+    "separator": " · ",
+    "markRead": "Mark all as read",
+    "pending": "One moment…",
+    "noticeRead": "Your notifications are marked as read."
   }
 }
