@@ -187,6 +187,17 @@ test.describe("export d'un projet", () => {
   test("export de ses données personnelles", async ({ page, browser }) => {
     const owner = await signInOnboarded(page, "donnees");
     const { projectId, token } = seedProject(owner.id);
+    // Membre d'une organisation, dont un autre compte est membre lui aussi.
+    const organizationId = randomUUID();
+    const organizationName = `Organisation ${token}`;
+    const colleague = await createConfirmedUser(uniqueEmail("donnees-collegue"), strongPassword());
+    sql(`
+      insert into public.organizations (id, slug, name, status)
+        values ('${organizationId}', '0${9_999_999_999_999 - Date.now()}-${token}', '${organizationName}', 'verified');
+      insert into public.organization_members (organization_id, user_id, role) values
+        ('${organizationId}', '${owner.id}', 'teacher'),
+        ('${organizationId}', '${colleague}', 'member')
+    `);
 
     await page.getByRole("link", { name: "Télécharger mes données" }).click();
     await expect(page).toHaveURL(/\/fr\/account\/export/);
@@ -210,6 +221,13 @@ test.describe("export d'un projet", () => {
     expect(data.research.section_citations).toEqual([expect.objectContaining({ pages: "p. 12-14" })]);
     expect(data.not_included).not.toContain("deleted_projects_pending_purge");
     expect(data.version).toBe(2);
+    // Ses appartenances : l'organisation, son rôle, la date — et rien des autres membres.
+    expect(data.organizations.memberships).toEqual([
+      expect.objectContaining({ organization_id: organizationId, organization_name: organizationName, role: "teacher" }),
+    ]);
+    expect(typeof data.organizations.memberships[0].joined_at).toBe("string");
+    expect(data.not_included).not.toContain("organization_memberships");
+    expect(JSON.stringify(data)).not.toContain(colleague);
     expect(Array.isArray(data.research.deleted_projects_pending_purge)).toBe(true);
     expect(Array.isArray(data.account_events)).toBe(true);
     // Rien d'interne ni d'autrui : pas de colonne de propriété, pas de note de modération.
@@ -238,6 +256,18 @@ test.describe("export d'un projet", () => {
     });
     expect(missing.status()).toBe(303);
     expect(missing.headers().location).toContain("error=password");
+
+    // L'organisation de test ne reste pas dans la base locale.
+    try {
+      sql(`
+        update public.organizations set status = 'suspended' where id = '${organizationId}';
+        select set_config('eduscholar.organization_dissolution', '${organizationId}', true);
+        delete from public.organization_members where organization_id = '${organizationId}';
+        delete from public.organizations where id = '${organizationId}'
+      `);
+    } catch {
+      // Le ménage est un confort.
+    }
     // L'ancienne adresse en GET ne rend aucun fichier.
     const viaGet = await page.request.get("/fr/account/export/download");
     expect(viaGet.status()).toBe(405);

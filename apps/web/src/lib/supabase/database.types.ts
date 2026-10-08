@@ -847,8 +847,14 @@ isOneToOne: false
               "admin_count": number,"country_code": string,"created_at": string,"id": string,"member_count": number,"name": string,"recovery_since_suspension": boolean,"slug": string,"status": string,"suspension_reason": string
             }[]
                            },
+"admin_reference_items":
+{ Args: { "kind": string }; Returns: Json
+                           },
 "admin_rename_organization":
 { Args: { "organization_id": string,"payload": Json }; Returns: Json
+                           },
+"admin_save_reference_item":
+{ Args: { "kind": string,"payload": Json }; Returns: Json
                            },
 "admin_session":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -860,6 +866,9 @@ isOneToOne: false
                            },
 "admin_set_organization_status":
 { Args: { "organization_id": string,"reason"?: string,"status": string }; Returns: Json
+                           },
+"admin_set_reference_active":
+{ Args: { "active": boolean,"code": string,"kind": string,"parent_code"?: string }; Returns: Json
                            },
 "admin_set_role":
 { Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: Json
@@ -1031,6 +1040,9 @@ isOneToOne: false
 "org_members":
 { Args: { "organization_id": string }; Returns: Json
                            },
+"project_coherence_report":
+{ Args: { "project_id": string }; Returns: Json
+                           },
 "project_comments":
 { Args: { "project_id": string }; Returns: Json
                            },
@@ -1048,6 +1060,11 @@ isOneToOne: false
                            },
 "purge_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"recommended_resources":
+{ Args: { "payload"?: Json }; Returns: {
+              "id": string,"reasons": (string)[],"score": number
+            }[]
                            },
 "record_auth_event":
 { Args: { "p_kind": string }; Returns: undefined
@@ -1135,11 +1152,21 @@ isOneToOne: false
               "due_date": string,"id": string,"owner_email": string,"role": string,"status": string,"title": string,"updated_at": string
             }[]
                            },
+"similar_resources":
+{ Args: { "resource_id": string }; Returns: {
+              "confidence": string,"editorial_status": string,"id": string,"reason": string,"score": number,"title": string
+            }[]
+                           },
 "submit_resource":
 { Args: { "payload": Json }; Returns: string
                            },
 "submit_thesis_version":
 { Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
+"suggest_resource_classification":
+{ Args: { "resource_id": string }; Returns: {
+              "code": string,"confidence": string,"kind": string,"labels": Json,"matched_words": (string)[]
+            }[]
                            },
 "unsubscribe_notifications":
 { Args: { "p_token": string }; Returns: undefined

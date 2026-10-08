@@ -3,6 +3,7 @@ import type { OrganizationFieldErrorCode } from "@/lib/organizations/schemas";
 import type { ProfileFieldErrorCode } from "@/lib/profile/schemas";
 import type { ProjectFieldErrorCode } from "@/lib/projects/schemas";
 import type { SourceFieldErrorCode } from "@/lib/projects/source-schemas";
+import type { ReferenceFieldErrorCode } from "@/lib/references/schemas";
 import type { FieldErrorCode } from "./schemas";
 
 // État renvoyé par les actions d'authentification. Uniquement des codes : les
@@ -63,6 +64,11 @@ export type AuthErrorCode =
   | "organization_has_resources"
   | "org_suspension_required"
   | "second_factor_setup_required"
+  // Référentiels
+  | "read_only_reference"
+  | "last_active"
+  | "protected_reference"
+  | "reference_code_taken"
   | "unavailable";
 
 export type AuthNoticeCode = "check_email_signup" | "check_email_reset";
@@ -80,6 +86,7 @@ export type AuthFormState =
         | ProjectFieldErrorCode
         | SourceFieldErrorCode
         | OrganizationFieldErrorCode
+        | ReferenceFieldErrorCode
       >;
       /** Valeurs non sensibles à réafficher (jamais un mot de passe). */
       values?: Record<string, string>;

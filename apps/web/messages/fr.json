@@ -130,7 +130,11 @@
       "org_admin_exists": "Cette organisation a déjà un administrateur : c'est à lui d'inviter les suivants.",
       "organization_has_resources": "Des ressources du catalogue sont rattachées à cette organisation : elle ne peut pas être dissoute tant qu'il en reste.",
       "org_suspension_required": "Cette organisation a des membres mais plus d'administrateur. Suspendez-la d'abord, avec un motif : un autre super-administrateur pourra ensuite inviter un administrateur de reprise.",
-      "second_factor_setup_required": "Ce rôle exige la validation en deux étapes. Activez-la depuis « Sécurité du compte », puis rouvrez le lien de l'invitation."
+      "second_factor_setup_required": "Ce rôle exige la validation en deux étapes. Activez-la depuis « Sécurité du compte », puis rouvrez le lien de l'invitation.",
+      "read_only_reference": "Ce référentiel se consulte seulement : il ne se modifie pas depuis cet écran.",
+      "last_active": "C'est la dernière ligne active de ce référentiel : elle ne peut pas être désactivée. Activez-en d'abord une autre.",
+      "protected_reference": "Cette ligne est nécessaire au fonctionnement de la plateforme (type « thèse ou mémoire », langue d'interface) : elle ne se désactive pas.",
+      "reference_code_taken": "Une ligne porte déjà ce code. Pour la changer, utilisez « Modifier » sur cette ligne."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -152,7 +156,11 @@
       "invalid_date": "Indiquez une date au format AAAA-MM-JJ, par exemple 2027-06-30.",
       "too_many": "Vingt éléments au plus.",
       "invalid_org_name": "Le nom doit compter entre 2 et 200 caractères.",
-      "invalid_slug": "Minuscules sans accent, chiffres et tirets seulement, de 2 à 80 caractères. Par exemple : universite-de-dakar."
+      "invalid_slug": "Minuscules sans accent, chiffres et tirets seulement, de 2 à 80 caractères. Par exemple : universite-de-dakar.",
+      "invalid_reference_code": "Ce code n'a pas la forme attendue, ou il est déjà pris.",
+      "invalid_reference_label": "Libellé obligatoire en français et en anglais : 120 caractères au plus, sans < ni >.",
+      "invalid_position": "Indiquez un nombre entier de 0 à 99999.",
+      "invalid_isced": "Indiquez un chiffre de 0 à 8, ou laissez vide."
     },
     "secondFactor": {
       "title": "Sécurité du compte",
@@ -1007,7 +1015,8 @@
       "next": "Page suivante",
       "page": "Page {page}"
     },
-    "toOrganizations": "Administrer les organisations"
+    "toOrganizations": "Administrer les organisations",
+    "toReferences": "Administrer les référentiels"
   },
   "Sharing": {
     "title": "Partage du projet",
@@ -1466,6 +1475,107 @@
       "pending": "Un instant…",
       "toMine": "Mes organisations",
       "invalid": "Cette invitation n'est pas valable pour le compte {email} : elle a peut-être expiré, été annulée ou déjà utilisée, ou elle est adressée à une autre adresse. Demandez-en une nouvelle à la personne qui vous a invité."
+    }
+  },
+  "References": {
+    "title": "Référentiels",
+    "intro": "Les listes dans lesquelles les profils et les fiches du catalogue choisissent leurs valeurs.",
+    "backToAdmin": "Retour à l'administration",
+    "pending": "Un instant…",
+    "choose": "Choisir…",
+    "none": "aucun",
+    "separator": " · ",
+    "ruleAudit": "Chaque création, modification, activation ou désactivation est inscrite au journal d'audit, à votre nom.",
+    "ruleNoDelete": "Rien ne se supprime : une ligne se désactive. Elle n'est alors plus proposée, mais ce qui la porte déjà la garde.",
+    "ruleCode": "Le code d'une ligne ne change jamais ; seuls ses libellés et son rangement se modifient.",
+    "kindsLabel": "Choix du référentiel",
+    "kinds": {
+      "countries": "Pays",
+      "languages": "Langues",
+      "resource_types": "Types de ressource",
+      "education_levels": "Niveaux d'études",
+      "academic_domains": "Domaines",
+      "academic_programs": "Filières",
+      "program_specialties": "Spécialités",
+      "subjects": "Matières",
+      "licenses": "Licences"
+    },
+    "kindHelp": {
+      "countries": "Les codes ISO sont tous présents : un pays ne se crée pas, il s'active ou se désactive.",
+      "languages": "Langues des ressources. Les langues d'interface sont fixées par l'application et ne se désactivent pas.",
+      "resource_types": "Nature d'une fiche du catalogue. Le type « thesis » est nécessaire à la plateforme.",
+      "education_levels": "Niveaux proposés dans le profil et sur les fiches.",
+      "academic_domains": "Grands domaines auxquels les filières se rattachent.",
+      "academic_programs": "Filières proposées dans le profil, sur les fiches et pour les projets.",
+      "program_specialties": "Spécialités, chacune rattachée pour toujours à une filière.",
+      "subjects": "Matières, chacune rattachée pour toujours à une filière.",
+      "licenses": "Licences des fiches du catalogue et ce que chacune autorise."
+    },
+    "filterLabel": "Filtrer par code ou libellé",
+    "filter": "Filtrer",
+    "clearFilter": "Effacer le filtre",
+    "total": "{count, plural, =0 {Aucune ligne} one {# ligne} other {# lignes}}",
+    "totalFiltered": "{count, plural, =0 {Aucune ligne ne correspond} one {# ligne correspond} other {# lignes correspondent}} au filtre",
+    "empty": "Ce référentiel est vide.",
+    "emptyFiltered": "Aucune ligne ne correspond à ce filtre.",
+    "loadFailed": "La liste n'a pas pu être chargée. Réessayez dans un instant.",
+    "rateLimited": "Trop de consultations en peu de temps. Réessayez dans une minute.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "interfaceLanguage": "langue d'interface",
+    "usage": "{count, plural, =0 {aucun usage} one {# usage} other {# usages}}",
+    "parentWithCode": "{label} ({code})",
+    "keepParent": "Ne pas changer",
+    "fields": {
+      "code": "Code",
+      "codeHint": "Minuscules sans accent, chiffres et tirets bas, en commençant par une lettre. Il ne pourra plus changer.",
+      "codeHintLanguage": "Code de langue, par exemple « es » ou « pt-BR ». Il ne pourra plus changer.",
+      "labelFr": "Libellé français",
+      "labelEn": "Libellé anglais",
+      "labelOther": "Libellé ({language})",
+      "labelOtherHint": "Facultatif : laissé vide, ce libellé est retiré.",
+      "domain": "Domaine",
+      "program": "Filière",
+      "position": "Position",
+      "positionHint": "Rang dans les listes, du plus petit au plus grand.",
+      "isced": "Niveau CITE",
+      "iscedHint": "Classification internationale, de 0 à 8. Facultatif.",
+      "state": "État",
+      "usage": "Usages"
+    },
+    "editSummary": "Modifier",
+    "save": "Enregistrer",
+    "activateHelp": "Inactive, cette ligne n'est proposée à personne.",
+    "activate": "Activer",
+    "deactivateSummary": "Désactiver",
+    "deactivateHelp": "{count, plural, =0 {Désactivée, cette ligne ne sera plus proposée. Aucun profil ni aucune fiche ne la porte aujourd'hui.} one {Désactivée, cette ligne ne sera plus proposée. Le profil ou la fiche qui la porte (# usage) la garde et reste modifiable.} other {Désactivée, cette ligne ne sera plus proposée. Les profils et fiches qui la portent (# usages) la gardent et restent modifiables.}}",
+    "deactivate": "Désactiver cette ligne",
+    "createHeading": "Ajouter une ligne — {kind}",
+    "createInactive": "Une ligne créée est inactive : elle n'est proposée à personne tant que vous ne l'avez pas activée, depuis la liste.",
+    "create": "Créer la ligne",
+    "noCreation": "Ce référentiel est complet : aucune ligne ne s'y crée.",
+    "readOnly": "Les licences se consultent seulement. Leurs indicateurs décident de ce que la plateforme peut héberger et redistribuer : ils ont une portée juridique et ne se changent pas par un écran.",
+    "license": {
+      "canHost": "Hébergement",
+      "canRedistribute": "Redistribution",
+      "commercialUse": "Usage commercial",
+      "attribution": "Attribution exigée",
+      "values": {
+        "yes": "oui",
+        "no": "non",
+        "review": "à examiner"
+      }
+    },
+    "noticeConfirmed": "Identité confirmée.",
+    "noticeCreated": "La ligne est créée, inactive. Activez-la pour qu'elle soit proposée.",
+    "noticeUpdated": "La ligne est enregistrée.",
+    "noticeActivated": "La ligne est activée : elle est de nouveau proposée.",
+    "noticeDeactivated": "La ligne est désactivée : elle n'est plus proposée.",
+    "pagination": {
+      "label": "Pages du référentiel",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {page} sur {pages}"
     }
   }
 }

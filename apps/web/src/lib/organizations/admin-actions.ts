@@ -2,6 +2,7 @@
 
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
+import { producedValue, refusalCode, succeeded } from "@/lib/admin/responses";
 import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthFormState } from "@/lib/auth/state";
 import { serverEnv } from "@/lib/env.server";
@@ -15,11 +16,8 @@ import {
   ORG_UUID,
   organizationPage,
   organizationStatusSchema,
-  producedValue,
-  refusalCode,
   renameOrganizationSchema,
   statusNeedsReason,
-  succeeded,
 } from "./schemas";
 
 // Administration des organisations par la plateforme. Chaque action appelle

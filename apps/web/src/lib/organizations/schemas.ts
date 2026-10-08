@@ -1,6 +1,4 @@
 import { z } from "zod";
-import type { AuthErrorCode } from "@/lib/auth/state";
-import { catalogueErrorCode } from "@/lib/catalogue/errors";
 
 // Organisations : forme des entrées. Rien ici n'est une règle de sécurité —
 // la base revérifie chaque valeur et décide seule de qui peut quoi.
@@ -91,36 +89,3 @@ export const orgMemberRoleSchema = z.object({
   userId: z.uuid(),
   role: z.enum(ORG_ROLES),
 });
-
-// --- Réponses des fonctions d'administration de la plateforme -----------------
-//
-// Elles ne lèvent pas sur un refus de droit : elles rendent un objet et la
-// réponse porte le statut 403. Une écriture n'a eu lieu que si la réponse est
-// un succès sans erreur ; tout le reste est tenu pour un refus, quoi qu'en
-// dise le client de l'API.
-
-type RpcResponse = { data: unknown; error: unknown; status: number };
-
-/** Code d'un refus, lu dans l'erreur ou, à défaut, dans le corps rendu. */
-export function refusalCode(response: { data: unknown; error: unknown }): AuthErrorCode {
-  const body = (response.error ?? response.data) as { code?: string; message?: string } | null;
-  return body && typeof body === "object" && !Array.isArray(body) ? catalogueErrorCode(body) : "forbidden";
-}
-
-/** Écriture sans contenu rendu : succès, sans erreur ni corps. */
-export function succeeded(response: RpcResponse): boolean {
-  return response.error == null && response.data == null && (response.status === 200 || response.status === 204);
-}
-
-/**
- * Écriture qui rend un objet de succès (`{ id }`, `{ token }`) : la valeur
- * attendue, ou `null` si la réponse n'est pas ce succès-là — un refus rend lui
- * aussi un objet, mais avec le statut 403 et sans cette clé.
- */
-export function producedValue(response: RpcResponse, key: "id" | "token", pattern: RegExp): string | null {
-  if (response.error != null || response.status !== 200) return null;
-  const body = response.data;
-  if (body === null || typeof body !== "object" || Array.isArray(body)) return null;
-  const value = (body as Record<string, unknown>)[key];
-  return typeof value === "string" && pattern.test(value) ? value : null;
-}

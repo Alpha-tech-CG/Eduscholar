@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { producedValue, refusalCode, succeeded } from "@/lib/admin/responses";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
 import { buildOrganizationInvitation } from "@/lib/mail/notices";
 import {
@@ -13,11 +14,8 @@ import {
   organizationPage,
   organizationStatusSchema,
   orgMemberRoleSchema,
-  producedValue,
-  refusalCode,
   renameOrganizationSchema,
   statusNeedsReason,
-  succeeded,
 } from "@/lib/organizations/schemas";
 
 const id = "10000000-0000-4000-8000-000000000001";

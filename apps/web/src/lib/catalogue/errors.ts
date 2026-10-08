@@ -45,6 +45,11 @@ export function catalogueErrorCode(error: DatabaseError): AuthErrorCode {
     case "org_admin_exists":
     case "organization_has_resources":
       return message;
+    // Référentiels
+    case "read_only_reference":
+    case "last_active":
+    case "protected_reference":
+      return message;
     case "source_not_allowed":
       return "forbidden";
     case "duplicate_doi":

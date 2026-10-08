@@ -486,6 +486,90 @@ test.describe("organisations", () => {
     }
   });
 
+  test("reprise : qui suspend n'invite pas, qui invite ne rétablit pas", async ({ browser }) => {
+    const first = await createMember("org-reprise-a");
+    makeAdmin(first.id, "super_admin");
+    const second = await createMember("org-reprise-b");
+    makeAdmin(second.id, "super_admin");
+    const original = await createMember("org-reprise-origine");
+    giveSecondFactor(original.id);
+    const organization = seedOrganization("reprise", "verified", [{ user: original, role: "org_admin" }]);
+    const rescuerEmail = uniqueEmail("org-reprise-invite");
+
+    const a = await openSessionWithCode(browser, first);
+    const b = await openSessionWithCode(browser, second);
+    try {
+      const rowOf = (page: Page) => page.getByTestId("organization").filter({ hasText: organization.slug });
+
+      // --- A suspend l'organisation, qui a un administrateur --------------------------
+      await a.page.goto("/fr/admin/organizations");
+      await expect(rowOf(a.page).getByTestId("organization-counts")).toHaveText("1 membre, dont 1 administrateur");
+      let panel = await openPanel(rowOf(a.page), "Suspendre cette organisation");
+      await panel.getByLabel("Motif").fill("Administrateur injoignable");
+      await panel.getByRole("button", { name: "Suspendre", exact: true }).click();
+      await expect(a.page).toHaveURL(/notice=suspended$/);
+      await expect(rowOf(a.page).getByTestId("recovery-signal")).toHaveCount(0);
+
+      // Suspendue, l'organisation n'a plus d'administration.
+      const owner = await openSessionWithCode(browser, original);
+      expect((await owner.page.goto(`/fr/organizations/${organization.id}`))?.status()).toBe(404);
+
+      // --- A, qui a suspendu, n'invite pas l'administrateur de reprise ----------------
+      panel = await openPanel(rowOf(a.page), "Inviter un administrateur de reprise");
+      await panel.getByLabel("Adresse électronique du futur administrateur").fill(rescuerEmail);
+      await panel.getByRole("button", { name: "Envoyer l'invitation" }).click();
+      await expect(panel.getByRole("alert")).toHaveText("Vous n'avez pas le droit de faire cette action.");
+      expect(
+        sqlValue(`select count(*) from public.organization_invitations where organization_id = '${organization.id}'`),
+      ).toBe("0");
+
+      // --- B le peut : la liste montre alors le signal de reprise ----------------------
+      await b.page.goto("/fr/admin/organizations");
+      await expect(rowOf(b.page)).toContainText("Administrateur injoignable");
+      panel = await openPanel(rowOf(b.page), "Inviter un administrateur de reprise");
+      await panel.getByLabel("Adresse électronique du futur administrateur").fill(rescuerEmail);
+      await panel.getByRole("button", { name: "Envoyer l'invitation" }).click();
+      await expect(b.page).toHaveURL(/notice=admin-invited$/);
+      await expect(rowOf(b.page).getByTestId("recovery-signal")).toContainText("Reprise en cours");
+      await waitForOrgInvitation(rescuerEmail);
+
+      // --- B, qui a invité, ne rétablit pas ----------------------------------------------
+      panel = await openPanel(rowOf(b.page), "Rétablir cette organisation");
+      await panel.getByLabel("Motif").fill("Reprise engagée");
+      await panel.getByRole("button", { name: "Rétablir", exact: true }).click();
+      await expect(panel.getByRole("alert")).toHaveText("Vous n'avez pas le droit de faire cette action.");
+      expect(sqlValue(`select status from public.organizations where id = '${organization.id}'`)).toBe("suspended");
+
+      // --- A le peut, avec un motif --------------------------------------------------------
+      await a.page.goto("/fr/admin/organizations");
+      await expect(rowOf(a.page).getByTestId("recovery-signal")).toBeVisible();
+      panel = await openPanel(rowOf(a.page), "Rétablir cette organisation");
+      await panel.getByRole("button", { name: "Rétablir", exact: true }).click();
+      await expect(panel.getByRole("alert")).toContainText("Un motif est nécessaire");
+      await panel.getByLabel("Motif").fill("Reprise engagée par un autre super-administrateur");
+      await panel.getByRole("button", { name: "Rétablir", exact: true }).click();
+      await expect(a.page).toHaveURL(/notice=restored$/);
+      await expect(rowOf(a.page).getByTestId("organization-status")).toHaveText("Vérifiée");
+      await expect(rowOf(a.page).getByTestId("recovery-signal")).toHaveCount(0);
+
+      // --- L'administrateur d'origine sait qu'une invitation de la plateforme attend ------
+      expect((await owner.page.goto(`/fr/organizations/${organization.id}`))?.status()).toBe(200);
+      await expect(owner.page.getByTestId("platform-invitation")).toContainText(
+        "La plateforme a invité un administrateur",
+      );
+      // Ni l'adresse invitée, ni l'invitation elle-même ne sont à sa main.
+      await expect(owner.page.getByRole("main")).not.toContainText(rescuerEmail);
+      await expect(owner.page.getByTestId("org-invitation")).toHaveCount(0);
+      await owner.close();
+    } finally {
+      // Ces comptes ne restent pas super-administrateurs dans la base locale.
+      sql(`delete from public.platform_roles where user_id in ('${first.id}', '${second.id}')`);
+      dropOrganization(organization.id);
+      await a.close();
+      await b.close();
+    }
+  });
+
   test("l'administration des organisations est introuvable sans rôle", async ({ page, browser }) => {
     // Visiteur : renvoyé à la connexion.
     await page.goto("/fr/admin/organizations");

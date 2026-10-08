@@ -10,6 +10,7 @@ import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthErrorCode, AuthFormState } from "@/lib/auth/state";
 import { catalogueErrorCode } from "@/lib/catalogue/errors";
 import { getAdminSession } from "./queries";
+import { refusalCode, succeeded } from "./responses";
 import { sendAccountNotice } from "@/lib/mail/send";
 import { createServiceClient, createSessionClient } from "@/lib/supabase/server";
 
@@ -34,22 +35,6 @@ async function logLookupLimit(): Promise<void> {
   } catch {
     // La trace est un complément : le refus, lui, a déjà été opposé.
   }
-}
-
-/**
- * Les fonctions d'administration ne lèvent pas sur un refus de droit : elles
- * rendent un objet et la réponse porte le statut 403. Une écriture n'a eu lieu
- * que si la réponse est un succès sans erreur ni contenu ; tout le reste est
- * tenu pour un refus, quoi qu'en dise le client de l'API.
- */
-/** Code d'un refus, lu dans l'erreur ou, à défaut, dans le corps rendu. */
-function refusalCode(response: { data: unknown; error: unknown }): AuthErrorCode {
-  const body = (response.error ?? response.data) as { code?: string; message?: string } | null;
-  return body && !Array.isArray(body) ? catalogueErrorCode(body) : "forbidden";
-}
-
-function succeeded(response: { data: unknown; error: unknown; status: number }): boolean {
-  return response.error == null && response.data == null && (response.status === 200 || response.status === 204);
 }
 
 function text(formData: FormData, name: string): string {
@@ -86,9 +71,11 @@ export async function confirmAdminIdentity(
   }
 
   const locale = await getLocale();
-  // Retour à l'écran d'où vient la demande : deux destinations fixes, jamais
+  // Retour à l'écran d'où vient la demande : des destinations fixes, jamais
   // une adresse lue dans le formulaire.
-  const pathname = text(formData, "from") === "organizations" ? "/admin/organizations" : "/admin";
+  const from = text(formData, "from");
+  const pathname =
+    from === "organizations" ? "/admin/organizations" : from === "references" ? "/admin/references" : "/admin";
   return redirect({ href: { pathname, query: { notice: "confirmed" } }, locale });
 }
 

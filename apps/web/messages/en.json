@@ -130,7 +130,11 @@
       "org_admin_exists": "This organisation already has an administrator: it is up to them to invite the next ones.",
       "organization_has_resources": "Catalogue resources are attached to this organisation: it cannot be dissolved while any remain.",
       "org_suspension_required": "This organisation has members but no administrator left. Suspend it first, with a reason: another super administrator will then be able to invite a recovery administrator.",
-      "second_factor_setup_required": "This role requires two-step verification. Turn it on from “Account security”, then open the invitation link again."
+      "second_factor_setup_required": "This role requires two-step verification. Turn it on from “Account security”, then open the invitation link again.",
+      "read_only_reference": "This reference list is read-only: it cannot be changed from this screen.",
+      "last_active": "This is the last active entry of this reference list: it cannot be deactivated. Activate another one first.",
+      "protected_reference": "This entry is required for the platform to work (“thesis or dissertation” type, interface language): it cannot be deactivated.",
+      "reference_code_taken": "An entry already has this code. To change it, use “Edit” on that entry."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -152,7 +156,11 @@
       "invalid_date": "Enter a date as YYYY-MM-DD, for example 2027-06-30.",
       "too_many": "Twenty items at most.",
       "invalid_org_name": "The name must be between 2 and 200 characters long.",
-      "invalid_slug": "Lowercase letters without accents, digits and hyphens only, 2 to 80 characters. For example: university-of-dakar."
+      "invalid_slug": "Lowercase letters without accents, digits and hyphens only, 2 to 80 characters. For example: university-of-dakar.",
+      "invalid_reference_code": "This code does not have the expected form, or it is already taken.",
+      "invalid_reference_label": "A label is required in French and in English: 120 characters at most, without < or >.",
+      "invalid_position": "Enter a whole number from 0 to 99999.",
+      "invalid_isced": "Enter a digit from 0 to 8, or leave empty."
     },
     "secondFactor": {
       "title": "Account security",
@@ -1007,7 +1015,8 @@
       "next": "Next page",
       "page": "Page {page}"
     },
-    "toOrganizations": "Manage organisations"
+    "toOrganizations": "Manage organisations",
+    "toReferences": "Manage reference lists"
   },
   "Sharing": {
     "title": "Project sharing",
@@ -1466,6 +1475,107 @@
       "pending": "One moment…",
       "toMine": "My organisations",
       "invalid": "This invitation is not valid for the account {email}: it may have expired, been cancelled or already been used, or it is addressed to another address. Ask the person who invited you for a new one."
+    }
+  },
+  "References": {
+    "title": "Reference lists",
+    "intro": "The lists from which profiles and catalogue records choose their values.",
+    "backToAdmin": "Back to administration",
+    "pending": "One moment…",
+    "choose": "Choose…",
+    "none": "none",
+    "separator": " · ",
+    "ruleAudit": "Every creation, change, activation or deactivation is recorded in the audit log, under your name.",
+    "ruleNoDelete": "Nothing is deleted: an entry is deactivated. It is then no longer offered, but whatever already carries it keeps it.",
+    "ruleCode": "The code of an entry never changes; only its labels and its ordering can be edited.",
+    "kindsLabel": "Choice of reference list",
+    "kinds": {
+      "countries": "Countries",
+      "languages": "Languages",
+      "resource_types": "Resource types",
+      "education_levels": "Education levels",
+      "academic_domains": "Domains",
+      "academic_programs": "Programmes",
+      "program_specialties": "Specialties",
+      "subjects": "Subjects",
+      "licenses": "Licences"
+    },
+    "kindHelp": {
+      "countries": "All ISO codes are present: a country is not created, it is activated or deactivated.",
+      "languages": "Languages of resources. Interface languages are set by the application and cannot be deactivated.",
+      "resource_types": "Nature of a catalogue record. The “thesis” type is required by the platform.",
+      "education_levels": "Levels offered in the profile and on records.",
+      "academic_domains": "Broad domains that programmes are attached to.",
+      "academic_programs": "Programmes offered in the profile, on records and for projects.",
+      "program_specialties": "Specialties, each attached for good to a programme.",
+      "subjects": "Subjects, each attached for good to a programme.",
+      "licenses": "Licences of catalogue records and what each one allows."
+    },
+    "filterLabel": "Filter by code or label",
+    "filter": "Filter",
+    "clearFilter": "Clear the filter",
+    "total": "{count, plural, =0 {No entries} one {# entry} other {# entries}}",
+    "totalFiltered": "{count, plural, =0 {No entry matches} one {# entry matches} other {# entries match}} the filter",
+    "empty": "This reference list is empty.",
+    "emptyFiltered": "No entry matches this filter.",
+    "loadFailed": "The list could not be loaded. Try again in a moment.",
+    "rateLimited": "Too many views in a short time. Try again in a minute.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "interfaceLanguage": "interface language",
+    "usage": "{count, plural, =0 {no uses} one {# use} other {# uses}}",
+    "parentWithCode": "{label} ({code})",
+    "keepParent": "Do not change",
+    "fields": {
+      "code": "Code",
+      "codeHint": "Lowercase letters without accents, digits and underscores, starting with a letter. It can never change afterwards.",
+      "codeHintLanguage": "Language code, for example “es” or “pt-BR”. It can never change afterwards.",
+      "labelFr": "French label",
+      "labelEn": "English label",
+      "labelOther": "Label ({language})",
+      "labelOtherHint": "Optional: left empty, this label is removed.",
+      "domain": "Domain",
+      "program": "Programme",
+      "position": "Position",
+      "positionHint": "Rank in lists, from smallest to largest.",
+      "isced": "ISCED level",
+      "iscedHint": "International classification, from 0 to 8. Optional.",
+      "state": "Status",
+      "usage": "Uses"
+    },
+    "editSummary": "Edit",
+    "save": "Save",
+    "activateHelp": "While inactive, this entry is offered to no one.",
+    "activate": "Activate",
+    "deactivateSummary": "Deactivate",
+    "deactivateHelp": "{count, plural, =0 {Once deactivated, this entry will no longer be offered. No profile or record carries it today.} one {Once deactivated, this entry will no longer be offered. The profile or record that carries it (# use) keeps it and can still be edited.} other {Once deactivated, this entry will no longer be offered. The profiles and records that carry it (# uses) keep it and can still be edited.}}",
+    "deactivate": "Deactivate this entry",
+    "createHeading": "Add an entry — {kind}",
+    "createInactive": "A created entry is inactive: it is offered to no one until you activate it, from the list.",
+    "create": "Create the entry",
+    "noCreation": "This reference list is complete: no entry can be created in it.",
+    "readOnly": "Licences are read-only. Their indicators decide what the platform may host and redistribute: they have legal weight and are not changed through a screen.",
+    "license": {
+      "canHost": "Hosting",
+      "canRedistribute": "Redistribution",
+      "commercialUse": "Commercial use",
+      "attribution": "Attribution required",
+      "values": {
+        "yes": "yes",
+        "no": "no",
+        "review": "to be reviewed"
+      }
+    },
+    "noticeConfirmed": "Identity confirmed.",
+    "noticeCreated": "The entry is created, inactive. Activate it for it to be offered.",
+    "noticeUpdated": "The entry is saved.",
+    "noticeActivated": "The entry is activated: it is offered again.",
+    "noticeDeactivated": "The entry is deactivated: it is no longer offered.",
+    "pagination": {
+      "label": "Pages of the reference list",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page} of {pages}"
     }
   }
 }

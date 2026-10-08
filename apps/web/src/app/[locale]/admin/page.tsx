@@ -89,6 +89,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
           {t("toOrganizations")}
         </Link>
       </p>
+      <p>
+        <Link href="/admin/references" className="inline-block py-2 underline underline-offset-4">
+          {t("toReferences")}
+        </Link>
+      </p>
 
       {/* Les composants client de cette page ont besoin de leurs propres textes. */}
       <NextIntlClientProvider messages={{ Admin: messages.Admin, Auth: messages.Auth }}>
