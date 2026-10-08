@@ -409,6 +409,16 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   l'historique des suspensions. Acceptés : tout administrateur lit l'historique de tout
   compte ; une nouvelle suspension écrite hors des fonctions, au motif identique, n'est
   pas historisée. Ces corrections n'ont pas fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Fonction de recherche du catalogue (D-21) relue par l'agent
+  sécurité : aucun constat critique ou élevé ; aucune fuite d'une fiche non lisible ;
+  2 moyens et 6 faibles, tous de coût ou de robustesse. Corrigés : un mot d'une lettre
+  développait presque tout l'index ; un filtre inventé, par appel direct, faisait
+  parcourir le catalogue deux fois ; l'index couvrait aussi les fiches non lisibles, d'où
+  un canal temporel faible ; la page acceptait des chiffres d'une autre écriture ; la
+  règle des mots dépendait de la langue de la base ; la forme des mots n'était vérifiée
+  qu'après leur lecture ; le refus pour débit se confondait avec une panne. Non retenu :
+  un délai propre à la fonction, sans effet sur la requête appelante. Ces corrections
+  n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

@@ -540,6 +540,7 @@ depuis le serveur) :
 | `admin_session`, `admin_find_user`, `admin_list_accounts`, `admin_set_role`, `admin_set_account_status` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; jamais sur son propre compte ni sur un compte de rang égal ou supérieur ; détail dans `administration.md` |
 | `admin_account_history` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; lecture journalisée |
 | `log_admin_refusal` | Tout compte connecté, pour ses propres refus : opération et motif pris dans des listes fermées, trente par heure |
+| `search_resources` | Tout compte actif au profil complété ; ne rend que des identifiants de fiches publiées et publiques, deux cents appels par cinq minutes |
 | `recovery_codes_status`, `generate_recovery_codes`, `discard_recovery_codes`, `last_recovery_code_use` | Le titulaire, compte actif ; générer exige le second facteur présenté depuis moins de dix minutes |
 | `redeem_recovery_code` | Le titulaire, dans la session ouverte par le seul mot de passe d'un compte à second facteur ; refusée en session `aal2`, à un compte suspendu et au dernier super-administrateur effectif ; cinq essais erronés par quart d'heure |
 | `my_account_events`, `my_deleted_projects` | Le titulaire, compte actif : ses seuls événements (date et nature) et ses seuls projets supprimés en attente de purge |

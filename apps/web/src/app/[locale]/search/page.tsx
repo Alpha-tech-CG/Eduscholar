@@ -40,10 +40,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
     subjects: subjects.map(({ code }) => code),
   });
 
-  const allowed = (await checkAttempt("search", user.id)) === "allowed";
-  const { resources, total, failed } = allowed
-    ? await searchResources(filters)
-    : { resources: [], total: 0, failed: false };
+  const result =
+    (await checkAttempt("search", user.id)) === "allowed"
+      ? await searchResources(filters)
+      : { resources: [], total: 0, capped: false, failed: false, limited: true };
+  const { resources, total, capped, failed } = result;
+  // Refus de l'application ou de la base : le même message.
+  const allowed = !result.limited;
   const lastPage = Math.max(1, Math.ceil(total / SEARCH_PAGE_SIZE));
   const typeLabel = (code: string) =>
     catalogue.types.find((item) => item.code === code)?.label ?? code;
@@ -122,7 +125,11 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
 
       <section aria-labelledby="results-heading" className="flex flex-col gap-3">
         <h2 id="results-heading" className="text-lg font-semibold">
-          {allowed && !failed ? t("results", { count: total }) : t("resultsHeading")}
+          {!allowed || failed
+            ? t("resultsHeading")
+            : capped
+              ? t("resultsCapped", { count: total })
+              : t("results", { count: total })}
         </h2>
         {!allowed ? (
           <p role="alert" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">

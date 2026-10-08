@@ -100,7 +100,7 @@ describe("paramètres de l'adresse", () => {
       ["-4", 1],
       ["abc", 1],
       ["2.5", 2],
-      ["999999999", 500],
+      ["999999999", 250],
       [undefined, 1],
     ] as const) {
       expect(parseSearchParams({ page }, reference).page, String(page)).toBe(expected);

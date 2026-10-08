@@ -405,6 +405,8 @@ select is(
     'private.is_session_aal2()',
     'private.my_org_ids(p_roles text[])',
     'private.must_keep_second_factor()',
+    'private.search_resources(p jsonb)',
+    'public.search_resources(payload jsonb)',
     'private.admin_account_history(p_user uuid)',
     'public.admin_account_history(target_user uuid)',
     'private.log_admin_refusal(p_operation text, p_code text)',

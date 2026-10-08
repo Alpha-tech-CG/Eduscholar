@@ -100,6 +100,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006006200_sign_in_alert_hardening.sql` | Corrections de revue : enregistrement par le serveur seul, compte ancien sans navigateur connu, oubli au changement de mot de passe |
 | `20261006006300_admin_audit_followup.sql` | Historique des suspensions, consignation des opérations d'administration refusées |
 | `20261006006500_admin_refusal_hardening.sql` | Corrections de revue : refus déclarables bornés au rôle, plafonds, dépassement signalé |
+| `20261006006400_resource_search_function.sql` | Recherche du catalogue par une fonction dédiée (ADR-0010) |
+| `20261006006600_resource_search_hardening.sql` | Corrections de revue : mots courts, filtres hors référentiel, index partiel |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables

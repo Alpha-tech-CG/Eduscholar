@@ -4,7 +4,8 @@ import { getSecondFactorState } from "@/lib/auth/second-factor";
 import { getCurrentUser } from "@/lib/auth/session";
 import type { Option } from "@/lib/profile/queries";
 import { createSessionClient } from "@/lib/supabase/server";
-import { SEARCH_PAGE_SIZE, toTsQuery, type SearchFilters } from "./search";
+import { catalogueErrorCode } from "./errors";
+import { searchTerms, toTsQuery, type SearchFilters } from "./search";
 
 // Lectures du catalogue, faites sous le jeton de l'utilisateur : la RLS décide
 // de ce qu'il voit. Les colonnes sont nommées une à une (modèle de menaces M-52).
@@ -170,47 +171,64 @@ export async function getPublishedResources(ids: string[]): Promise<Resource[] |
   return wanted.flatMap((id) => byId.get(id) ?? []);
 }
 
-export type SearchResult = { resources: Resource[]; total: number; failed: boolean };
+export type SearchResult = {
+  resources: Resource[];
+  total: number;
+  /** Le décompte est plafonné : il y a davantage de fiches que `total`. */
+  capped: boolean;
+  failed: boolean;
+  /** La base a refusé la recherche : trop de recherches en peu de temps. */
+  limited: boolean;
+};
 
 /**
- * Recherche parmi les fiches publiées. Le statut et la visibilité sont filtrés
- * explicitement : un modérateur, qui lit aussi les fiches en attente, ne les
- * voit pas apparaître ici. La RLS reste la règle ; ce filtre est un choix
- * d'affichage.
+ * Recherche parmi les fiches publiées et publiques (ADR-0010).
+ *
+ * La base rend, par une fonction qui peut se servir de l'index, les
+ * identifiants de la page demandée, classés. Le contenu des fiches est ensuite
+ * lu ici sous la session de l'utilisateur : la RLS reste la règle de lecture.
  */
 export async function searchResources(filters: SearchFilters): Promise<SearchResult> {
+  const empty = { resources: [], total: 0, capped: false, failed: false, limited: false };
+  const failed: SearchResult = { ...empty, failed: true };
   const supabase = await createSessionClient();
-  let query = supabase
-    .from("resources")
-    .select(RESOURCE_COLUMNS, { count: "exact" })
-    .eq("editorial_status", "published")
-    .eq("visibility", "public");
+  const { data: hits, error } = await supabase.rpc("search_resources", {
+    payload: {
+      terms: searchTerms(filters.query),
+      type: filters.typeCode,
+      language: filters.languageCode,
+      access: filters.accessStatus,
+      level: filters.levelCode,
+      subject: filters.subjectCode,
+      page: filters.page,
+    },
+  });
+  if (error) return catalogueErrorCode(error) === "rate_limited" ? { ...empty, limited: true } : failed;
 
-  const tsQuery = toTsQuery(filters.query);
-  if (tsQuery) query = query.textSearch("search_vector", tsQuery, { config: "simple" });
-  if (filters.typeCode) query = query.eq("type_code", filters.typeCode);
-  if (filters.languageCode) query = query.eq("language_code", filters.languageCode);
-  if (filters.accessStatus) query = query.eq("access_status", filters.accessStatus);
-  if (filters.levelCode) query = query.contains("level_codes", [filters.levelCode]);
-  if (filters.subjectCode) query = query.contains("subject_codes", [filters.subjectCode]);
-
-  const from = (filters.page - 1) * SEARCH_PAGE_SIZE;
-  const { data, count, error } = await query
-    .order("published_at", { ascending: false })
-    .order("id")
-    .range(from, from + SEARCH_PAGE_SIZE - 1);
-  if (error) {
+  const first = hits?.[0];
+  if (!first) {
     // Page au-delà de la dernière : on revient à la première.
-    if (error.code === "PGRST103" && filters.page > 1) {
-      return searchResources({ ...filters, page: 1 });
-    }
-    return { resources: [], total: 0, failed: true };
+    if (filters.page > 1) return searchResources({ ...filters, page: 1 });
+    return empty;
   }
 
+  const ids = (hits ?? []).map((hit) => hit.id);
+  const { data, error: readError } = await supabase
+    .from("resources")
+    .select(RESOURCE_COLUMNS)
+    .in("id", ids)
+    .eq("editorial_status", "published")
+    .eq("visibility", "public");
+  if (readError) return failed;
+
+  // L'ordre est celui de la base : pertinence, puis date de publication.
+  const byId = new Map(((data ?? []) as ResourceRow[]).map((row) => [row.id, toResource(row)]));
   return {
-    resources: ((data ?? []) as ResourceRow[]).map(toResource),
-    total: count ?? 0,
+    resources: ids.flatMap((id) => byId.get(id) ?? []),
+    total: first.total,
+    capped: first.capped,
     failed: false,
+    limited: false,
   };
 }
 

@@ -5,7 +5,8 @@ export const SEARCH_PAGE_SIZE = 20;
 const MAX_QUERY_LENGTH = 200;
 const MAX_TERMS = 8;
 const MAX_TERM_LENGTH = 40;
-const MAX_PAGE = 500;
+// La base ne compte pas au-delà de cinq mille fiches : deux cent cinquante pages.
+const MAX_PAGE = 250;
 
 /** Statuts d'accès proposés comme filtre. */
 export const SEARCHABLE_ACCESS_STATUSES = [

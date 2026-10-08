@@ -156,28 +156,30 @@ cache côté serveur et une limitation de débit devant l'API (dette D-15).
   apostrophe) est remplacée par des espaces, pour que l'index découpe comme la requête :
   « feu » trouve « pare-feu ». Une valeur fournie est écrasée.
 - **Requête** : l'application ne garde des mots saisis que lettres et chiffres, huit mots
-  au plus, chacun cherché par son début (`arbre` trouve `arbres`) ; tous sont exigés.
-  Aucun opérateur ne peut y être glissé.
+  au plus ; tous sont exigés. À partir de trois lettres, un mot est cherché par son début
+  (`arbre` trouve `arbres`). Aucun opérateur ne peut y être glissé : la base revérifie
+  les mots et les cite un par un.
 - **Filtres** : type, langue, statut d'accès, niveau, matière. Une valeur absente du
   référentiel est ignorée.
-- **Lecture** : sous la session de l'utilisateur, par l'API ; la RLS décide. La recherche
-  ajoute « publiée et publique », pour qu'un modérateur ou un contributeur n'y voie pas
-  de fiche en attente. Résultats par 20, les plus récemment publiés d'abord.
+- **Lecture** (ADR-0010) : la fonction `search_resources` rend les identifiants des
+  fiches publiées et publiques de la page demandée, classés par pertinence puis par date
+  de publication ; l'application lit ensuite leur contenu sous la session de
+  l'utilisateur, où la RLS décide. Un modérateur ou un contributeur n'y voit pas de fiche
+  en attente. Résultats par 20 ; le décompte s'arrête à cinq mille et le dit.
 - **Fiche** : origine, licence, statut d'accès, date de dernière vérification, lien
   officiel (`rel="noopener noreferrer nofollow"`). Une fiche non publiée, réservée ou
   inexistante répond « introuvable » de la même façon.
 - **Signalement** : depuis la fiche, par `report_resource`. L'identité du signaleur n'est
   lisible de personne.
-- **Débit** : 150 recherches par cinq minutes et par compte. Pas de limite par adresse :
-  un seul compte bloquerait tout un campus placé derrière la même adresse.
+- **Débit** : 150 recherches par cinq minutes et par compte dans l'application, 200 dans
+  la base pour un appel direct. Pas de limite par adresse : un seul compte bloquerait
+  tout un campus placé derrière la même adresse.
 
 Limites connues :
 
-- Sous RLS, PostgreSQL n'utilise pas l'index plein texte pour la requête d'un
-  utilisateur (l'opérateur n'est pas « leakproof ») : chaque recherche parcourt les
-  fiches. Mesuré le 6 octobre 2026 sur 50 000 fiches : 47 ms. C'est acceptable pour le
-  pilote ; à revoir avant 200 000 fiches ou si une recherche dépasse 300 ms (dette D-21).
-- Les résultats ne sont pas classés par pertinence.
+- Le classement par pertinence est sommaire : un mot du titre pèse plus qu'un mot du
+  résumé. Au-delà de cinq mille fiches trouvées, il porte sur cinq mille d'entre elles.
+- La file de modération cherche sous RLS, sans index : elle est courte.
 - Les mots cherchés figurent dans l'adresse de la page (historique du navigateur,
   journaux d'accès de l'hébergeur). Ils ne partent pas vers les sites externes.
 - Hors écritures latine, grecque et cyrillique, le retrait des signes diacritiques peut
