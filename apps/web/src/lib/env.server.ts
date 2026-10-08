@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { SITE_KEY_PATTERN } from "@/lib/auth/captcha-shared";
 
 // Seul module qui lit les variables d'environnement serveur (docs/environment.md).
 // La lecture est paresseuse : le build ne dépend d'aucune valeur.
@@ -36,7 +37,7 @@ const schema = z.object({
   // Clé de site Cloudflare Turnstile (ADR-0011). Elle n'est pas secrète : elle
   // est servie au navigateur. Sans elle, aucun défi n'est affiché. Le secret
   // correspondant se règle dans le service d'authentification, pas ici.
-  TURNSTILE_SITE_KEY: z.string().regex(/^[0-9A-Za-z_-]{10,100}$/).optional().catch(undefined),
+  TURNSTILE_SITE_KEY: z.string().regex(SITE_KEY_PATTERN).optional().catch(undefined),
   // Contrôle des mots de passe compromis (ADR-0011) : « 1 » pour l'activer.
   PASSWORD_BREACH_CHECK: z.enum(["0", "1"]).optional().catch(undefined),
 });

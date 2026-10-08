@@ -117,7 +117,10 @@ export default async function ProjectSectionPage({
               saving: t("autosave.saving"),
               savedAt: t.raw("autosave.savedAt") as string,
               retrying: t("autosave.retrying"),
+              offline: t("autosave.offline"),
+              unreachable: t("autosave.unreachable"),
             },
+            network: t("autosave.network"),
             errors: {
               validation: tAuth("errors.validation"),
               rate_limited: t("autosave.rateLimited"),

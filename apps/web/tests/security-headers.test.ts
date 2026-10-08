@@ -3,6 +3,7 @@ import {
   apiContentSecurityPolicy,
   buildContentSecurityPolicy,
   generateNonce,
+  serviceWorkerHeaders,
   staticSecurityHeaders,
 } from "@/lib/security/headers";
 
@@ -43,11 +44,22 @@ describe("Content-Security-Policy de production", () => {
     expect(csp.has("upgrade-insecure-requests")).toBe(true);
   });
 
+  it("n'admet que le service worker et le manifeste de l'origine (ADR-0012)", () => {
+    expect(csp.get("worker-src")).toEqual(["'self'"]);
+    expect(csp.get("manifest-src")).toEqual(["'self'"]);
+    // Rien d'autre n'a été élargi pour eux.
+    expect(csp.get("script-src")).toEqual(["'self'", "'nonce-abc123'", "'strict-dynamic'"]);
+    expect(csp.get("connect-src")).toEqual(["'self'"]);
+    expect(csp.has("child-src")).toBe(false);
+  });
+
   it("ne contient aucune source générique", () => {
     const values = [...csp.values()].flat();
     expect(values).not.toContain("*");
     expect(values).not.toContain("https:");
     expect(values).not.toContain("http:");
+    expect(csp.get("worker-src")).not.toContain("blob:");
+    expect(csp.get("worker-src")).not.toContain("data:");
   });
 });
 
@@ -90,6 +102,26 @@ describe("CSP de repli des routes d'API", () => {
     expect(apiContentSecurityPolicy).toContain("default-src 'none'");
     expect(apiContentSecurityPolicy).toContain("frame-ancestors 'none'");
     expect(apiContentSecurityPolicy).toContain("sandbox");
+  });
+});
+
+describe("en-têtes du service worker (ADR-0012)", () => {
+  const headers = new Map(
+    serviceWorkerHeaders.map(({ key, value }) => [key.toLowerCase(), value]),
+  );
+
+  it("n'est jamais servi depuis un cache : un retrait atteint tous les navigateurs", () => {
+    expect(headers.get("cache-control")).toContain("no-cache");
+    expect(headers.get("cache-control")).toContain("no-store");
+    expect(headers.get("content-type")).toContain("application/javascript");
+  });
+
+  it("ne peut joindre que l'origine, sans script importé", () => {
+    const csp = parse(headers.get("content-security-policy") ?? "");
+    expect(csp.get("default-src")).toEqual(["'none'"]);
+    expect(csp.get("connect-src")).toEqual(["'self'"]);
+    expect(csp.get("frame-ancestors")).toEqual(["'none'"]);
+    expect(csp.has("script-src")).toBe(false);
   });
 });
 

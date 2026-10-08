@@ -10,7 +10,8 @@
     "home": "Accueil",
     "signIn": "Se connecter",
     "account": "Mon compte",
-    "footer": "EduScholar — plateforme en construction."
+    "footer": "EduScholar — plateforme en construction.",
+    "offline": "Vous êtes hors ligne. Rien de nouveau ne peut être chargé ni enregistré."
   },
   "Home": {
     "title": "EduScholar",
@@ -122,7 +123,8 @@
       "nothing_to_submit": "Votre projet n'a encore aucune section : il n'y a rien à soumettre.",
       "scope_required": "Cochez au moins une section, ou choisissez l'accès à tout le projet.",
       "captcha_required": "Terminez la vérification anti-robot, puis renvoyez le formulaire.",
-      "breached_password": "Ce mot de passe figure dans des fuites de données connues. Choisissez-en un autre, que vous n'utilisez nulle part ailleurs."
+      "breached_password": "Ce mot de passe figure dans des fuites de données connues. Choisissez-en un autre, que vous n'utilisez nulle part ailleurs.",
+      "captcha_failed": "La vérification anti-robot n'a pas abouti. Rechargez la page, puis réessayez."
     },
     "fieldErrors": {
       "email_invalid": "Indiquez une adresse électronique valide.",
@@ -857,7 +859,10 @@
         "notFound": "Cette section n'existe plus : le texte ne peut pas être enregistré. Copiez-le avant de quitter la page.",
         "unavailable": "L'enregistrement n'a pas abouti.",
         "forbidden": "Votre compte ne peut plus enregistrer de texte. Copiez votre texte avant de quitter la page.",
-        "leave": "Votre texte n'a pas pu être enregistré. Quitter la page quand même ? Les modifications non enregistrées seront perdues."
+        "leave": "Votre texte n'a pas pu être enregistré. Quitter la page quand même ? Les modifications non enregistrées seront perdues.",
+        "offline": "Non enregistré — hors ligne.",
+        "unreachable": "Non enregistré — serveur injoignable.",
+        "network": "Vos dernières modifications ne sont pas enregistrées. Gardez cet onglet ouvert : elles seront envoyées dès le retour de la connexion. Si vous le fermez avant, elles seront perdues."
       },
       "conflict": {
         "heading": "Cette section a été modifiée ailleurs.",
@@ -1296,5 +1301,11 @@
     "done": "Si ce lien était valable, vous ne recevrez plus ces courriels.",
     "reactivate": "Vous pouvez les demander de nouveau depuis la page « Notifications » de votre compte.",
     "toHome": "Retour à l'accueil"
+  },
+  "Offline": {
+    "title": "Vous êtes hors ligne",
+    "description": "Cette page n'a pas pu être chargée : la connexion est absente ou trop faible.",
+    "privacy": "Par sécurité, aucune page de votre compte n'est conservée sur cet appareil : elles redeviennent accessibles dès le retour de la connexion.",
+    "retry": "Réessayer"
   }
 }

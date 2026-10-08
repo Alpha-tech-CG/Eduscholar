@@ -10,7 +10,8 @@
     "home": "Home",
     "signIn": "Sign in",
     "account": "My account",
-    "footer": "EduScholar — platform under construction."
+    "footer": "EduScholar — platform under construction.",
+    "offline": "You are offline. Nothing new can be loaded or saved."
   },
   "Home": {
     "title": "EduScholar",
@@ -122,7 +123,8 @@
       "nothing_to_submit": "Your project has no section yet: there is nothing to submit.",
       "scope_required": "Tick at least one section, or choose access to the whole project.",
       "captcha_required": "Complete the anti-robot check, then send the form again.",
-      "breached_password": "This password appears in known data breaches. Choose another one that you use nowhere else."
+      "breached_password": "This password appears in known data breaches. Choose another one that you use nowhere else.",
+      "captcha_failed": "The anti-robot check did not succeed. Reload the page, then try again."
     },
     "fieldErrors": {
       "email_invalid": "Enter a valid email address.",
@@ -857,7 +859,10 @@
         "notFound": "This section no longer exists: the text cannot be saved. Copy it before leaving the page.",
         "unavailable": "The save did not go through.",
         "forbidden": "Your account can no longer save text. Copy your text before leaving the page.",
-        "leave": "Your text could not be saved. Leave the page anyway? Unsaved changes will be lost."
+        "leave": "Your text could not be saved. Leave the page anyway? Unsaved changes will be lost.",
+        "offline": "Not saved — offline.",
+        "unreachable": "Not saved — server unreachable.",
+        "network": "Your latest changes are not saved. Keep this tab open: they will be sent as soon as the connection is back. If you close it before then, they will be lost."
       },
       "conflict": {
         "heading": "This section was changed elsewhere.",
@@ -1296,5 +1301,11 @@
     "done": "If this link was valid, you will no longer receive these emails.",
     "reactivate": "You can ask for them again from the “Notifications” page of your account.",
     "toHome": "Back to home"
+  },
+  "Offline": {
+    "title": "You are offline",
+    "description": "This page could not be loaded: there is no connection, or it is too weak.",
+    "privacy": "For your security, no page of your account is kept on this device: they become available again as soon as the connection is back.",
+    "retry": "Try again"
   }
 }

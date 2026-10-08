@@ -25,6 +25,9 @@ export function buildContentSecurityPolicy(
       "'strict-dynamic'",
       // React utilise eval en développement uniquement.
       ...(isDev ? ["'unsafe-eval'"] : []),
+      // Sous 'strict-dynamic', les navigateurs récents ignorent les origines
+      // listées : le script du défi passe parce qu'il est inséré par un script
+      // porteur du nonce. L'origine ne sert que de repli aux anciens navigateurs.
       ...(captcha ? [CAPTCHA_ORIGIN] : []),
     ],
     // En développement, Next.js injecte des styles sans nonce.
@@ -36,6 +39,11 @@ export function buildContentSecurityPolicy(
     "connect-src": ["'self'", ...(isDev ? ["ws:"] : [])],
     // Aucun cadre, sauf celui du défi anti-robot quand il est configuré.
     "frame-src": captcha ? [CAPTCHA_ORIGIN] : ["'none'"],
+    // Service worker et manifeste de l'application installable (ADR-0012) :
+    // ceux de l'origine seulement. Sans `worker-src`, le worker retomberait
+    // sur `script-src`, dont 'strict-dynamic' écarte 'self'.
+    "worker-src": ["'self'"],
+    "manifest-src": ["'self'"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
@@ -76,3 +84,19 @@ export const staticSecurityHeaders: ReadonlyArray<{
 // sert jamais de page, elle n'a donc besoin d'aucune source.
 export const apiContentSecurityPolicy =
   "default-src 'none'; frame-ancestors 'none'; sandbox";
+
+// Le service worker (ADR-0012) ne passe pas par le proxy. Sa politique ne lui
+// permet que des requêtes vers l'origine : ni script importé, ni autre source.
+export const serviceWorkerHeaders: ReadonlyArray<{
+  key: string;
+  value: string;
+}> = [
+  { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+  // Toujours revalidé : une correction ou un retrait atteint les navigateurs
+  // dès la visite suivante.
+  { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+  {
+    key: "Content-Security-Policy",
+    value: "default-src 'none'; connect-src 'self'; frame-ancestors 'none'",
+  },
+];

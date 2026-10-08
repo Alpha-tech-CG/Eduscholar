@@ -204,15 +204,34 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"organization_members": {
+                },"organization_invitations": {
                   Row: {
-                    "created_at": string,"invited_by": string | null,"organization_id": string,"role": string,"role_granted_at": string,"user_id": string
+                    "accepted_at": string | null,"accepted_by": string | null,"created_at": string,"created_by": string | null,"email": string,"expires_at": string,"id": string,"issued_by_platform": boolean,"organization_id": string,"recovery": boolean,"role": string,"status": string,"token_hash": string
                   }
                   Insert: {
-                    "created_at"?: string,"invited_by"?: string | null,"organization_id": string,"role"?: string,"role_granted_at"?: string,"user_id": string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email": string,"expires_at": string,"id"?: string,"issued_by_platform"?: boolean,"organization_id": string,"recovery"?: boolean,"role": string,"status"?: string,"token_hash": string
                   }
                   Update: {
-                    "created_at"?: string,"invited_by"?: string | null,"organization_id"?: string,"role"?: string,"role_granted_at"?: string,"user_id"?: string
+                    "accepted_at"?: string | null,"accepted_by"?: string | null,"created_at"?: string,"created_by"?: string | null,"email"?: string,"expires_at"?: string,"id"?: string,"issued_by_platform"?: boolean,"organization_id"?: string,"recovery"?: boolean,"role"?: string,"status"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "organization_invitations_organization_id_fkey"
+      columns: ["organization_id"]
+isOneToOne: false
+      referencedRelation: "organizations"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"organization_members": {
+                  Row: {
+                    "created_at": string,"invited_by": string | null,"organization_id": string,"recovery_until": string | null,"role": string,"role_granted_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"invited_by"?: string | null,"organization_id": string,"recovery_until"?: string | null,"role"?: string,"role_granted_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"invited_by"?: string | null,"organization_id"?: string,"recovery_until"?: string | null,"role"?: string,"role_granted_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -770,7 +789,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "accept_project_invitation":
+            "accept_org_invitation":
+{ Args: { "token": string }; Returns: string
+                           },
+"accept_project_invitation":
 { Args: { "token": string }; Returns: string
                            },
 "account_deletion_check":
@@ -801,15 +823,32 @@ isOneToOne: false
               "day": string,"kind": string,"total": number
             }[]
                            },
+"admin_create_organization":
+{ Args: { "payload": Json }; Returns: Json
+                           },
+"admin_dissolve_organization":
+{ Args: { "organization_id": string,"reason": string }; Returns: Json
+                           },
 "admin_find_user":
 { Args: { "email": string }; Returns: {
               "confirmed": boolean,"created_at": string,"email": string,"has_second_factor": boolean,"roles": (string)[],"suspended": boolean,"suspension_reason": string,"user_id": string
             }[]
                            },
+"admin_invite_org_admin":
+{ Args: { "email": string,"organization_id": string }; Returns: Json
+                           },
 "admin_list_accounts":
 { Args: Record<PropertyKey, never>; Returns: {
               "email": string,"roles": (string)[],"suspended": boolean,"suspension_reason": string,"user_id": string
             }[]
+                           },
+"admin_list_organizations":
+{ Args: { "page_limit"?: number,"page_offset"?: number }; Returns: {
+              "admin_count": number,"country_code": string,"created_at": string,"id": string,"member_count": number,"name": string,"recovery_since_suspension": boolean,"slug": string,"status": string,"suspension_reason": string
+            }[]
+                           },
+"admin_rename_organization":
+{ Args: { "organization_id": string,"payload": Json }; Returns: Json
                            },
 "admin_session":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -818,6 +857,9 @@ isOneToOne: false
                            },
 "admin_set_account_status":
 { Args: { "reason"?: string,"suspended": boolean,"target_user": string }; Returns: Json
+                           },
+"admin_set_organization_status":
+{ Args: { "organization_id": string,"reason"?: string,"status": string }; Returns: Json
                            },
 "admin_set_role":
 { Args: { "grant_role": boolean,"role": string,"target_user": string }; Returns: Json
@@ -884,11 +926,17 @@ isOneToOne: false
 "invitation_preview":
 { Args: { "token": string }; Returns: Json
                            },
+"invite_org_member":
+{ Args: { "organization_id": string,"payload": Json }; Returns: string
+                           },
 "invite_project_member":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
 "last_recovery_code_use":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"leave_organization":
+{ Args: { "organization_id": string }; Returns: undefined
                            },
 "leave_project":
 { Args: { "project_id": string }; Returns: undefined
@@ -935,6 +983,16 @@ isOneToOne: false
               "created_at": string,"id": string,"is_read": boolean,"kind": string,"project_id": string,"project_title": string,"scope": string,"section_id": string,"version_id": string
             }[]
                            },
+"my_organization_memberships":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "joined_at": string,"organization_id": string,"organization_name": string,"role": string
+            }[]
+                           },
+"my_organizations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "joined_at": string,"name": string,"organization_id": string,"role": string,"slug": string,"status": string
+            }[]
+                           },
 "my_pending_access_requests":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -966,6 +1024,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "comment": string,"decided_at": string,"decision": string,"project_id": string,"version_id": string
             }[]
+                           },
+"org_invitation_preview":
+{ Args: { "token": string }; Returns: Json
+                           },
+"org_members":
+{ Args: { "organization_id": string }; Returns: Json
                            },
 "project_comments":
 { Args: { "project_id": string }; Returns: Json
@@ -1002,6 +1066,9 @@ isOneToOne: false
 "register_sign_in_device":
 { Args: { "p_device_hash": string,"p_user_id": string }; Returns: boolean
                            },
+"remove_org_member":
+{ Args: { "organization_id": string,"user_id": string }; Returns: undefined
+                           },
 "remove_project_member":
 { Args: { "project_id": string,"user_id": string }; Returns: undefined
                            },
@@ -1016,6 +1083,9 @@ isOneToOne: false
                            },
 "resolve_report":
 { Args: { "note"?: string,"report_id": string,"status": string }; Returns: undefined
+                           },
+"revoke_org_invitation":
+{ Args: { "invitation_id": string }; Returns: undefined
                            },
 "revoke_project_invitation":
 { Args: { "invitation_id": string }; Returns: undefined
@@ -1050,6 +1120,9 @@ isOneToOne: false
                            },
 "set_notification_preferences":
 { Args: { "payload": Json }; Returns: undefined
+                           },
+"set_org_member_role":
+{ Args: { "organization_id": string,"role": string,"user_id": string }; Returns: undefined
                            },
 "set_section_citation":
 { Args: { "pages"?: string,"present": boolean,"section_id": string,"source_id": string }; Returns: undefined

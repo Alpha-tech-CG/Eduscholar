@@ -68,10 +68,10 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 
 | ID | Sujet | Échéance |
 |---|---|---|
-| D-01 | Fonctions d'attribution de rôle et de suspension sous la session de l'administrateur : **fait** (écran `/admin`, `service_role` n'écrit plus les rôles). Reste : les organisations (invitation, rôles, dissolution), où le rôle serveur écrit encore | Avec les organisations partenaires (D-04) |
+| D-01 | Fonctions d'attribution de rôle et de suspension sous la session de l'administrateur : **fait** (écran `/admin`, `service_role` n'écrit plus les rôles). Reste : les organisations (invitation, rôles, dissolution), où le rôle serveur écrit encore | **fait pour la base** — le rôle serveur n'écrit plus ni dans les organisations ni dans leurs appartenances ; tout passe par des fonctions sous la session de l'appelant. Écrans : voir F-02 |
 | D-02 | Authentification récente pour les opérations d'administration ; refus d'attribuer un rôle à un compte sans second facteur | fait |
 | D-03 | Journal d'audit : durée de conservation à **décider** (juriste) puis à poser en base ; export hors base ; partitionnement par mois au-delà de cinq millions de lignes | Avant la production — **fait** : mécanisme de conservation dans la purge nocturne, inactif tant qu'aucune durée n'est posée (`private.platform_settings`, clé `audit_retention_months`) |
-| D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | Avec les organisations partenaires |
+| D-04 | Renommage d'une organisation par fonction, avec nouvelle vérification ; dissolution d'une organisation | **fait pour la base** — renommer repasse une organisation vérifiée à « en attente » ; la dissolution vaut pour une organisation suspendue et sans ressource rattachée. Écrans : voir F-02 |
 | D-05 | Contrôle automatique de `supabase/config.toml` en CI ; configuration des projets hébergés par `supabase config push` | À la création du projet de staging |
 | D-06 | Dépôt distant : épingler les actions par empreinte, `CODEOWNERS`, protection de `main` | À la création du dépôt |
 | D-07 | Copie chiffrée hors plateforme de la base et des fichiers ; exercice de restauration | Avant la production |
@@ -100,12 +100,23 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | D-26 | Journal d'audit : la suppression en cascade d'un compte attribue la ligne du rôle supprimé à l'administrateur qui l'avait accordé ; journaliser les tentatives d'administration refusées ; historique des motifs de suspension ; pagination de la liste des comptes à rôle | **fait** — l'attribution était corrigée depuis la migration 000800, un test la fixe ; les refus opposés par l'application sont consignés (opération et motif du refus, jamais la cible) ; chaque suspension et chaque rétablissement est gardé avec son motif et son auteur ; la liste se lit par pages de cinquante |
 | D-31 | Administration : consigner un refus dans la base elle-même, pour qu'un appel direct à l'API laisse la même trace que l'application (enveloppes qui capturent le refus et rendent un statut) ; durée de conservation de l'historique des suspensions et place dans la copie des données | **fait** — les six fonctions d'administration capturent le refus de droit, le consignent (`source: database`) et répondent 403 sans lever ; historique gardé trois ans, cinquante décisions par compte au-delà de quatre-vingt-dix jours ; la copie des données porte déjà la date et la nature de chaque décision, pas son motif |
 
+## Phase 5 — Internationalisation et mobile
+
+| # | Tâche | Dépend de | État |
+|---|---|---|---|
+| F-01 | Mode faible connexion : application installable, service worker sans donnée privée, page hors ligne, bandeau de connexion, reprise de l'enregistrement dans l'éditeur, audit à 360 px (ADR-0012) | — | fait |
+| F-02 | Écrans des organisations : plateforme (créer, vérifier, suspendre, renommer, dissoudre, inviter le premier administrateur) et organisation (membres, invitations, rôles) | D-01, D-04 | à faire |
+| F-03 | Référentiels configurables par l'administration : pays, niveaux, programmes, spécialités, matières (activer, désactiver, libellés par langue) | D-15 | à faire |
+| F-04 | Troisième langue d'interface (portugais) et vérification que rien n'est figé à deux langues ; formats de date et de nombre localisés | — | à faire |
+| F-05 | Aide et documentation dans les langues de l'interface | F-04 | à faire |
+| F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | à faire |
+
 ## Phases suivantes (non détaillées)
 
 - Phase 2 — Bibliothèque : notes, import DOI/BibTeX/RIS, dédoublonnage, vérification des liens.
 - Phase 3 — Atelier de recherche : projet de mémoire, fiches de lecture, bibliographie, export.
 - Phase 4 — Encadrement : découpée ci-dessus (E-01 à E-06).
-- Phase 5 — Internationalisation et mobile.
+- Phase 5 — Internationalisation et mobile : découpée ci-dessus (F-01 à F-06).
 - Phase 6 — Intelligence documentaire.
 
 ## Décisions en attente du porteur de projet

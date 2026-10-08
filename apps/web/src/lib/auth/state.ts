@@ -16,6 +16,7 @@ export type AuthErrorCode =
   | "weak_password"
   | "breached_password"
   | "captcha_required"
+  | "captcha_failed"
   | "same_password"
   | "session_expired"
   | "invalid_code"

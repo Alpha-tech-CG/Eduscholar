@@ -1,3 +1,4 @@
+import { isCaptchaConfigured } from "@/lib/auth/captcha-shared";
 import createIntlMiddleware from "next-intl/middleware";
 import { NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
@@ -24,7 +25,7 @@ export default async function proxy(request: NextRequest) {
     process.env.NODE_ENV === "development",
     // Lu ici sans passer par le module des variables serveur : le proxy ne
     // doit pas échouer pour une variable absente.
-    /^[0-9A-Za-z_-]{10,100}$/.test(process.env.TURNSTILE_SITE_KEY ?? ""),
+    isCaptchaConfigured(process.env.TURNSTILE_SITE_KEY),
   );
 
   // Next.js lit le nonce dans l'en-tête CSP de la requête pour l'appliquer
@@ -56,7 +57,9 @@ export const config = {
     // d'extensions statiques. Un chemin qui contient un point ailleurs (un DOI
     // par exemple) passe bien par le proxy et reçoit la CSP. Les requêtes de
     // préchargement ne sont pas exclues : l'en-tête qui les signale est choisi
-    // par le client.
-    "/((?!api(?:/|$)|_next(?:/|$)|_vercel(?:/|$)|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp|avif|txt|xml|webmanifest|woff2?)$).*)",
+    // par le client. Le service worker et la page hors ligne (ADR-0012), deux
+    // adresses exactes, sont aussi exclus : publics, identiques pour tous, ils
+    // portent leur propre politique et ne doivent pas être redirigés par langue.
+    "/((?!api(?:/|$)|_next(?:/|$)|_vercel(?:/|$)|sw\\.js$|offline\\.html$|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp|avif|txt|xml|webmanifest|woff2?)$).*)",
   ],
 };

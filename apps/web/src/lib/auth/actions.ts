@@ -1,7 +1,7 @@
 "use server";
 
 import { isBreachedPassword } from "./breached-password";
-import { readCaptcha } from "./captcha";
+import { isCaptchaRefusal, readCaptcha } from "./captcha";
 import { noteSignInDevice } from "./device";
 import { recordAuthEvent } from "./events";
 import { getLocale } from "next-intl/server";
@@ -76,15 +76,17 @@ export async function signUp(
   const success: AuthFormState = { status: "success", notice: "check_email_signup" };
 
   return withMinimumDuration(async () => {
+    // Le défi d'abord : c'est un contrôle de forme, sans état. Un envoi sans
+    // jeton ne consomme pas la limite de l'adresse visée et n'en dit rien.
+    const captcha = readCaptcha(formData);
+    if (captcha.missing) {
+      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
+    }
     const verdict = await checkAttempt("sign-up", parsed.data.email);
     if (verdict === "client_limited") return rateLimited;
     // Limite propre à cette adresse : même réponse que d'habitude, sans envoi.
     if (verdict === "account_limited") return success;
 
-    const captcha = readCaptcha(formData);
-    if (captcha.missing) {
-      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
-    }
     if (await isBreachedPassword(parsed.data.password)) {
       return { status: "error", error: "breached_password", values: { email: parsed.data.email } };
     }
@@ -102,6 +104,11 @@ export async function signUp(
         error: "weak_password",
         values: { email: parsed.data.email },
       };
+    }
+    // Défi refusé par le service : rien n'a été créé, et il faut le dire.
+    if (isCaptchaRefusal(error)) {
+      await recordAuthEvent("failed:captcha");
+      return { status: "error", error: "captcha_failed", values: { email: parsed.data.email } };
     }
 
     // Toute autre issue donne la même réponse, que l'adresse soit déjà
@@ -127,13 +134,12 @@ export async function signIn(
   if (!parsed.success) return invalid;
 
   const failure = await withMinimumDuration<AuthFormState | null>(async () => {
-    if ((await checkAttempt("sign-in", parsed.data.email)) !== "allowed") {
-      return rateLimited;
-    }
-
     const captcha = readCaptcha(formData);
     if (captcha.missing) {
       return { status: "error", error: "captcha_required", values: { email: submittedEmail } };
+    }
+    if ((await checkAttempt("sign-in", parsed.data.email)) !== "allowed") {
+      return rateLimited;
     }
 
     const supabase = await createSessionClient();
@@ -142,6 +148,11 @@ export async function signIn(
       password: parsed.data.password,
       options: { captchaToken: captcha.token },
     });
+    // Défi refusé : ce n'est pas un mot de passe faux, et ce n'est pas compté comme tel.
+    if (isCaptchaRefusal(error)) {
+      await recordAuthEvent("failed:captcha");
+      return { status: "error", error: "captcha_failed", values: { email: submittedEmail } };
+    }
     if (error || !data.user) {
       await recordAuthEvent("failed:sign-in");
       return invalid;
@@ -184,19 +195,25 @@ export async function requestPasswordReset(
   const success: AuthFormState = { status: "success", notice: "check_email_reset" };
 
   return withMinimumDuration(async () => {
+    const captcha = readCaptcha(formData);
+    if (captcha.missing) {
+      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
+    }
     const verdict = await checkAttempt("password-reset", parsed.data.email);
     if (verdict === "client_limited") return rateLimited;
     // Limite propre à ce compte : un tiers ne peut ni inonder sa boîte, ni
     // savoir que la limite est atteinte.
     if (verdict === "account_limited") return success;
 
-    const captcha = readCaptcha(formData);
-    if (captcha.missing) {
-      return { status: "error", error: "captcha_required", values: { email: parsed.data.email } };
-    }
-
     const supabase = await createSessionClient();
-    await supabase.auth.resetPasswordForEmail(parsed.data.email, { captchaToken: captcha.token });
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+      captchaToken: captcha.token,
+    });
+    // Défi refusé par le service : aucun courriel n'est parti, et il faut le dire.
+    if (isCaptchaRefusal(error)) {
+      await recordAuthEvent("failed:captcha");
+      return { status: "error", error: "captcha_failed", values: { email: parsed.data.email } };
+    }
 
     // Même réponse que le compte existe ou non.
     return success;

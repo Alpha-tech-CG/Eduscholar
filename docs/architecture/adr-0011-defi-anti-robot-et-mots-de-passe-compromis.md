@@ -53,15 +53,35 @@ serveur : ni le mot de passe, ni son empreinte complète ne sortent.
 
 - Tests unitaires : politique de sécurité de contenu avec et sans défi ; contrôle des
   mots de passe (seul le préfixe part, lignes de remplissage ignorées, panne tolérée).
-- Sonde manuelle du 8 octobre 2026, serveur local et clé de test publique de Cloudflare :
-  le widget se charge sous la politique de sécurité de contenu, sans aucun refus, et le
-  jeton arrive dans le champ du formulaire.
+- Sonde manuelle du 8 octobre 2026, sur la construction de production servie en local
+  (`next start`, politique de production : ni `unsafe-eval` ni style sans nonce) et la
+  clé de test publique de Cloudflare, page de connexion : le widget se charge sans aucun
+  refus de la politique de sécurité de contenu, et le jeton arrive dans le champ du
+  formulaire. Les six autres formulaires utilisent le même composant ; ils n'ont pas été
+  sondés un par un.
 
 ## Non vérifié
 
 Le refus, par le service d'authentification, d'une connexion sans jeton : il demande
 d'activer `[auth.captcha]` avec un secret, donc un projet de staging. **À valider en
 staging avant l'ouverture**, formulaire par formulaire.
+
+## Mise en service : contrôle obligatoire
+
+Une configuration à moitié faite ne se voit pas d'elle-même : la clé de site sans le
+secret affiche un widget que rien ne vérifie ; le secret sans la clé de site ferme la
+connexion à tous. Après chaque activation, en staging puis en production :
+
+1. appeler directement le service d'authentification, sans jeton, pour une connexion
+   avec une adresse quelconque : la réponse attendue est le refus `captcha_failed` ;
+2. se connecter par l'application : la connexion aboutit ;
+3. regarder les compteurs de l'authentification dans l'écran d'administration : la
+   nature `failed:captcha` ne doit pas monter.
+
+Un refus du défi par le service est dit comme tel à l'utilisateur (« la vérification
+anti-robot n'a pas abouti ») et compté à part ; il n'est jamais présenté comme un
+succès ni comme un mot de passe faux, sauf sur les quatre formulaires de revérification
+du mot de passe, où il est consigné au journal du serveur.
 
 ## Écarté
 
@@ -71,8 +91,9 @@ staging avant l'ouverture**, formulaire par formulaire.
 
 ## Conséquences
 
-- Une origine tierce de plus, pour les seules pages qui portent un formulaire concerné,
-  et seulement quand le défi est configuré. Cloudflare reçoit alors l'adresse et des
+- Une origine tierce de plus, seulement quand le défi est configuré. La politique de
+  sécurité de contenu l'admet alors sur toutes les pages ; le script, lui, n'est chargé
+  que par celles qui portent un formulaire concerné. Cloudflare reçoit alors l'adresse et des
   signaux du navigateur du visiteur : à inscrire dans la politique de confidentialité.
 - Sans JavaScript, le widget ne s'affiche pas et le service refusera la connexion une
   fois le défi activé : la connexion exige alors JavaScript.

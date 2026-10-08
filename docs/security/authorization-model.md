@@ -81,6 +81,24 @@ Règles :
   collections des autres membres.
 - Un rôle d'organisation ne vaut que pour cette organisation. Aucune requête ne traverse
   deux organisations.
+- Un `org_admin` ne se désigne pas d'office : la plateforme émet une invitation à ce rôle,
+  que la personne accepte sous son adresse confirmée, second facteur présenté.
+  - *Premier administrateur* : organisation non suspendue et sans aucun membre ; ouvert à
+    un `platform_admin`.
+  - *Reprise* : organisation suspendue. Réservée à un `super_admin` qui n'est pas l'auteur
+    de la suspension en cours. Qui a émis l'invitation de reprise ne rétablit pas
+    l'organisation, sans borne de temps ; le rétablissement exige un motif. Pendant trente
+    jours, l'administrateur ainsi placé ne retire ni ne rétrograde un administrateur
+    antérieur. Risque accepté : deux `super_admin` de connivence ; chaque étape est au
+    journal.
+- Un administrateur de la plateforme n'administre pas une organisation dont il est membre,
+  ni dont il l'a été dans les trente derniers jours ; un compte à rôle de plateforme ne
+  reçoit pas d'invitation d'administrateur d'organisation.
+- Le nom et l'identifiant d'adresse d'une organisation ne sont modifiés que par la
+  plateforme ; renommer une organisation vérifiée la repasse à `pending`. Une organisation
+  ne se dissout que suspendue et sans ressource rattachée.
+- Le dernier `org_admin` d'une organisation suspendue peut la quitter, et supprimer son
+  compte : l'organisation devient sans administrateur, cas de la reprise.
 - Une organisation est créée par un `platform_admin`. Elle porte un état : `pending`,
   `verified`, `suspended`. Seul `verified` permet la publication directe (section 5.1).
 - Dans une organisation `suspended`, `has_org_role` renvoie faux pour tous : plus aucun
@@ -302,10 +320,12 @@ expires_at, status, accepted_by)`.
 | Inviter un membre | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
 | Accepter une invitation d'organisation | `F` | — | — | — | — | — |
 | Retirer un membre, changer un rôle | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
-| Modifier les paramètres de l'organisation | ✖ | ✖ | ✖ | ✖ | `F`, `org` | ✖ |
+| Modifier le nom ou l'identifiant d'adresse | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, sauf s'il en est membre ; repasse à `pending` |
+| Dissoudre une organisation | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, suspendue et sans ressource |
 | Quitter l'organisation | — | `F` | `F` | `F` | `F`, sauf dernier `org_admin` | — |
 | Créer, vérifier, suspendre une organisation | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, sauf s'il en est membre |
-| Désigner le premier `org_admin` | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, jamais lui-même |
+| Inviter le premier `org_admin` | ✖ | ✖ | ✖ | ✖ | ✖ | `F`, jamais lui-même ni un compte à rôle de plateforme |
+| Inviter un `org_admin` de reprise | ✖ | ✖ | ✖ | ✖ | ✖ | `super_admin` seul, `F`, s'il n'a pas prononcé la suspension |
 | Consulter les statistiques | ✖ | ✖ | ✖ | `org`, agrégées | `org`, agrégées | agrégées |
 
 Les statistiques sont agrégées et anonymisées, avec un seuil minimal d'effectif : elles ne
@@ -542,6 +562,10 @@ depuis le serveur) :
 | `log_admin_refusal` | `platform_admin` ou `super_admin`, pour la seule limite de débit de la recherche d'un compte ; tout autre refus est consigné par la base, dans la transaction de l'appel |
 | `search_resources` | Tout compte actif au profil complété ; ne rend que des identifiants de fiches publiées et publiques, deux cents appels par cinq minutes |
 | `reference_data` | Tout compte actif : les neuf référentiels en un objet, trente lectures par minute ; leurs tables ne se lisent pas par l'API |
+| `admin_create_organization`, `admin_set_organization_status`, `admin_rename_organization`, `admin_dissolve_organization`, `admin_invite_org_admin`, `admin_list_organizations` | `platform_admin` ou `super_admin`, second facteur récent, jamais sur une organisation dont il est ou a été membre depuis moins de trente jours ; refus de droit consigné et rendu en 403 ; reprise réservée au `super_admin` |
+| `invite_org_member`, `revoke_org_invitation`, `set_org_member_role`, `remove_org_member`, `org_members` | `org_admin` de cette organisation, non suspendue ; jamais le dernier `org_admin` |
+| `org_invitation_preview`, `accept_org_invitation` | L'appelant connecté sous l'adresse invitée, confirmée, profil complété ; second facteur présenté pour le rôle `org_admin` ; toute autre situation reçoit la même réponse vide |
+| `leave_organization`, `my_organizations`, `my_organization_memberships` | Le membre ; le dernier `org_admin` ne part que d'une organisation suspendue |
 | `recovery_codes_status`, `generate_recovery_codes`, `discard_recovery_codes`, `last_recovery_code_use` | Le titulaire, compte actif ; générer exige le second facteur présenté depuis moins de dix minutes |
 | `redeem_recovery_code` | Le titulaire, dans la session ouverte par le seul mot de passe d'un compte à second facteur ; refusée en session `aal2`, à un compte suspendu et au dernier super-administrateur effectif ; cinq essais erronés par quart d'heure |
 | `my_account_events`, `my_deleted_projects` | Le titulaire, compte actif : ses seuls événements (date et nature) et ses seuls projets supprimés en attente de purge |
@@ -582,7 +606,6 @@ et refuse le rejeu.
 | Opération | Contrôle préalable |
 |---|---|
 | Émission des URL signées Storage | Ligne `files` visible sous la session de l'appelant, `scan_status` |
-| Création, vérification, suspension d'une organisation | `platform_admin`, non membre |
 | Levée du second facteur après un code de secours (`auth.admin.mfa.deleteFactor`) | Code accepté par `redeem_recovery_code` sous la session du titulaire, juste avant ; l'identifiant vient de la session vérifiée |
 | Lecture de l'adresse d'un compte pour l'avis de suspension ou de rétablissement (`auth.admin.getUserById`) | `admin_set_account_status` acceptée juste avant sous la session de l'administrateur ; l'adresse ne sert qu'à l'envoi, n'est ni affichée ni journalisée |
 | Suppression de compte à la demande du titulaire | Mot de passe redemandé, puis verdict `ok` de `account_deletion_check` obtenu sous la session du titulaire |

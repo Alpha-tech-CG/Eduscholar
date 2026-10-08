@@ -42,9 +42,14 @@ export async function isBreachedPassword(
       signal: AbortSignal.timeout(TIMEOUT_MS),
       cache: "no-store",
     });
-    if (!response.ok) return false;
+    if (!response.ok) {
+      console.error("Contrôle des mots de passe compromis : le service a refusé la requête.");
+      return false;
+    }
     return isSuffixListed(await response.text(), suffix);
   } catch {
+    // Rien de dérivé du mot de passe n'est consigné.
+    console.error("Contrôle des mots de passe compromis : le service n'a pas répondu.");
     return false;
   }
 }

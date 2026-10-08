@@ -431,6 +431,25 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   des motifs récents à la purge. Accepté : une limite de débit de la base, opposée à un
   administrateur reconnu, n'est pas consignée. Ces corrections n'ont pas fait l'objet
   d'une seconde revue.
+- 8 octobre 2026 — Défi anti-robot et mots de passe compromis (D-09) relus par l'agent
+  sécurité : aucun constat critique ou élevé ; 3 moyens et 6 faibles. Corrigés : un refus
+  du défi par le service d'authentification était présenté comme un succès à
+  l'inscription et à la réinitialisation, et comme un mot de passe faux à la connexion ;
+  le défi était contrôlé après la limite de débit, ce qui révélait l'état de celle-ci ;
+  la forme de la clé de site était définie à deux endroits ; une panne du contrôle des
+  mots de passe était muette. Reste à faire en staging : vérifier qu'un appel direct sans
+  jeton est refusé, et sonder les six autres formulaires. Ces corrections n'ont pas fait
+  l'objet d'une seconde revue.
+- 8 octobre 2026 — Organisations (D-01, D-04), partie base, relues deux fois par l'agent
+  sécurité. Première revue : **un constat élevé** — un seul administrateur de plateforme
+  pouvait suspendre une organisation, y placer un complice comme administrateur, la
+  rétablir, lire la liste des membres et évincer les administrateurs en place — et 4
+  moyens. Corrigés. Seconde revue, ciblée sur ce constat : scénario d'origine fermé, deux
+  chemins résiduels moyens (attendre le départ du dernier administrateur ; attendre
+  trente jours avant de rétablir). Corrigés : la reprise se définit par l'état de
+  l'organisation, les interdits reposent sur des faits durables, l'administrateur de
+  reprise est en observation trente jours. Risque accepté : deux super-administrateurs de
+  connivence. La troisième migration de correction n'a pas été relue.
 
 ## Suivi
 

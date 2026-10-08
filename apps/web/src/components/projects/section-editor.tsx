@@ -3,6 +3,7 @@
 import { useLocale } from "next-intl";
 import { useActionState, useCallback, useEffect, useId, useRef, useState } from "react";
 import { initialAuthState } from "@/lib/auth/state";
+import { retryDelay } from "@/lib/offline/retry";
 import {
   loadSectionVersion,
   saveSectionDraft,
@@ -16,12 +17,20 @@ import { countWords, SECTION_BODY_MAX } from "@/lib/projects/section-schemas";
 //
 // Rien de ce qui est saisi n'est jamais remplacé sans un geste de l'utilisateur,
 // et la page ne se quitte pas avec un texte non enregistré sans qu'il le sache.
+//
+// Sans réseau (ADR-0012) : le texte reste dans la page, en mémoire seulement —
+// jamais dans le stockage du navigateur —, l'état le dit, et l'envoi reprend au
+// retour du réseau ou après un délai croissant. Fermer l'onglet avant perd ce
+// qui n'a pas été envoyé : le navigateur demande confirmation.
 
 /** Attente après la dernière frappe, et intervalle minimal entre deux envois. */
 const IDLE_MS = 2500;
 const MIN_INTERVAL_MS = 10_000;
-/** Reprise après un refus passager (réseau, service, débit). */
-const RETRY_MS = 30_000;
+/** Attente minimale après un refus pour débit : le serveur a demandé de ralentir. */
+const RATE_LIMIT_MS = 30_000;
+
+/** L'envoi n'a pas atteint le serveur : appareil hors ligne, ou serveur injoignable. */
+type Network = "offline" | "unreachable" | null;
 
 type Draft = { title: string; level: string; body: string };
 
@@ -47,7 +56,18 @@ export type SectionEditorLabels = {
   pending: string;
   /** « {count} » est remplacé par le nombre de mots. */
   words: { zero: string; one: string; other: string };
-  status: { unsaved: string; saving: string; savedAt: string; retrying: string };
+  status: {
+    unsaved: string;
+    saving: string;
+    savedAt: string;
+    retrying: string;
+    /** L'envoi n'est pas parti : appareil hors ligne. */
+    offline: string;
+    /** L'envoi n'est pas arrivé alors que l'appareil se dit en ligne. */
+    unreachable: string;
+  };
+  /** Ce que devient le texte tant que le réseau manque. */
+  network: string;
   errors: Record<EditorError, string>;
   fieldErrors: { required: string; too_long: string; invalid_choice: string };
   /** Demande de confirmation avant de quitter la page avec un texte non enregistré. */
@@ -108,6 +128,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
   const [status, setStatus] = useState<Status>({ kind: "clean" });
   const [fields, setFields] = useState<Record<string, string>>({});
   const [conflict, setConflict] = useState<SectionVersion | "gone" | null>(null);
+  const [network, setNetwork] = useState<Network>(null);
 
   const form = useRef<HTMLFormElement>(null);
   const draftRef = useRef(draft);
@@ -117,6 +138,9 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
   const lastSave = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blocked = useRef(false);
+  const networkRef = useRef<Network>(null);
+  /** Échecs consécutifs : ils allongent le délai avant l'essai suivant. */
+  const failures = useRef(0);
   const saveRef = useRef<() => Promise<boolean>>(async () => true);
 
   const schedule = useCallback((delay: number) => {
@@ -125,19 +149,35 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     timer.current = setTimeout(() => void saveRef.current(), wait);
   }, []);
 
+  const settle = useCallback((value: Network) => {
+    networkRef.current = value;
+    setNetwork(value);
+  }, []);
+
   /** Un envoi du texte présent à l'écran, et le traitement de sa réponse. */
   const send = useCallback(async (): Promise<void> => {
     const sent = draftRef.current;
     lastSave.current = Date.now();
     setStatus({ kind: "saving" });
+    // L'appel n'a pas abouti : le texte reste à l'écran, l'envoi sera retenté
+    // après un délai qui s'allonge, ou dès le retour du réseau.
+    const lost = () => {
+      failures.current += 1;
+      settle(navigator.onLine ? "unreachable" : "offline");
+      setStatus({ kind: "unsaved" });
+      schedule(retryDelay(failures.current));
+    };
+
     let result: Awaited<ReturnType<typeof saveSectionDraft>>;
     try {
       result = await saveSectionDraft({ projectId, sectionId, ...sent, updatedAt: versionRef.current });
     } catch {
-      result = { status: "error", error: "unavailable" };
+      return lost();
     }
+    settle(null);
 
     const accept = (updatedAt: string) => {
+      failures.current = 0;
       savedRef.current = sent;
       versionRef.current = updatedAt;
       setVersion(updatedAt);
@@ -156,7 +196,13 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       // Seuls les refus passagers sont retentés ; les autres attendent une correction.
       const retrying = error === "unavailable" || error === "rate_limited";
       setStatus({ kind: "error", error, retrying });
-      if (retrying) schedule(RETRY_MS);
+      if (!retrying) {
+        failures.current = 0;
+        return;
+      }
+      failures.current += 1;
+      const delay = retryDelay(failures.current);
+      schedule(error === "rate_limited" ? Math.max(delay, RATE_LIMIT_MS) : delay);
     };
 
     if (result.status === "saved") return accept(result.updatedAt);
@@ -170,7 +216,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     try {
       theirs = await loadSectionVersion({ projectId, sectionId });
     } catch {
-      theirs = { status: "error", error: "unavailable" };
+      return lost();
     }
     // La version n'a pas pu être lue : rien n'est affirmé, l'envoi sera retenté.
     if (theirs.status === "error") return fail(theirs.error);
@@ -194,7 +240,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     };
     setConflict(theirs.version);
     setStatus({ kind: "unsaved" });
-  }, [projectId, sectionId, schedule]);
+  }, [projectId, sectionId, schedule, settle]);
 
   /** Enregistre ce qui ne l'est pas encore. Rend vrai si plus rien n'est en attente. */
   const save = useCallback(async (): Promise<boolean> => {
@@ -227,13 +273,16 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
         // Revenu au texte enregistré : plus rien à envoyer, ni à signaler.
         if (timer.current) clearTimeout(timer.current);
         if (!inFlight.current) setStatus({ kind: "clean" });
+        failures.current = 0;
+        settle(null);
         setFields({});
         return;
       }
       if (!inFlight.current) setStatus({ kind: "unsaved" });
-      if (!blocked.current) schedule(IDLE_MS);
+      // Réseau absent : l'essai suivant est déjà programmé, la frappe ne le rapproche pas.
+      if (!blocked.current && !networkRef.current) schedule(IDLE_MS);
     },
-    [schedule],
+    [schedule, settle],
   );
 
   // Ce qui a été saisi avant que le script de la page soit prêt est repris tel quel.
@@ -304,12 +353,27 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       });
     };
 
+    // Retour du réseau : l'envoi part tout de suite, sans attendre le délai en cours.
+    const onOnline = () => {
+      if (!dirty() || blocked.current) return;
+      failures.current = 0;
+      lastSave.current = 0;
+      void saveRef.current();
+    };
+    const onOffline = () => {
+      if (networkRef.current === "unreachable") settle("offline");
+    };
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
     window.addEventListener("beforeunload", warn);
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", flush);
     document.addEventListener("click", onClick, true);
     document.addEventListener("submit", onSubmit, true);
     return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
       window.removeEventListener("beforeunload", warn);
       window.removeEventListener("pagehide", flush);
       document.removeEventListener("visibilitychange", flush);
@@ -317,7 +381,7 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
       document.removeEventListener("submit", onSubmit, true);
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [leaveLabel]);
+  }, [leaveLabel, settle]);
 
   const keepMine = () => {
     if (!conflict || conflict === "gone") return;
@@ -327,8 +391,10 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     setConflict(null);
     lastSave.current = 0;
     // Texte identique à la version enregistrée : il n'y a rien à envoyer.
-    if (same(draftRef.current, savedRef.current)) setStatus({ kind: "clean" });
-    else void save();
+    if (same(draftRef.current, savedRef.current)) {
+      settle(null);
+      setStatus({ kind: "clean" });
+    } else void save();
   };
 
   const takeTheirs = () => {
@@ -342,6 +408,8 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
     blocked.current = false;
     setConflict(null);
     setFields({});
+    failures.current = 0;
+    settle(null);
     setStatus({ kind: "clean" });
   };
 
@@ -349,8 +417,10 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
   const wordsLabel = (words === 0 ? labels.words.zero : words === 1 ? labels.words.one : labels.words.other)
     .replace("{count}", new Intl.NumberFormat(locale).format(words));
 
-  const statusText =
-    status.kind === "unsaved"
+  // Tant que le réseau manque, l'état le dit, y compris pendant un nouvel essai.
+  const statusText = network
+    ? labels.status[network]
+    : status.kind === "unsaved"
       ? labels.status.unsaved
       : status.kind === "saving"
         ? labels.status.saving
@@ -397,6 +467,12 @@ export function SectionEditor({ projectId, sectionId, initial, labels }: Props) 
         <p role="alert" className="rounded border border-red-700 p-3 text-red-800 dark:border-red-400 dark:text-red-300">
           {labels.errors[status.error]}
           {status.retrying ? ` ${labels.status.retrying}` : ""}
+        </p>
+      ) : null}
+
+      {network ? (
+        <p role="alert" data-testid="network-alert" className="rounded border border-foreground/40 p-3">
+          {labels.network}
         </p>
       ) : null}
 

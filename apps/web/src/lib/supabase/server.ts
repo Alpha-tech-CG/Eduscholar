@@ -79,6 +79,12 @@ export async function verifyPassword(
     password,
     options: { captchaToken },
   });
+  if (error?.code === "captcha_failed") {
+    // Le formulaire dira « mot de passe incorrect » ; l'exploitation, elle,
+    // voit que c'est le défi qui a été refusé.
+    console.error("Revérification du mot de passe : défi anti-robot refusé par le service d'authentification.");
+    return false;
+  }
   if (error || !data.session) return false;
 
   // La session ouverte pour la vérification est refermée aussitôt.

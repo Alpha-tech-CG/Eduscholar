@@ -20,8 +20,28 @@
   }
 }
 
+/* Petit écran (cahier §10.7) : boutons et champs offrent une cible tactile d'au
+   moins 44 points. Dans la couche de base : une classe utilitaire peut y déroger. */
+@layer base {
+  button,
+  select,
+  textarea,
+  summary,
+  input:not([type="hidden"], [type="checkbox"], [type="radio"]) {
+    min-height: 2.75rem;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  /* Un mot ou une adresse plus large que l'écran (titre, DOI, lien) est coupé
+     plutôt que de faire défiler toute la page. */
+  overflow-wrap: anywhere;
+}
+
+/* Un tableau garde ses mots entiers : il défile dans son propre conteneur. */
+table {
+  overflow-wrap: normal;
 }

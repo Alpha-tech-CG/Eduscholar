@@ -3,8 +3,11 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { ConnectionStatus } from "@/components/offline/connection-status";
+import { ServiceWorkerRegistration } from "@/components/offline/service-worker-registration";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { THEME } from "@/lib/offline/service-worker";
 import { isSessionCookie } from "@/lib/supabase/cookies";
 import "./globals.css";
 
@@ -18,12 +21,21 @@ export async function generateMetadata({
   return {
     title: { default: t("title"), template: `%s — ${t("title")}` },
     description: t("description"),
+    // Application installable (ADR-0012). Le lien vers le manifeste est posé
+    // par Next.js à partir de `app/manifest.ts`.
+    applicationName: t("title"),
+    appleWebApp: { capable: true, title: t("title"), statusBarStyle: "default" },
+    icons: { apple: "/icons/icon-192.png" },
   };
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME.dark },
+  ],
 };
 
 export default async function LocaleLayout({
@@ -42,7 +54,7 @@ export default async function LocaleLayout({
   const mayBeSignedIn = cookieStore.getAll().some(({ name }) => isSessionCookie(name));
 
   const linkClass =
-    "rounded px-2 py-1 underline-offset-4 hover:underline aria-[current=true]:font-semibold";
+    "inline-flex min-h-11 items-center rounded px-2 underline-offset-4 hover:underline aria-[current=true]:font-semibold";
 
   return (
     <html lang={locale} dir="ltr" className="h-full antialiased">
@@ -56,9 +68,10 @@ export default async function LocaleLayout({
           >
             {t("skipToContent")}
           </a>
-          <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm print:hidden">
+          <ConnectionStatus label={t("offline")} />
+          <header className="flex flex-wrap items-center justify-between gap-x-2 px-4 py-1 text-sm print:hidden">
             <nav aria-label={t("mainNavigation")}>
-              <ul className="flex gap-3">
+              <ul className="flex flex-wrap gap-x-3">
                 <li>
                   <Link href="/" className={linkClass}>
                     {t("home")}
@@ -78,7 +91,7 @@ export default async function LocaleLayout({
               </ul>
             </nav>
             <nav aria-label={t("languageSwitcher")}>
-              <ul className="flex gap-3">
+              <ul className="flex flex-wrap gap-x-3">
                 {routing.locales.map((target) => (
                   <li key={target}>
                     <Link
@@ -102,6 +115,7 @@ export default async function LocaleLayout({
           <footer className="px-4 py-6 text-center text-sm opacity-70">
             {t("footer")}
           </footer>
+          <ServiceWorkerRegistration />
         </NextIntlClientProvider>
       </body>
     </html>

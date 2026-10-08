@@ -2,6 +2,7 @@ import path from "node:path";
 import type { NextConfig } from "next";
 import {
   apiContentSecurityPolicy,
+  serviceWorkerHeaders,
   staticSecurityHeaders,
 } from "./src/lib/security/headers";
 
@@ -42,6 +43,10 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "Content-Security-Policy", value: apiContentSecurityPolicy },
         ],
+      },
+      {
+        source: "/sw.js",
+        headers: [...serviceWorkerHeaders],
       },
     ];
   },

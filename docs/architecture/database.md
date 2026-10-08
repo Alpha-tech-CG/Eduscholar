@@ -106,6 +106,11 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006006800_admin_refusals_in_database.sql` | Refus d'administration consignés par la base, réponse 403 sans erreur levée ; conservation de l'historique des suspensions |
 | `20261006006900_admin_refusals_hardening.sql` | Corrections de revue : toutes les lectures couvertes, plafond de plateforme, purge prudente |
 | `20261006007000_reference_data_function.sql` | Référentiels rendus par une fonction ; lecture directe retirée aux comptes |
+| `20261006007100_organization_administration.sql` | Organisations administrées par fonctions ; le rôle serveur n'y écrit plus |
+| `20261006007200_organization_members.sql` | Invitations, rôles et départs des membres d'une organisation |
+| `20261006007300_organization_admin_invitation.sql` | Un administrateur d'organisation s'invite, il ne se désigne pas |
+| `20261006007400_organization_hardening.sql` | Corrections de revue : reprise réservée, motifs, traces |
+| `20261006007500_organization_recovery_rules.sql` | Seconde revue : reprise définie par l'état, interdits durables, période d'observation |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -725,6 +730,25 @@ l'auteur d'une décision supprime le sien, la décision reste sans son identifia
   l'ensemble des comptes sans rôle ; chaque dépassement laisse une ligne à lui ;
 - `private.purge_status_history` (tâche `eduscholar-status-history-purge`) : trois ans,
   et cinquante décisions par compte au-delà de quatre-vingt-dix jours.
+
+### Organisations (D-01, D-04)
+
+Le rôle serveur n'écrit plus dans `organizations` ni `organization_members` : tout passe
+par des fonctions sous la session de l'appelant (détail des droits dans
+`authorization-model.md` §2.2, §5.5 et §7.5).
+
+- `organization_invitations` : invitations à rejoindre une organisation — empreinte du
+  jeton, rôle, sept jours, `issued_by_platform` et `recovery` pour celles qu'émet la
+  plateforme. Aucun droit direct.
+- `private.organization_decisions` : motifs de suspension, de rétablissement et de
+  dissolution, et invitations de reprise ; trois ans, sauf la suspension en cours.
+- `private.organization_departures` : départs récents, pour qu'un administrateur de la
+  plateforme n'administre pas une organisation qu'il vient de quitter ; quatre-vingt-dix
+  jours.
+- `organization_members.recovery_until` : fin de la période pendant laquelle un
+  administrateur entré par reprise ne touche pas aux administrateurs antérieurs.
+- Tâche `eduscholar-org-invitations-purge` : invitations expirées ou closes depuis trente
+  jours.
 
 ## Fonctions du schéma `private`
 

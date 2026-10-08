@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { CAPTCHA_FIELD } from "@/lib/auth/captcha-shared";
 
 const SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
@@ -95,7 +96,7 @@ export function CaptchaWidget({ siteKey, label }: { siteKey: string; label: stri
     <div className="flex flex-col gap-1">
       <p className="text-sm opacity-80">{label}</p>
       <div ref={container} data-testid="captcha" />
-      <input ref={field} type="hidden" name="captchaToken" defaultValue="" />
+      <input ref={field} type="hidden" name={CAPTCHA_FIELD} defaultValue="" />
     </div>
   );
 }
