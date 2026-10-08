@@ -791,6 +791,11 @@ isOneToOne: false
 "add_thesis_section":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
+"admin_account_history":
+{ Args: { "target_user": string }; Returns: {
+              "changed_at": string,"changed_by_email": string,"reason": string,"status": string
+            }[]
+                           },
 "admin_auth_events":
 { Args: Record<PropertyKey, never>; Returns: {
               "day": string,"kind": string,"total": number
@@ -887,6 +892,9 @@ isOneToOne: false
                            },
 "leave_project":
 { Args: { "project_id": string }; Returns: undefined
+                           },
+"log_admin_refusal":
+{ Args: { "code": string,"operation": string }; Returns: undefined
                            },
 "log_personal_data_export":
 { Args: Record<PropertyKey, never>; Returns: undefined
@@ -1014,6 +1022,11 @@ isOneToOne: false
                            },
 "save_literature_note":
 { Args: { "payload": Json,"source_id": string }; Returns: undefined
+                           },
+"search_resources":
+{ Args: { "payload": Json }; Returns: {
+              "capped": boolean,"id": string,"total": number
+            }[]
                            },
 "second_factor_status":
 { Args: Record<PropertyKey, never>; Returns: {

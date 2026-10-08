@@ -142,11 +142,29 @@ test.describe("administration des rôles et des comptes", () => {
     expect((await restored.page.goto("/fr/moderation"))?.status()).toBe(404);
     await restored.close();
 
+    // --- Historique : le motif survit au rétablissement ------------------------
+    await lookup(page, candidate.email);
+    const changes = page.getByTestId("found-user").getByTestId("status-change");
+    await expect(changes).toHaveCount(2);
+    await expect(changes.nth(0)).toContainText("Rétabli");
+    await expect(changes.nth(1)).toContainText("Suspendu");
+    await expect(changes.nth(1)).toContainText("Enquête en cours");
+    await expect(changes.nth(1)).toContainText(admin.email);
+
     // --- Journal d'audit -----------------------------------------------------
     const actions = sqlValue(
       `select string_agg(action, ',' order by action) from (select distinct action from public.audit_logs where actor_id = '${admin.id}') a`,
     );
-    for (const action of ["user.lookup", "platform_roles.insert", "platform_roles.delete", "account_status.insert", "account_status.update"]) {
+    // Le rôle refusé plus haut, faute de second facteur, a laissé une trace lui aussi.
+    for (const action of [
+      "user.lookup",
+      "user.history_read",
+      "admin.refused",
+      "platform_roles.insert",
+      "platform_roles.delete",
+      "account_status.insert",
+      "account_status.update",
+    ]) {
       expect(actions, action).toContain(action);
     }
 

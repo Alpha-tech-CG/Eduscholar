@@ -509,7 +509,8 @@
       "next": "Next page",
       "page": "Page {page} of {pages}",
       "resultsHeading": "Results",
-      "unavailable": "Search is temporarily unavailable. Try again in a moment."
+      "unavailable": "Search is temporarily unavailable. Try again in a moment.",
+      "resultsCapped": "More than {count, number} results: narrow your search"
     },
     "resource": {
       "title": "Resource",
@@ -955,7 +956,6 @@
     "noticeRoleRevoked": "The role has been removed.",
     "noticeSuspended": "The account has been suspended: its sessions are closed and it cannot open a new one.",
     "noticeRestored": "The account has been restored.",
-    "truncated": "The list is too long to be shown in full: it is incomplete. Use the search by address.",
     "ruleRank": "A suspension decided by a super administrator can only be lifted by a super administrator.",
     "authEvents": {
       "heading": "Authentication: last seven days",
@@ -970,6 +970,19 @@
         "limited": "Limit reached",
         "new-device": "New browser"
       }
+    },
+    "history": {
+      "heading": "Suspensions and reinstatements",
+      "empty": "This account has never been suspended.",
+      "suspended": "Suspended",
+      "restored": "Reinstated",
+      "byDeleted": "by an account deleted since"
+    },
+    "pagination": {
+      "label": "Pages of the account list",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {page}"
     }
   },
   "Sharing": {

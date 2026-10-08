@@ -398,6 +398,17 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   service d'authentification est comptée comme un échec ; l'usage d'un code de secours
   ne fait pas oublier les navigateurs connus. Ces corrections n'ont pas fait l'objet
   d'une seconde revue.
+- 8 octobre 2026 — Suites du journal d'administration (D-26) relues par l'agent
+  sécurité : aucun constat critique ou élevé ; 4 moyens et 6 faibles. Corrigés : un
+  compte sans rôle pouvait déclarer des refus qu'il n'avait pas pu essuyer ; le plafond
+  des refus, par compte seulement, laissait gonfler un journal qui ne se vide pas ; son
+  dépassement était silencieux ; le bloc d'exception du plafond avalait toute erreur ;
+  la lecture de l'historique d'un compte inexistant écrivait une ligne ; une vague de
+  suspensions pouvait chasser de la liste les détenteurs d'un rôle. Reportés (D-31) : le
+  refus opposé à un appel direct de l'API n'est pas consigné en base ; conservation de
+  l'historique des suspensions. Acceptés : tout administrateur lit l'historique de tout
+  compte ; une nouvelle suspension écrite hors des fonctions, au motif identique, n'est
+  pas historisée. Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

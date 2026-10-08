@@ -7,8 +7,9 @@ import { AccountActions } from "@/components/admin/account-actions";
 import { UserLookup } from "@/components/admin/user-lookup";
 import { AuthForm, TextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
+import { Link } from "@/i18n/navigation";
 import { confirmAdminIdentity } from "@/lib/admin/actions";
-import { getAdminSession, listAdminAccounts, listAuthEvents } from "@/lib/admin/queries";
+import { accountPage, getAdminSession, listAdminAccounts, listAuthEvents } from "@/lib/admin/queries";
 import { requireUser } from "@/lib/auth/session";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,7 +35,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
   const session = await getAdminSession();
   if (session.rank < 2) notFound();
 
-  const [t, messages, { notice }] = await Promise.all([
+  const [t, messages, { notice, page }] = await Promise.all([
     getTranslations("Admin"),
     getMessages(),
     searchParams,
@@ -60,7 +61,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
     );
   }
 
-  const [listing, authEvents] = await Promise.all([listAdminAccounts(), listAuthEvents()]);
+  const [listing, authEvents] = await Promise.all([listAdminAccounts(accountPage(page)), listAuthEvents()]);
   const natures: Record<string, string> = {
     failed: t("authEvents.natures.failed"),
     limited: t("authEvents.natures.limited"),
@@ -100,11 +101,6 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
             <p className="opacity-70">{t("accountsEmpty")}</p>
           ) : (
             <ul className="flex flex-col gap-4">
-              {listing?.truncated ? (
-                <li data-testid="list-truncated" className="rounded border border-foreground/30 p-3 text-sm">
-                  {t("truncated")}
-                </li>
-              ) : null}
               {accounts.map((account) => (
                 <li
                   key={account.userId}
@@ -131,6 +127,27 @@ export default async function AdminPage({ searchParams }: PageProps<"/[locale]/a
               ))}
             </ul>
           )}
+          {listing && (listing.page > 1 || listing.hasNext) ? (
+            <nav aria-label={t("pagination.label")} className="flex flex-wrap items-center gap-4 text-sm">
+              {listing.page > 1 ? (
+                <Link
+                  href={{ pathname: "/admin", query: { page: String(listing.page - 1) } }}
+                  className="underline underline-offset-4"
+                >
+                  {t("pagination.previous")}
+                </Link>
+              ) : null}
+              <span data-testid="accounts-page">{t("pagination.page", { page: listing.page })}</span>
+              {listing.hasNext ? (
+                <Link
+                  href={{ pathname: "/admin", query: { page: String(listing.page + 1) } }}
+                  className="underline underline-offset-4"
+                >
+                  {t("pagination.next")}
+                </Link>
+              ) : null}
+            </nav>
+          ) : null}
         </section>
       </NextIntlClientProvider>
 

@@ -538,6 +538,8 @@ depuis le serveur) :
 | Enregistrer un téléversement, demander une URL de lecture | Selon la matrice |
 | `set_favorite`, `create_collection`, `update_collection`, `delete_collection`, `set_collection_item` | Le titulaire, compte actif au profil complété ; seules des fiches publiées et publiques se gardent ; même réponse pour une fiche cachée et une fiche inexistante, pour la collection d'autrui et une collection inexistante |
 | `admin_session`, `admin_find_user`, `admin_list_accounts`, `admin_set_role`, `admin_set_account_status` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; jamais sur son propre compte ni sur un compte de rang égal ou supérieur ; détail dans `administration.md` |
+| `admin_account_history` | `platform_admin` ou `super_admin`, second facteur présenté depuis moins de dix minutes ; lecture journalisée |
+| `log_admin_refusal` | Tout compte connecté, pour ses propres refus : opération et motif pris dans des listes fermées, trente par heure |
 | `recovery_codes_status`, `generate_recovery_codes`, `discard_recovery_codes`, `last_recovery_code_use` | Le titulaire, compte actif ; générer exige le second facteur présenté depuis moins de dix minutes |
 | `redeem_recovery_code` | Le titulaire, dans la session ouverte par le seul mot de passe d'un compte à second facteur ; refusée en session `aal2`, à un compte suspendu et au dernier super-administrateur effectif ; cinq essais erronés par quart d'heure |
 | `my_account_events`, `my_deleted_projects` | Le titulaire, compte actif : ses seuls événements (date et nature) et ses seuls projets supprimés en attente de purge |

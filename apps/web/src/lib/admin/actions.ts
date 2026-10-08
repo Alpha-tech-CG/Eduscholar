@@ -20,6 +20,23 @@ import { createServiceClient, createSessionClient } from "@/lib/supabase/server"
 const expired: AuthFormState = { status: "error", error: "session_expired" };
 const invalid: AuthFormState = { status: "error", error: "validation" };
 
+type Operation = "find_user" | "set_role" | "set_account_status" | "account_history";
+
+/**
+ * Consigne une opération refusée. La base a annulé la transaction du refus, et
+ * avec elle toute trace : celle-ci s'écrit après coup, sous la même session.
+ * Seuls l'opération et le motif du refus sont gardés, jamais la cible. La
+ * trace est déclarée par l'application : un appel direct à l'API n'en laisse pas.
+ */
+async function logRefusal(operation: Operation, code: AuthErrorCode): Promise<void> {
+  try {
+    const supabase = await createSessionClient();
+    await supabase.rpc("log_admin_refusal", { operation, code });
+  } catch {
+    // La trace est un complément : le refus, lui, a déjà été opposé.
+  }
+}
+
 function text(formData: FormData, name: string): string {
   const value = formData.get(name);
   return typeof value === "string" ? value : "";
@@ -66,6 +83,16 @@ export type FoundUser = {
   suspended: boolean;
   suspensionReason: string | null;
   hasSecondFactor: boolean;
+  /** Suspensions et rétablissements passés, du plus récent au plus ancien. `null` si la lecture échoue. */
+  history: StatusChange[] | null;
+};
+
+export type StatusChange = {
+  changedAt: string;
+  suspended: boolean;
+  reason: string | null;
+  /** Adresse de l'auteur ; `null` si son compte n'existe plus. */
+  by: string | null;
 };
 
 export type LookupState =
@@ -85,14 +112,22 @@ export async function findUser(_previous: LookupState, formData: FormData): Prom
 
   if (!z.email().safeParse(email).success) return { status: "error", error: "validation", email };
   if ((await checkAttempt("admin-lookup", user.id)) !== "allowed") {
+    await logRefusal("find_user", "rate_limited");
     return { status: "error", error: "rate_limited", email };
   }
 
   const supabase = await createSessionClient();
   const { data, error } = await supabase.rpc("admin_find_user", { email });
-  if (error) return { status: "error", error: catalogueErrorCode(error), email };
+  if (error) {
+    const code = catalogueErrorCode(error);
+    await logRefusal("find_user", code);
+    return { status: "error", error: code, email };
+  }
   const row = data?.[0];
   if (!row) return { status: "error", error: "user_not_found", email };
+
+  const history = await supabase.rpc("admin_account_history", { target_user: row.user_id });
+  if (history.error) await logRefusal("account_history", catalogueErrorCode(history.error));
 
   return {
     status: "found",
@@ -105,6 +140,14 @@ export async function findUser(_previous: LookupState, formData: FormData): Prom
       suspended: row.suspended,
       suspensionReason: row.suspension_reason,
       hasSecondFactor: row.has_second_factor,
+      history: history.error
+        ? null
+        : (history.data ?? []).map((change) => ({
+            changedAt: change.changed_at,
+            suspended: change.status === "suspended",
+            reason: change.reason,
+            by: change.changed_by_email,
+          })),
     },
   };
 }
@@ -131,7 +174,11 @@ export async function setRole(_previous: AuthFormState, formData: FormData): Pro
     role: parsed.data.role,
     grant_role: parsed.data.grant,
   });
-  if (error) return { status: "error", error: catalogueErrorCode(error) };
+  if (error) {
+    const code = catalogueErrorCode(error);
+    await logRefusal("set_role", code);
+    return { status: "error", error: code };
+  }
 
   const locale = await getLocale();
   return redirect({
@@ -172,7 +219,11 @@ export async function setAccountStatus(
     suspended: parsed.data.suspended,
     reason: parsed.data.reason,
   });
-  if (error) return { status: "error", error: catalogueErrorCode(error), values };
+  if (error) {
+    const code = catalogueErrorCode(error);
+    await logRefusal("set_account_status", code);
+    return { status: "error", error: code, values };
+  }
 
   // La base a fait le reste dans la même transaction : sessions du compte
   // fermées, et plus aucune session ouvrable tant qu'il est suspendu.

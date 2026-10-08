@@ -83,12 +83,24 @@ procédure à deux personnes s'applique.
 
 ## Limites connues
 
-- Les tentatives refusées ne sont pas journalisées en base (la transaction est annulée) :
-  elles ne se voient que dans les journaux de l'API.
-- Le motif d'une suspension n'entre pas au journal d'audit ; il est effacé au
-  rétablissement.
+- Une opération refusée annule sa transaction, et n'écrit donc rien au journal par
+  elle-même. L'application consigne le refus après coup (`admin.refused` : qui, quelle
+  opération, quel motif de refus — jamais la cible). Ces lignes portent `source: app` :
+  elles sont déclarées par l'application, pas écrites par la base au moment du refus. Un
+  compte sans rôle d'administration ne peut déclarer que `forbidden` ; cinq lignes par
+  heure pour lui, trente pour un administrateur, cinq cents pour toute la plateforme. Le
+  premier dépassement d'une heure laisse une ligne `admin.refusal_overflow`. Un refus
+  opposé à un appel direct de l'API, hors application, ne se voit que dans les journaux
+  de l'API (dette D-31).
+- Tout administrateur lit l'historique de tout compte, y compris d'un pair ou d'un
+  super-administrateur : il n'y agit pas, et sa lecture est journalisée.
+- L'historique d'un compte est gardé sans limite de durée tant que le compte existe ; il
+  n'entre pas dans la copie des données remise au titulaire.
+- La liste des comptes s'arrête à cinq cents, détenteurs d'un rôle d'abord.
+- Le motif d'une suspension n'entre pas au journal d'audit. Il est gardé dans
+  l'historique du compte, avec son auteur, à chaque suspension et à chaque
+  rétablissement ; l'administration le lit sur la fiche du compte, et cette lecture est
+  journalisée. L'historique part avec le compte.
 - La liste des comptes à rôle et suspendus n'est pas journalisée à la lecture.
-- La suppression en cascade d'un compte attribue la ligne d'audit du rôle supprimé à
-  l'administrateur qui l'avait accordé (défaut antérieur, dette D-26).
 - Les organisations (invitation, rôles d'organisation, dissolution) ne sont pas encore
   administrées par fonctions : le rôle serveur y écrit toujours (dette D-01, D-04).

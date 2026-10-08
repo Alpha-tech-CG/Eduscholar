@@ -75,6 +75,29 @@ export function UserLookup({ adminRank }: { adminRank: number }) {
               </>
             ) : null}
           </dl>
+          <div className="flex flex-col gap-2">
+            <h3 className="font-medium">{t("history.heading")}</h3>
+            {state.user.history === null ? (
+              <p role="alert">{t("loadFailed")}</p>
+            ) : state.user.history.length === 0 ? (
+              <p className="text-sm opacity-70">{t("history.empty")}</p>
+            ) : (
+              <ol className="flex flex-col gap-2">
+                {state.user.history.map((change, index) => (
+                  <li key={index} data-testid="status-change" className="rounded border border-foreground/20 p-2 text-sm">
+                    <p>
+                      {[
+                        format.dateTime(new Date(change.changedAt), { dateStyle: "long", timeStyle: "short" }),
+                        change.suspended ? t("history.suspended") : t("history.restored"),
+                        change.by ?? t("history.byDeleted"),
+                      ].join(t("separator"))}
+                    </p>
+                    {change.reason ? <p className="whitespace-pre-line">{change.reason}</p> : null}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
           <AccountActions
             userId={state.user.userId}
             roles={state.user.roles}

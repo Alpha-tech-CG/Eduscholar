@@ -98,6 +98,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006006000_notification_emails_hardening.sql` | Corrections de revue : traces d'audit, comptes bannis, rappel retenté |
 | `20261006006100_sign_in_alert_and_auth_events.sql` | Navigateurs connus d'un compte, compteurs des échecs et limites de l'authentification |
 | `20261006006200_sign_in_alert_hardening.sql` | Corrections de revue : enregistrement par le serveur seul, compte ancien sans navigateur connu, oubli au changement de mot de passe |
+| `20261006006300_admin_audit_followup.sql` | Historique des suspensions, consignation des opérations d'administration refusées |
+| `20261006006500_admin_refusal_hardening.sql` | Corrections de revue : refus déclarables bornés au rôle, plafonds, dépassement signalé |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -695,6 +697,22 @@ atteintes, par heure et par nature. Aucun droit direct sur l'une ni l'autre.
   derniers jours ;
 - navigateurs non revus depuis six mois et compteurs de plus de trois mois sont effacés
   chaque nuit (tâche `eduscholar-auth-traces-purge`).
+
+### Suites du journal d'administration (D-26)
+
+`private.account_status_history (user_id, status, reason, changed_by, changed_at)` :
+chaque suspension et chaque rétablissement, écrit par un déclencheur sur
+`private.account_status`. Aucun droit direct. L'historique part avec le compte ; si
+l'auteur d'une décision supprime le sien, la décision reste sans son identifiant.
+
+- `admin_account_history` (administration, second facteur récent) : les cinquante
+  décisions les plus récentes d'un compte, avec l'adresse de leur auteur. La lecture est
+  journalisée (`user.history_read`) ;
+- `log_admin_refusal` (tout compte connecté) : consigne une opération d'administration
+  refusée, sous la session de qui a essuyé le refus. Opération et motif sont pris dans
+  des listes fermées ; sans rôle d'administration, seul `forbidden` se déclare. Cinq
+  lignes par heure sans rôle, trente pour un administrateur, cinq cents pour la
+  plateforme ; le premier dépassement d'une heure laisse une ligne à lui.
 
 ## Fonctions du schéma `private`
 

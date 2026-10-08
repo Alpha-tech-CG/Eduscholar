@@ -34,29 +34,38 @@ export type AdminAccount = {
 
 export type AdminAccountList = {
   accounts: AdminAccount[];
-  /** La liste dépasse ce qui est affiché : elle ne doit pas passer pour complète. */
-  truncated: boolean;
+  /** Page affichée, à partir de 1. */
+  page: number;
+  /** Il existe une page suivante. */
+  hasNext: boolean;
 };
 
-/** Nombre de comptes affichés : au-delà, la liste se signale comme incomplète. */
-const ACCOUNT_LIST_SIZE = 100;
+/** Nombre de comptes par page. La base n'en rend pas plus de cinq cents en tout. */
+export const ACCOUNT_PAGE_SIZE = 50;
+const LAST_PAGE = 10;
 
-/** Comptes détenant un rôle et comptes suspendus. `null` si la lecture échoue. */
-export async function listAdminAccounts(): Promise<AdminAccountList | null> {
+/** Numéro de page lu dans l'adresse : un entier de 1 à 10, sinon 1. */
+export function accountPage(value: unknown): number {
+  const page = typeof value === "string" && /^\d{1,2}$/.test(value) ? Number(value) : 1;
+  return Math.min(Math.max(page, 1), LAST_PAGE);
+}
+
+/** Comptes détenant un rôle et comptes suspendus, page par page. `null` si la lecture échoue. */
+export async function listAdminAccounts(page = 1): Promise<AdminAccountList | null> {
   const supabase = await createSessionClient();
-  const { data, error } = await supabase.rpc("admin_list_accounts").range(0, ACCOUNT_LIST_SIZE - 1);
+  const from = (page - 1) * ACCOUNT_PAGE_SIZE;
+  // Un compte de plus que la page : il dit s'il y en a une suivante.
+  const { data, error } = await supabase.rpc("admin_list_accounts").range(from, from + ACCOUNT_PAGE_SIZE);
   if (error) return null;
 
-  const accounts = (data ?? []).map((row) => ({
+  const accounts = (data ?? []).slice(0, ACCOUNT_PAGE_SIZE).map((row) => ({
     userId: row.user_id,
     email: row.email,
     roles: row.roles,
     suspended: row.suspended,
     suspensionReason: row.suspension_reason,
   }));
-  // Une page pleine : il peut y en avoir d'autres. L'écran le dit, et la
-  // recherche par adresse reste le moyen d'atteindre n'importe quel compte.
-  return { accounts, truncated: accounts.length === ACCOUNT_LIST_SIZE };
+  return { accounts, page, hasNext: (data ?? []).length > ACCOUNT_PAGE_SIZE && page < LAST_PAGE };
 }
 
 export type AuthEventCount = {
