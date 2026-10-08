@@ -452,7 +452,7 @@ select is(
 select set_config('request.jwt.claims', '', true);
 select lives_ok($$ delete from auth.users where id = 'a0000000-0000-0000-0000-000000005601' $$, 'Le propriétaire supprime son compte');
 select is(
-  (select count(*) from public.research_project_member_sections),
+  (select count(*) from public.research_project_member_sections where project_id = '56000000-0000-0000-0000-0000000000a1'),
   0::bigint, 'Les portées partent avec le projet'
 );
 

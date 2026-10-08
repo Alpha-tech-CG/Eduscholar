@@ -483,7 +483,7 @@ select throws_ok(
 );
 select throws_ok(
   $$ insert into public.organizations (slug, name) values ('sans-auteur', 'Sans auteur') $$,
-  '23502', null, 'Une création d''organisation sans auteur est refusée'
+  '42501', null, 'Le rôle serveur ne crée plus d''organisation : cela passe par les fonctions d''administration'
 );
 select throws_ok(
   $$ insert into public.audit_logs (category, action) values ('platform', 'faux') $$,
@@ -507,6 +507,10 @@ select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 select throws_ok(
   $$ insert into public.platform_roles (user_id, role) values ('b0000000-0000-0000-0000-000000000002', 'moderator') $$,
   '23502', null, 'Une attribution de rôle sans auteur est refusée'
+);
+select throws_ok(
+  $$ insert into public.organizations (slug, name) values ('sans-auteur', 'Sans auteur') $$,
+  '23502', null, 'Une création d''organisation sans auteur est refusée'
 );
 select throws_ok(
   $$ insert into public.platform_roles (user_id, role, granted_by) values ('b0000000-0000-0000-0000-000000000002', 'moderator', 'b0000000-0000-0000-0000-000000000002') $$,
