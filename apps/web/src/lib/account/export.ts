@@ -73,6 +73,7 @@ async function ownRows(
     | "my_deleted_projects"
     | "my_project_comments"
     | "my_thesis_versions"
+    | "my_project_tasks"
     | "my_version_decisions",
 ): Promise<unknown[]> {
   const rows: unknown[] = [];
@@ -191,6 +192,8 @@ export async function buildPersonalDataExport(
     // décisions rendues sur les projets des autres.
     const submittedVersions = await ownRows(supabase, "my_thesis_versions");
     const versionDecisions = await ownRows(supabase, "my_version_decisions");
+    // Tâches de ses projets, et celles qu'il a posées sur les projets des autres.
+    const projectTasks = await ownRows(supabase, "my_project_tasks");
 
     return {
       format: "eduscholar-personal-data",
@@ -211,6 +214,7 @@ export async function buildPersonalDataExport(
         comments_written: projectComments,
         submitted_versions: submittedVersions,
         version_decisions_given: versionDecisions,
+        tasks: projectTasks,
       },
       // Date et nature seulement : ni l'auteur d'une décision, ni ses détails.
       account_events: accountEvents,

@@ -182,6 +182,11 @@ export default async function ProjectPage({
             {t("sharing.versions")}
           </Link>
         </p>
+        <p>
+          <Link href={`/projects/${project.id}/tasks`} className="underline underline-offset-4">
+            {t("sharing.tasks")}
+          </Link>
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">

@@ -886,7 +886,8 @@
       "intro": "Invitez votre encadreur à lire votre projet. Sans invitation, vous seul le lisez.",
       "manage": "Gérer le partage",
       "toShared": "Projets partagés avec moi",
-      "versions": "Versions soumises à l'encadreur"
+      "versions": "Versions soumises à l'encadreur",
+      "tasks": "Tâches et échéances"
     }
   },
   "DataExport": {
@@ -1025,7 +1026,8 @@
     "sectionsHeading": "Sections",
     "sectionsIntro": "Ouvrez une section pour la lire et la commenter.",
     "openThreads": "{count, plural, one {# fil ouvert} other {# fils ouverts}}",
-    "toVersions": "Versions soumises et décisions"
+    "toVersions": "Versions soumises et décisions",
+    "toTasks": "Tâches et échéances"
   },
   "Comments": {
     "sectionTitle": "Section d'un projet partagé",
@@ -1132,5 +1134,42 @@
     "eraseConfirm": "J'efface définitivement le contenu de cette version.",
     "erase": "Effacer le contenu",
     "noticeErased": "Le contenu de cette version est effacé."
+  },
+  "Tasks": {
+    "title": "Tâches et échéances",
+    "introOwner": "Ce qu'il reste à faire sur votre projet. Votre encadreur lit ces tâches et peut vous en proposer.",
+    "introMember": "Ce qu'il reste à faire sur ce projet. Vous ne modifiez que les tâches que vous avez posées.",
+    "backToProject": "Retour au projet",
+    "backToShared": "Retour au projet partagé",
+    "openHeading": "{count, plural, =0 {Aucune tâche en cours} one {# tâche en cours} other {# tâches en cours}}",
+    "openEmpty": "Rien à faire pour l'instant.",
+    "doneHeading": "{count, plural, one {# tâche terminée} other {# tâches terminées}}",
+    "addHeading": "Nouvelle tâche",
+    "add": "Ajouter la tâche",
+    "markDone": "Marquer comme faite",
+    "reopen": "Rouvrir",
+    "delete": "Supprimer la tâche",
+    "pending": "Un instant…",
+    "separator": " · ",
+    "setBy": "posée par : {role}",
+    "setByFormer": "posée par un ancien membre",
+    "roles": {
+      "owner": "l'auteur du projet",
+      "supervisor": "l'encadreur",
+      "viewer": "un lecteur"
+    },
+    "dueOn": "échéance le {date}",
+    "overdue": "échéance dépassée depuis le {date}",
+    "noDueDate": "sans échéance",
+    "fields": {
+      "title": "Ce qu'il faut faire",
+      "details": "Précisions (facultatif)",
+      "dueDate": "Échéance (facultatif)",
+      "dueDateHint": "Au format AAAA-MM-JJ, par exemple 2026-11-30."
+    },
+    "noticeAdded": "La tâche est ajoutée.",
+    "noticeDone": "La tâche est marquée comme faite.",
+    "noticeReopened": "La tâche est rouverte.",
+    "noticeDeleted": "La tâche est supprimée."
   }
 }

@@ -340,6 +340,13 @@ Les risques sont de processus et de configuration. Deux sont classés HIGH et do
   les fenêtres fixes laissent passer le double d'un plafond à cheval sur deux fenêtres ;
   un quota de lecture dépassé s'affiche comme « introuvable ». Ces corrections n'ont pas
   fait l'objet d'une seconde revue.
+- 8 octobre 2026 — Tâches et échéances (E-04) relues par l'agent sécurité : aucun
+  constat critique ou élevé, cloisonnement conforme ; 2 moyens et 6 faibles. Corrigés :
+  la copie des données rendait à un membre retiré le texte actuel de ses anciennes
+  tâches ; un encadreur pouvait remplir le projet (trente tâches ouvertes au plus par
+  membre) ; quota commun aux créations et aux modifications ; intitulé non contrôlé en
+  type ; verrou posé avant le contrôle de rôle. Accepté : le retard d'une échéance se
+  calcule en temps universel. Ces corrections n'ont pas fait l'objet d'une seconde revue.
 
 ## Suivi
 

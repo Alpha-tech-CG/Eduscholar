@@ -354,6 +354,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"project_tasks": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"details": string | null,"done_at": string | null,"done_by": string | null,"due_date": string | null,"id": string,"project_id": string,"title": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id": string,"title": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"details"?: string | null,"done_at"?: string | null,"done_by"?: string | null,"due_date"?: string | null,"id"?: string,"project_id"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "project_tasks_project_id_fkey"
+      columns: ["project_id"]
+isOneToOne: false
+      referencedRelation: "research_projects"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"research_project_members": {
                   Row: {
                     "created_at": string,"full_access": boolean,"invited_by": string | null,"project_id": string,"role": string,"user_id": string
@@ -658,6 +677,9 @@ isOneToOne: false
 "add_project_source_from_resource":
 { Args: { "project_id": string,"resource_id": string }; Returns: string
                            },
+"add_project_task":
+{ Args: { "payload": Json,"project_id": string }; Returns: string
+                           },
 "add_thesis_section":
 { Args: { "payload": Json,"project_id": string }; Returns: string
                            },
@@ -711,6 +733,9 @@ isOneToOne: false
                            },
 "delete_project_source":
 { Args: { "source_id": string }; Returns: undefined
+                           },
+"delete_project_task":
+{ Args: { "task_id": string }; Returns: undefined
                            },
 "delete_thesis_section":
 { Args: { "section_id": string }; Returns: undefined
@@ -767,6 +792,11 @@ isOneToOne: false
               "body": string,"created_at": string,"id": string,"project_id": string,"quote": string,"section_id": string
             }[]
                            },
+"my_project_tasks":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"details": string,"done_at": string,"due_date": string,"id": string,"project_id": string,"title": string
+            }[]
+                           },
 "my_report_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
                            },
@@ -787,6 +817,9 @@ isOneToOne: false
 { Args: { "project_id": string }; Returns: Json
                            },
 "project_sharing":
+{ Args: { "project_id": string }; Returns: Json
+                           },
+"project_tasks":
 { Args: { "project_id": string }; Returns: Json
                            },
 "project_version":
@@ -866,6 +899,9 @@ isOneToOne: false
                            },
 "update_project_source":
 { Args: { "payload": Json,"source_id": string }; Returns: undefined
+                           },
+"update_project_task":
+{ Args: { "payload": Json,"task_id": string }; Returns: undefined
                            },
 "update_submission":
 { Args: { "payload": Json,"resource_id": string }; Returns: undefined

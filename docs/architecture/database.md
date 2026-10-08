@@ -87,6 +87,8 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006004900_project_comments_hardening.sql` | Corrections de revue des commentaires : plafonds par auteur, rôle exigé pour modifier, fil clos fermé aux réponses, adresse rendue au seul propriétaire, identifiant retiré à la suppression d'un compte |
 | `20261006005000_thesis_versions.sql` | Versions soumises et décisions de l'encadreur |
 | `20261006005100_thesis_versions_hardening.sql` | Corrections de revue des versions : tailles bornées, lecture autorisée avant chargement, garde d'immuabilité, effacement du contenu d'une version, copie des données |
+| `20261006005200_project_tasks.sql` | Tâches et échéances d'un projet partagé |
+| `20261006005300_project_tasks_hardening.sql` | Corrections de revue des tâches : copie des données après retrait, plafond par membre, quota des modifications à part, intitulé sur une ligne |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -562,6 +564,25 @@ pour accepter), `decided_by`, `decided_at`.
   20 par version ; 120 lectures de liste et 60 lectures de version par quart d'heure ;
 - l'adresse de l'encadreur n'est rendue qu'au propriétaire, et tant que cet encadreur
   est membre du projet.
+
+### `public.project_tasks`
+
+Tâches et échéances d'un projet partagé (E-04) : `project_id`, `title` (200 caractères,
+une ligne), `details`, `due_date`, `created_by`, `done_at`, `done_by`.
+
+- aucune lecture ni écriture directe ; `project_tasks` : propriétaire et membres à accès
+  complet, lecteur compris ; `add_project_task` : propriétaire et encadreur ;
+  `update_project_task` et `delete_project_task` : le propriétaire pour toutes,
+  l'encadreur pour celles qu'il a créées ;
+- la modification est partielle (seules les clés présentes) ; clore ou rouvrir passe
+  par la clé `done` ;
+- plafonds : 50 créations et 200 modifications par jour et par compte ; 100 tâches par
+  projet, dont 30 ouvertes au plus par membre — un membre ne remplit pas le projet à la
+  place de son propriétaire ;
+- la copie des données rend les tâches de ses projets, et celles qu'on a posées
+  ailleurs tant qu'on y est encore membre ;
+- écart voulu, plus strict que le modèle : un membre à portée limitée ne lit pas les
+  tâches tant que la portée par section n'existe pas (E-06).
 
 ## Fonctions du schéma `private`
 

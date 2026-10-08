@@ -112,6 +112,11 @@ export default async function SharedProjectPage({
           </Link>
         </p>
         <p>
+          <Link href={`/shared/${id}/tasks`} className="underline underline-offset-4">
+            {t("toTasks")}
+          </Link>
+        </p>
+        <p>
           <Link href="/shared" className="underline underline-offset-4">
             {t("backToShared")}
           </Link>

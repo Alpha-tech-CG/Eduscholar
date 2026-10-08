@@ -886,7 +886,8 @@
       "intro": "Invite your supervisor to read your project. Without an invitation, only you can read it.",
       "manage": "Manage sharing",
       "toShared": "Projects shared with me",
-      "versions": "Versions submitted to the supervisor"
+      "versions": "Versions submitted to the supervisor",
+      "tasks": "Tasks and deadlines"
     }
   },
   "DataExport": {
@@ -1025,7 +1026,8 @@
     "sectionsHeading": "Sections",
     "sectionsIntro": "Open a section to read it and comment on it.",
     "openThreads": "{count, plural, one {# open thread} other {# open threads}}",
-    "toVersions": "Submitted versions and decisions"
+    "toVersions": "Submitted versions and decisions",
+    "toTasks": "Tasks and deadlines"
   },
   "Comments": {
     "sectionTitle": "Section of a shared project",
@@ -1132,5 +1134,42 @@
     "eraseConfirm": "I permanently erase the content of this version.",
     "erase": "Erase the content",
     "noticeErased": "This version's content has been erased."
+  },
+  "Tasks": {
+    "title": "Tasks and deadlines",
+    "introOwner": "What remains to be done on your project. Your supervisor reads these tasks and can suggest some.",
+    "introMember": "What remains to be done on this project. You only change the tasks you set.",
+    "backToProject": "Back to the project",
+    "backToShared": "Back to the shared project",
+    "openHeading": "{count, plural, =0 {No task in progress} one {# task in progress} other {# tasks in progress}}",
+    "openEmpty": "Nothing to do for now.",
+    "doneHeading": "{count, plural, one {# completed task} other {# completed tasks}}",
+    "addHeading": "New task",
+    "add": "Add the task",
+    "markDone": "Mark as done",
+    "reopen": "Reopen",
+    "delete": "Delete the task",
+    "pending": "One moment…",
+    "separator": " · ",
+    "setBy": "set by: {role}",
+    "setByFormer": "set by a former member",
+    "roles": {
+      "owner": "the project's author",
+      "supervisor": "the supervisor",
+      "viewer": "a reader"
+    },
+    "dueOn": "due on {date}",
+    "overdue": "overdue since {date}",
+    "noDueDate": "no deadline",
+    "fields": {
+      "title": "What needs to be done",
+      "details": "Details (optional)",
+      "dueDate": "Deadline (optional)",
+      "dueDateHint": "In the format YYYY-MM-DD, for example 2026-11-30."
+    },
+    "noticeAdded": "The task has been added.",
+    "noticeDone": "The task has been marked as done.",
+    "noticeReopened": "The task has been reopened.",
+    "noticeDeleted": "The task has been deleted."
   }
 }

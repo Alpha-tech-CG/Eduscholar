@@ -426,6 +426,99 @@ test.describe("partage d'un projet avec un encadreur", () => {
     expect(sqlValue(`select count(*) from public.version_decisions where project_id = '${projectId}'`)).toBe("2");
   });
 
+  test("tâches : l'encadreur en propose, l'étudiante les clôt, le lecteur les lit", async ({
+    page,
+    browser,
+  }) => {
+    const owner = await createMember("taches-etudiante");
+    const supervisor = await createMember("taches-encadreur");
+    const viewer = await createMember("taches-lecteur");
+    const { projectId, token } = seedProject(owner.id);
+    sql(`
+      insert into public.research_project_members (project_id, user_id, role) values
+        ('${projectId}', '${supervisor.id}', 'supervisor'),
+        ('${projectId}', '${viewer.id}', 'viewer')
+    `);
+
+    // --- L'encadreur propose une tâche, avec une échéance passée -----------------
+    const guide = await openSession(browser, supervisor);
+    await guide.page.goto(`/fr/shared/${projectId}`);
+    await guide.page.getByRole("link", { name: "Tâches et échéances" }).click();
+    await expect(guide.page).toHaveURL(new RegExp(`/fr/shared/${projectId}/tasks$`));
+    await expect(guide.page.getByRole("main")).toContainText("Rien à faire pour l'instant.");
+
+    await guide.page.getByRole("button", { name: "Ajouter la tâche" }).click();
+    await expect(alert(guide.page)).toHaveText("Certains champs sont à corriger.");
+    await guide.page.getByLabel("Ce qu'il faut faire").fill(`Reprendre la problématique ${token}`);
+    await guide.page.getByLabel("Échéance (facultatif)").fill("30/11/2026");
+    await guide.page.getByRole("button", { name: "Ajouter la tâche" }).click();
+    // Le champ fautif est signalé : la réponse est arrivée, la saisie peut reprendre.
+    await expect(guide.page.getByLabel("Échéance (facultatif)")).toHaveAttribute("aria-invalid", "true");
+    await guide.page.getByLabel("Ce qu'il faut faire").fill(`Reprendre la problématique ${token}`);
+    await guide.page.getByLabel("Échéance (facultatif)").fill("2020-01-15");
+    await guide.page.getByRole("button", { name: "Ajouter la tâche" }).click();
+    await expect(guide.page).toHaveURL(/notice=task-added$/);
+    const guideTask = guide.page.getByTestId("task");
+    await expect(guideTask).toContainText(`Reprendre la problématique ${token}`);
+    await expect(guideTask).toContainText("posée par : l'encadreur");
+    await expect(guideTask).toContainText("échéance dépassée depuis le 15 janvier 2020");
+
+    // --- L'étudiante ajoute la sienne, et clôt celle de son encadreur --------------
+    await signInThroughForm(page, owner.email, owner.password);
+    await expect(page).toHaveURL(/\/fr\/account/);
+    await page.goto(`/fr/projects/${projectId}`);
+    await page.getByRole("link", { name: "Tâches et échéances" }).click();
+    await expect(page).toHaveURL(new RegExp(`/fr/projects/${projectId}/tasks$`));
+    await expect(page.getByTestId("task")).toHaveCount(1);
+    await page.getByLabel("Ce qu'il faut faire").fill(`Rédiger la méthode ${token}`);
+    await page.getByRole("button", { name: "Ajouter la tâche" }).click();
+    await expect(page).toHaveURL(/notice=task-added$/);
+    await expect(page.getByTestId("task")).toHaveCount(2);
+
+    await page
+      .getByTestId("task")
+      .filter({ hasText: "Reprendre la problématique" })
+      .getByRole("button", { name: "Marquer comme faite" })
+      .click();
+    await expect(page).toHaveURL(/notice=task-done$/);
+    await expect(page.getByRole("heading", { name: "1 tâche terminée" })).toBeVisible();
+    await expect(
+      page.getByTestId("task").filter({ hasText: "Reprendre la problématique" }),
+    ).toHaveAttribute("data-done", "true");
+
+    // --- L'encadreur ne modifie que la sienne -------------------------------------
+    await guide.page.goto(`/fr/shared/${projectId}/tasks`);
+    const studentTask = guide.page.getByTestId("task").filter({ hasText: "Rédiger la méthode" });
+    await expect(studentTask).toContainText("posée par : l'auteur du projet");
+    await expect(studentTask.getByRole("button")).toHaveCount(0);
+    await guide.page
+      .getByTestId("task")
+      .filter({ hasText: "Reprendre la problématique" })
+      .getByRole("button", { name: "Rouvrir" })
+      .click();
+    await expect(guide.page).toHaveURL(/notice=task-reopened$/);
+    await guide.close();
+
+    // --- Le lecteur simple lit, sans rien pouvoir faire ----------------------------
+    const reader = await openSession(browser, viewer);
+    await reader.page.goto(`/fr/shared/${projectId}/tasks`);
+    await expect(reader.page.getByTestId("task")).toHaveCount(2);
+    await expect(reader.page.getByRole("main").getByRole("button")).toHaveCount(0);
+    expect((await reader.page.goto(`/fr/projects/${projectId}/tasks`))?.status()).toBe(404);
+    await reader.close();
+
+    // --- L'étudiante supprime une tâche ---------------------------------------------
+    await page.goto(`/fr/projects/${projectId}/tasks`);
+    await page
+      .getByTestId("task")
+      .filter({ hasText: "Reprendre la problématique" })
+      .getByRole("button", { name: "Supprimer la tâche" })
+      .click();
+    await expect(page).toHaveURL(/notice=task-deleted$/);
+    await expect(page.getByTestId("task")).toHaveCount(1);
+    expect(sqlValue(`select count(*) from public.project_tasks where project_id = '${projectId}'`)).toBe("1");
+  });
+
   test("les pages de partage exigent une session", async ({ page }) => {
     for (const path of ["/fr/shared", `/fr/shared/${randomUUID()}`, `/fr/projects/${randomUUID()}/sharing`]) {
       await page.goto(path);
