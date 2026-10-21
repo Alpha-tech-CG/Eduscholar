@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthPageShell } from "@/components/auth/page-shell";
+import { ResourceCard } from "@/components/catalogue/resource-card";
 import { Link } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
 import { getCatalogueReference, searchResources } from "@/lib/catalogue/queries";
@@ -120,6 +121,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
           <Link href="/search" className="underline underline-offset-4">
             {t("reset")}
           </Link>
+          <Link href="/recommendations" className="underline underline-offset-4">
+            {t("toRecommendations")}
+          </Link>
         </div>
       </form>
 
@@ -144,31 +148,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/[locale]/
         ) : (
           <ul className="flex flex-col gap-3">
             {resources.map((resource) => (
-              <li key={resource.id} className="rounded border border-foreground/20 p-3">
-                <Link
-                  href={`/resources/${resource.id}`}
-                  className="font-medium underline underline-offset-4"
-                >
-                  {resource.title}
-                </Link>
-                <p className="text-sm opacity-80">
-                  {[
-                    typeLabel(resource.typeCode),
-                    resource.authors.slice(0, 3).join(", ") || resource.institutionName,
-                    resource.publicationYear?.toString(),
-                  ]
-                    .filter(Boolean)
-                    .join(t("separator"))}
-                </p>
-                <p className="text-sm">
-                  <span className="rounded border border-foreground/30 px-2 py-0.5">
-                    {tAccess(resource.accessStatus as "unknown")}
-                  </span>
-                  <span className="ms-2 opacity-70">
-                    {t("source", { source: resource.sourceName })}
-                  </span>
-                </p>
-              </li>
+              <ResourceCard key={resource.id} resource={resource} typeLabel={typeLabel(resource.typeCode)} />
             ))}
           </ul>
         )}

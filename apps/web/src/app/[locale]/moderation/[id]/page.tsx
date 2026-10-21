@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { AuthForm, OptionalTextField, SelectField } from "@/components/auth/form";
+import { AuthForm, CheckboxGroup, OptionalTextField, SelectField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
+import { ModerationAssistance } from "@/components/catalogue/moderation-assistance";
 import { ResourceSummary } from "@/components/catalogue/resource-summary";
 import { Link } from "@/i18n/navigation";
+import { getClassificationSuggestions, getSimilarResources } from "@/lib/assistance/queries";
 import { moderateResource, moderatorUpdateResource } from "@/lib/catalogue/actions";
 import { requireModerator } from "@/lib/catalogue/guard";
 import {
@@ -18,6 +20,7 @@ import {
   MODERATION_ACTIONS,
   type ModerationAction,
 } from "@/lib/catalogue/schemas";
+import { getReferenceData } from "@/lib/profile/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Catalogue.moderation");
@@ -52,7 +55,9 @@ export default async function ModerationResourcePage({
   if (!resource || resource.visibility !== "public") notFound();
 
   const locale = await getLocale();
-  const [t, tStatus, tAction, tHistory, tAccess, format, notes, history, catalogue, { notice }] =
+  // Les deux lectures d'assistance partent avec les autres, et ne lèvent jamais :
+  // leur échec n'est qu'un état de leur bloc.
+  const [t, tStatus, tAction, tHistory, tAccess, format, notes, history, catalogue, { notice }, similar, suggestions, reference] =
     await Promise.all([
       getTranslations("Catalogue.moderation"),
       getTranslations("Catalogue.editorialStatus"),
@@ -64,6 +69,9 @@ export default async function ModerationResourcePage({
       getResourceHistory(resource.id),
       getCatalogueReference(locale),
       searchParams,
+      getSimilarResources(resource.id),
+      getClassificationSuggestions(resource.id),
+      getReferenceData(locale),
     ]);
 
   const actions = AVAILABLE[resource.editorialStatus] ?? [];
@@ -73,6 +81,15 @@ export default async function ModerationResourcePage({
       ? IMPORT_NOTICES[notice]
       : undefined;
   const editable = !["rejected", "removed"].includes(resource.editorialStatus);
+  // Matières de la filière de la fiche ; celles qu'elle porte déjà restent
+  // proposées même si elles ont été désactivées depuis.
+  const programSubjects = reference.subjects.filter((item) => item.programCode === resource.programCode);
+  const subjectOptions = [
+    ...programSubjects.map((item) => ({ value: item.code, label: item.label })),
+    ...resource.subjectCodes
+      .filter((code) => !programSubjects.some((item) => item.code === code))
+      .map((code) => ({ value: code, label: code })),
+  ];
 
   return (
     <AuthPageShell
@@ -122,6 +139,13 @@ export default async function ModerationResourcePage({
         </dl>
       </section>
 
+      <ModerationAssistance
+        similar={similar}
+        suggestions={suggestions}
+        locale={locale}
+        correctionAnchor={editable ? "correction" : null}
+      />
+
       {actions.length > 0 ? (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("decision")}</h2>
@@ -146,7 +170,7 @@ export default async function ModerationResourcePage({
       ) : null}
 
       {editable ? (
-        <section className="flex flex-col gap-3">
+        <section id="correction" className="flex scroll-mt-4 flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("correct")}</h2>
           <p className="text-sm opacity-80">{t("correctIntro")}</p>
           <AuthForm
@@ -179,6 +203,17 @@ export default async function ModerationResourcePage({
               defaultValue={resource.licenseCode}
               required
             />
+            {subjectOptions.length > 0 ? (
+              <>
+                <input type="hidden" name="subjectsShown" value="1" />
+                <CheckboxGroup
+                  name="subjectCodes"
+                  legend={t("subjects")}
+                  options={subjectOptions}
+                  defaultValues={resource.subjectCodes}
+                />
+              </>
+            ) : null}
             <OptionalTextField
               name="moderationNotes"
               label={t("notes")}

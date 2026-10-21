@@ -206,6 +206,12 @@ export async function moderatorUpdateResource(
     accessStatus: text(formData, "accessStatus"),
     licenseCode: text(formData, "licenseCode"),
     moderationNotes: text(formData, "moderationNotes"),
+    // Les cases ne sont lues que si le formulaire les a montrées : sans ce
+    // témoin, une liste vide passerait pour « retirer toutes les matières ».
+    subjectCodes:
+      text(formData, "subjectsShown") === "1"
+        ? formData.getAll("subjectCodes").filter((value): value is string => typeof value === "string")
+        : undefined,
   });
   if (!parsed.success) return { status: "error", error: "validation" };
 
@@ -217,6 +223,7 @@ export async function moderatorUpdateResource(
       access_status: parsed.data.accessStatus,
       license_code: parsed.data.licenseCode,
       moderation_notes: parsed.data.moderationNotes ?? "",
+      ...(parsed.data.subjectCodes ? { subject_codes: parsed.data.subjectCodes } : {}),
     },
   });
   if (error) return { status: "error", error: catalogueErrorCode(error) };

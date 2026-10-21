@@ -124,6 +124,11 @@ export default async function SharedProjectPage({
                 {t("toTasks")}
               </Link>
             </p>
+            <p>
+              <Link href={`/shared/${id}/coherence`} className="underline underline-offset-4">
+                {t("toCoherence")}
+              </Link>
+            </p>
           </>
         ) : null}
         <p>

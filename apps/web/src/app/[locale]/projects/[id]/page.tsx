@@ -187,6 +187,11 @@ export default async function ProjectPage({
             {t("sharing.tasks")}
           </Link>
         </p>
+        <p>
+          <Link href={`/projects/${project.id}/coherence`} className="underline underline-offset-4">
+            {t("sharing.coherence")}
+          </Link>
+        </p>
       </section>
 
       <section className="flex flex-col gap-2">

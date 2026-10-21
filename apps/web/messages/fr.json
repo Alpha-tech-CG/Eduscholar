@@ -254,7 +254,8 @@
     "recoveryUseWarning": "Un code de secours a été utilisé récemment sur votre compte, et la validation en deux étapes a été désactivée. Si ce n'était pas vous, changez de mot de passe sans attendre.",
     "sharedProjects": "Projets partagés avec moi",
     "notifications": "{count, plural, =0 {Notifications} one {Notifications (# non lue)} other {Notifications (# non lues)}}",
-    "organizations": "Mes organisations"
+    "organizations": "Mes organisations",
+    "recommendations": "Recommandations pour moi"
   },
   "Profile": {
     "title": "Mon profil",
@@ -495,7 +496,8 @@
       "previous": "Page précédente",
       "next": "Page suivante",
       "page": "Page {page} sur {pages}",
-      "reportsPagination": "Pages des signalements"
+      "reportsPagination": "Pages des signalements",
+      "subjects": "Matières"
     },
     "import": {
       "title": "Importer par DOI",
@@ -538,7 +540,8 @@
       "page": "Page {page} sur {pages}",
       "resultsHeading": "Résultats",
       "unavailable": "La recherche est momentanément indisponible. Réessayez dans un instant.",
-      "resultsCapped": "Plus de {count, number} résultats : précisez votre recherche"
+      "resultsCapped": "Plus de {count, number} résultats : précisez votre recherche",
+      "toRecommendations": "Voir les recommandations"
     },
     "resource": {
       "title": "Ressource",
@@ -922,7 +925,8 @@
       "manage": "Gérer le partage",
       "toShared": "Projets partagés avec moi",
       "versions": "Versions soumises à l'encadreur",
-      "tasks": "Tâches et échéances"
+      "tasks": "Tâches et échéances",
+      "coherence": "Contrôles de cohérence"
     }
   },
   "DataExport": {
@@ -1134,7 +1138,8 @@
     "noticeScopeChanged": "L'accès de cette personne est modifié.",
     "noticeLinkRevoked": "Le lien est désactivé.",
     "noticeRequestApproved": "La demande est acceptée : cette personne suit maintenant votre projet.",
-    "noticeRequestRefused": "La demande est refusée."
+    "noticeRequestRefused": "La demande est refusée.",
+    "toCoherence": "Contrôles de cohérence"
   },
   "Comments": {
     "sectionTitle": "Section d'un projet partagé",
@@ -1576,6 +1581,129 @@
       "previous": "Page précédente",
       "next": "Page suivante",
       "page": "Page {page} sur {pages}"
+    }
+  },
+  "Assistance": {
+    "moderation": {
+      "heading": "Aide à l'examen",
+      "disclaimer": "Suggestions calculées automatiquement à partir des fiches du catalogue et du référentiel, sans modèle de langage. Elles sont à vérifier : rien n'est appliqué, c'est vous qui décidez.",
+      "separator": " · ",
+      "unavailable": "Cette aide est momentanément indisponible. Le reste de la page n'est pas concerné.",
+      "rateLimited": "Trop de demandes en peu de temps : cette aide reviendra dans quelques minutes.",
+      "similarHeading": "Fiches qui ressemblent à celle-ci",
+      "similarEmpty": "Aucune fiche ressemblante n'a été trouvée.",
+      "reasons": {
+        "same_doi": "même DOI",
+        "same_url": "même lien officiel",
+        "similar_title": "titre proche"
+      },
+      "confidence": {
+        "high": "indice de confiance : élevé",
+        "medium": "indice de confiance : moyen",
+        "low": "indice de confiance : faible"
+      },
+      "titleScore": "Proximité des titres : {percent} %.",
+      "subjectsHeading": "Matières suggérées",
+      "subjectsEmpty": "Aucune matière à suggérer pour cette fiche.",
+      "matchedWords": "{count, plural, =0 {aucun mot retrouvé} one {mot retrouvé dans la fiche : {words}} other {mots retrouvés dans la fiche : {words}}}",
+      "applyHint": "Pour retenir une matière, cochez-la vous-même dans le formulaire de correction.",
+      "toCorrection": "Aller à la correction de la fiche",
+      "notEditable": "Cette fiche ne se corrige plus : ces suggestions sont données pour information."
+    },
+    "coherence": {
+      "title": "Contrôles de cohérence",
+      "intro": "Projet « {project} ».",
+      "introMember": "Projet partagé avec vous.",
+      "backToProject": "Retour au projet",
+      "backToShared": "Retour au projet partagé",
+      "disclaimer": "Ce sont des contrôles automatiques de forme : ils comptent des sections, des sources, des citations et des dates. Ils ne lisent pas le sens du texte et n'évaluent pas le fond du travail. Chaque point est à vérifier ; rien n'est corrigé à votre place.",
+      "totals": "Examiné : {sections, plural, =0 {aucune section} one {# section} other {# sections}}, {sources, plural, =0 {aucune source} one {# source} other {# sources}}, {citations, plural, =0 {aucune citation} one {# citation} other {# citations}}, {tasks, plural, =0 {aucune tâche} one {# tâche} other {# tâches}}.",
+      "clear": "Ces contrôles ne relèvent rien à signaler pour l'instant.",
+      "unavailable": "Le rapport n'a pas pu être établi. Réessayez dans un instant.",
+      "rateLimited": "Trop de demandes en peu de temps. Réessayez dans quelques minutes.",
+      "unreadable": "{count, plural, one {# constat n'a pas pu être affiché.} other {# constats n'ont pas pu être affichés.}}",
+      "separator": " · ",
+      "severity": {
+        "warning": "À vérifier",
+        "info": "Information"
+      },
+      "families": {
+        "project": "Fiche du projet et échéances",
+        "writing": "Plan et rédaction",
+        "sources": "Sources et citations",
+        "literature": "Littérature"
+      },
+      "findings": {
+        "project_incomplete": "{count, plural, one {# rubrique de la fiche du projet est vide.} other {# rubriques de la fiche du projet sont vides.}}",
+        "project_overdue": "{days, plural, one {L'échéance du projet est dépassée depuis # jour.} other {L'échéance du projet est dépassée depuis # jours.}}",
+        "project_due_soon": "{days, plural, =0 {L'échéance du projet est aujourd'hui.} one {L'échéance du projet est dans # jour.} other {L'échéance du projet est dans # jours.}}",
+        "task_overdue": "{count, plural, one {# tâche a dépassé son échéance.} other {# tâches ont dépassé leur échéance.}}",
+        "section_empty": "{count, plural, one {# section n'a pas encore de texte.} other {# sections n'ont pas encore de texte.}}",
+        "section_without_citation": "{count, plural, one {# section rédigée ne cite aucune source.} other {# sections rédigées ne citent aucune source.}}",
+        "section_single_source": "{count, plural, one {# section rédigée ne s'appuie que sur une seule source.} other {# sections rédigées ne s'appuient que sur une seule source.}}",
+        "section_short": "{count, plural, one {# section est très courte par rapport aux autres.} other {# sections sont très courtes par rapport aux autres.}}",
+        "source_never_cited": "{count, plural, one {# source n'est citée dans aucune section.} other {# sources ne sont citées dans aucune section.}}",
+        "citation_without_pages": "{count, plural, one {# citation ne précise pas de page.} other {# citations ne précisent pas de page.}}",
+        "source_incomplete": "{count, plural, one {# source est incomplète pour la bibliographie.} other {# sources sont incomplètes pour la bibliographie.}}",
+        "source_duplicate": "{count, plural, one {# source semble enregistrée en double.} other {# groupes de sources semblent enregistrés en double.}}",
+        "cited_source_without_note": "{count, plural, one {# source citée n'a pas de fiche de lecture.} other {# sources citées n'ont pas de fiche de lecture.}}",
+        "literature_none_recent": "Aucune source datée n'a moins de cinq ans : la plus récente est de {year}.",
+        "literature_mostly_old": "{count} des {total} sources datées ont plus de dix ans."
+      },
+      "help": {
+        "project_incomplete": "Problématique, question principale, objectif général et méthodologie sont les quatre rubriques contrôlées.",
+        "project_overdue": "Calculé d'après la date d'échéance inscrite sur la fiche du projet.",
+        "project_due_soon": "Calculé d'après la date d'échéance inscrite sur la fiche du projet.",
+        "task_overdue": "Tâches non terminées dont la date est passée.",
+        "section_empty": "C'est normal pour un plan en cours ; la liste aide seulement à voir ce qui reste.",
+        "section_without_citation": "Une section compte comme rédigée à partir de 300 caractères. Certaines sections n'appellent pas de source.",
+        "section_single_source": "Une seule source peut suffire ; à vous d'en juger selon la section.",
+        "section_short": "Moins du quart de la longueur médiane des sections déjà écrites.",
+        "source_never_cited": "Une source peut être gardée pour plus tard ; elle n'apparaîtra pas dans les citations du document.",
+        "citation_without_pages": "Seulement là où la source indique des pages.",
+        "source_incomplete": "Il manque un auteur, une année ou un titre : la référence sera incomplète.",
+        "source_duplicate": "Même DOI, ou même titre une fois les accents et la casse ignorés.",
+        "cited_source_without_note": "Vos fiches de lecture ne sont lues que pour vous : ce constat n'est montré à personne d'autre.",
+        "literature_none_recent": "D'après la seule année de publication des sources. Selon le sujet, des sources anciennes peuvent être les bonnes.",
+        "literature_mostly_old": "D'après la seule année de publication des sources. Selon le sujet, des sources anciennes peuvent être les bonnes."
+      },
+      "fieldsMissing": "Rubriques vides : {fields}.",
+      "toEdit": "Compléter la fiche du projet",
+      "toTasks": "Voir les tâches",
+      "untitledSection": "Section sans titre",
+      "untitledSource": "Source sans titre",
+      "sectionNumber": "Section concernée n° {number}",
+      "citationsHere": "{count, plural, one {# citation} other {# citations}}",
+      "sourceMissing": "manque : {fields}",
+      "sourceFields": {
+        "authors": "auteur",
+        "publication_year": "année",
+        "title": "titre"
+      }
+    },
+    "recommendations": {
+      "title": "Recommandations",
+      "intro": "Des fiches publiées du catalogue qui correspondent à votre profil.",
+      "origin": "Ces recommandations sont calculées à partir de votre seul profil (filière, niveau, matières) et, si vous le choisissez, des sources de votre seul projet. Jamais à partir de l'activité des autres utilisateurs, et rien n'est retenu de ce qui vous est montré.",
+      "toSearch": "Rechercher dans le catalogue",
+      "project": "Affiner avec l'un de mes projets (facultatif)",
+      "noProject": "Aucun : mon profil seulement",
+      "projectHint": "Les fiches déjà reprises comme sources de ce projet ne sont pas reproposées.",
+      "refine": "Affiner",
+      "resultsHeading": "Fiches recommandées",
+      "results": "{count, plural, =0 {Aucune fiche recommandée} one {# fiche recommandée} other {# fiches recommandées}}",
+      "empty": "Aucune fiche à recommander pour l'instant. Complétez les matières de votre profil, ou cherchez directement dans le catalogue.",
+      "unavailable": "Les recommandations n'ont pas pu être calculées. Réessayez dans un instant.",
+      "rateLimited": "Trop de demandes en peu de temps. Réessayez dans quelques minutes.",
+      "because": "Pourquoi cette fiche :",
+      "separator": " · ",
+      "reasons": {
+        "same_program": "même filière que votre profil",
+        "same_subject": "matière de votre profil",
+        "same_level": "même niveau que votre profil",
+        "cited_authors": "auteur déjà cité dans votre projet",
+        "project_keywords": "mots-clés ou matières des sources de votre projet"
+      }
     }
   }
 }

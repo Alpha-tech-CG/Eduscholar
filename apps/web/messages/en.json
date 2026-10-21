@@ -254,7 +254,8 @@
     "recoveryUseWarning": "A backup code was recently used on your account, and two-step verification was turned off. If this was not you, change your password right away.",
     "sharedProjects": "Projects shared with me",
     "notifications": "{count, plural, =0 {Notifications} one {Notifications (# unread)} other {Notifications (# unread)}}",
-    "organizations": "My organisations"
+    "organizations": "My organisations",
+    "recommendations": "Recommendations for me"
   },
   "Profile": {
     "title": "My profile",
@@ -495,7 +496,8 @@
       "previous": "Previous page",
       "next": "Next page",
       "page": "Page {page} of {pages}",
-      "reportsPagination": "Report pages"
+      "reportsPagination": "Report pages",
+      "subjects": "Subjects"
     },
     "import": {
       "title": "Import by DOI",
@@ -538,7 +540,8 @@
       "page": "Page {page} of {pages}",
       "resultsHeading": "Results",
       "unavailable": "Search is temporarily unavailable. Try again in a moment.",
-      "resultsCapped": "More than {count, number} results: narrow your search"
+      "resultsCapped": "More than {count, number} results: narrow your search",
+      "toRecommendations": "See recommendations"
     },
     "resource": {
       "title": "Resource",
@@ -922,7 +925,8 @@
       "manage": "Manage sharing",
       "toShared": "Projects shared with me",
       "versions": "Versions submitted to the supervisor",
-      "tasks": "Tasks and deadlines"
+      "tasks": "Tasks and deadlines",
+      "coherence": "Consistency checks"
     }
   },
   "DataExport": {
@@ -1134,7 +1138,8 @@
     "noticeScopeChanged": "This person's access has been changed.",
     "noticeLinkRevoked": "The link has been disabled.",
     "noticeRequestApproved": "The request has been accepted: this person now follows your project.",
-    "noticeRequestRefused": "The request has been refused."
+    "noticeRequestRefused": "The request has been refused.",
+    "toCoherence": "Consistency checks"
   },
   "Comments": {
     "sectionTitle": "Section of a shared project",
@@ -1576,6 +1581,129 @@
       "previous": "Previous page",
       "next": "Next page",
       "page": "Page {page} of {pages}"
+    }
+  },
+  "Assistance": {
+    "moderation": {
+      "heading": "Review aid",
+      "disclaimer": "Suggestions computed automatically from catalogue records and reference lists, without any language model. They are to be checked: nothing is applied, the decision is yours.",
+      "separator": " · ",
+      "unavailable": "This aid is temporarily unavailable. The rest of the page is not affected.",
+      "rateLimited": "Too many requests in a short time: this aid will be back in a few minutes.",
+      "similarHeading": "Records that look like this one",
+      "similarEmpty": "No similar record was found.",
+      "reasons": {
+        "same_doi": "same DOI",
+        "same_url": "same official link",
+        "similar_title": "similar title"
+      },
+      "confidence": {
+        "high": "confidence: high",
+        "medium": "confidence: medium",
+        "low": "confidence: low"
+      },
+      "titleScore": "Title similarity: {percent}%.",
+      "subjectsHeading": "Suggested subjects",
+      "subjectsEmpty": "No subject to suggest for this record.",
+      "matchedWords": "{count, plural, =0 {no word found} one {word found in the record: {words}} other {words found in the record: {words}}}",
+      "applyHint": "To keep a subject, tick it yourself in the correction form.",
+      "toCorrection": "Go to the record correction",
+      "notEditable": "This record can no longer be corrected: these suggestions are given for information."
+    },
+    "coherence": {
+      "title": "Consistency checks",
+      "intro": "Project “{project}”.",
+      "introMember": "Project shared with you.",
+      "backToProject": "Back to the project",
+      "backToShared": "Back to the shared project",
+      "disclaimer": "These are automatic checks of form: they count sections, sources, citations and dates. They do not read the meaning of the text and do not assess the substance of the work. Each point is to be checked; nothing is corrected on your behalf.",
+      "totals": "Examined: {sections, plural, =0 {no sections} one {# section} other {# sections}}, {sources, plural, =0 {no sources} one {# source} other {# sources}}, {citations, plural, =0 {no citations} one {# citation} other {# citations}}, {tasks, plural, =0 {no tasks} one {# task} other {# tasks}}.",
+      "clear": "These checks find nothing to report for now.",
+      "unavailable": "The report could not be produced. Try again in a moment.",
+      "rateLimited": "Too many requests in a short time. Try again in a few minutes.",
+      "unreadable": "{count, plural, one {# finding could not be displayed.} other {# findings could not be displayed.}}",
+      "separator": " · ",
+      "severity": {
+        "warning": "To check",
+        "info": "Information"
+      },
+      "families": {
+        "project": "Project record and deadlines",
+        "writing": "Outline and writing",
+        "sources": "Sources and citations",
+        "literature": "Literature"
+      },
+      "findings": {
+        "project_incomplete": "{count, plural, one {# heading of the project record is empty.} other {# headings of the project record are empty.}}",
+        "project_overdue": "{days, plural, one {The project deadline passed # day ago.} other {The project deadline passed # days ago.}}",
+        "project_due_soon": "{days, plural, =0 {The project deadline is today.} one {The project deadline is in # day.} other {The project deadline is in # days.}}",
+        "task_overdue": "{count, plural, one {# task is past its due date.} other {# tasks are past their due date.}}",
+        "section_empty": "{count, plural, one {# section has no text yet.} other {# sections have no text yet.}}",
+        "section_without_citation": "{count, plural, one {# written section cites no source.} other {# written sections cite no source.}}",
+        "section_single_source": "{count, plural, one {# written section relies on a single source.} other {# written sections rely on a single source.}}",
+        "section_short": "{count, plural, one {# section is very short compared with the others.} other {# sections are very short compared with the others.}}",
+        "source_never_cited": "{count, plural, one {# source is not cited in any section.} other {# sources are not cited in any section.}}",
+        "citation_without_pages": "{count, plural, one {# citation gives no page.} other {# citations give no page.}}",
+        "source_incomplete": "{count, plural, one {# source is incomplete for the bibliography.} other {# sources are incomplete for the bibliography.}}",
+        "source_duplicate": "{count, plural, one {# source seems to be recorded twice.} other {# groups of sources seem to be recorded twice.}}",
+        "cited_source_without_note": "{count, plural, one {# cited source has no reading note.} other {# cited sources have no reading note.}}",
+        "literature_none_recent": "No dated source is less than five years old: the most recent is from {year}.",
+        "literature_mostly_old": "{count} of the {total} dated sources are more than ten years old."
+      },
+      "help": {
+        "project_incomplete": "Problem statement, main question, general objective and methodology are the four headings checked.",
+        "project_overdue": "Computed from the due date entered on the project record.",
+        "project_due_soon": "Computed from the due date entered on the project record.",
+        "task_overdue": "Unfinished tasks whose date has passed.",
+        "section_empty": "This is normal for an outline in progress; the list only helps to see what remains.",
+        "section_without_citation": "A section counts as written from 300 characters. Some sections do not call for a source.",
+        "section_single_source": "A single source may be enough; it is for you to judge, section by section.",
+        "section_short": "Less than a quarter of the median length of the sections already written.",
+        "source_never_cited": "A source may be kept for later; it will not appear among the citations of the document.",
+        "citation_without_pages": "Only where the source gives pages.",
+        "source_incomplete": "An author, a year or a title is missing: the reference will be incomplete.",
+        "source_duplicate": "Same DOI, or same title once accents and case are ignored.",
+        "cited_source_without_note": "Your reading notes are read for you only: this finding is shown to no one else.",
+        "literature_none_recent": "Based only on the publication year of sources. Depending on the topic, older sources may be the right ones.",
+        "literature_mostly_old": "Based only on the publication year of sources. Depending on the topic, older sources may be the right ones."
+      },
+      "fieldsMissing": "Empty headings: {fields}.",
+      "toEdit": "Complete the project record",
+      "toTasks": "See the tasks",
+      "untitledSection": "Untitled section",
+      "untitledSource": "Untitled source",
+      "sectionNumber": "Section concerned no. {number}",
+      "citationsHere": "{count, plural, one {# citation} other {# citations}}",
+      "sourceMissing": "missing: {fields}",
+      "sourceFields": {
+        "authors": "author",
+        "publication_year": "year",
+        "title": "title"
+      }
+    },
+    "recommendations": {
+      "title": "Recommendations",
+      "intro": "Published catalogue records that match your profile.",
+      "origin": "These recommendations are computed from your profile alone (programme, level, subjects) and, if you choose so, from the sources of your own project. Never from the activity of other users, and nothing is kept of what is shown to you.",
+      "toSearch": "Search the catalogue",
+      "project": "Refine with one of my projects (optional)",
+      "noProject": "None: my profile only",
+      "projectHint": "Records already used as sources of this project are not offered again.",
+      "refine": "Refine",
+      "resultsHeading": "Recommended records",
+      "results": "{count, plural, =0 {No recommended record} one {# recommended record} other {# recommended records}}",
+      "empty": "No record to recommend for now. Complete the subjects of your profile, or search the catalogue directly.",
+      "unavailable": "Recommendations could not be computed. Try again in a moment.",
+      "rateLimited": "Too many requests in a short time. Try again in a few minutes.",
+      "because": "Why this record:",
+      "separator": " · ",
+      "reasons": {
+        "same_program": "same programme as your profile",
+        "same_subject": "subject of your profile",
+        "same_level": "same level as your profile",
+        "cited_authors": "author already cited in your project",
+        "project_keywords": "keywords or subjects of your project's sources"
+      }
     }
   }
 }

@@ -177,6 +177,8 @@ export const moderatorEditSchema = z.object({
   accessStatus: z.enum(ACCESS_STATUSES, "invalid_choice"),
   licenseCode: code,
   moderationNotes: z.preprocess(empty, z.string().trim().max(5000, "too_long").optional()),
+  // Absent quand le formulaire ne montre pas les matières : elles ne changent alors pas.
+  subjectCodes: z.array(code).max(40).optional(),
 });
 
 export const REPORT_REASONS = [

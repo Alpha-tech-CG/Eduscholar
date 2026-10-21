@@ -110,6 +110,11 @@ export default async function AccountPage({
           </Link>
         </li>
         <li>
+          <Link href="/recommendations" className="underline underline-offset-4">
+            {t("recommendations")}
+          </Link>
+        </li>
+        <li>
           <Link href="/library" className="underline underline-offset-4">
             {t("library")}
           </Link>

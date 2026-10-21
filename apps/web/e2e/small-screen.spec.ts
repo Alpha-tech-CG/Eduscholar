@@ -153,6 +153,8 @@ test.describe("petit écran", () => {
       `${project}/bibliography`,
       `${project}/document`,
       `${project}/sharing`,
+      `${project}/coherence`,
+      "/fr/recommendations",
       "/fr/notifications",
     ];
     expect(await findings(page, paths)).toEqual({});
