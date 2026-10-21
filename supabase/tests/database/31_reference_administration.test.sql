@@ -394,7 +394,7 @@ select results_eq(
   $$ values (false, false) $$, 'La langue créée n''est pas une langue d''interface, et naît inactive'
 );
 select is(
-  (select count(*) from public.languages where is_interface), 2::bigint,
+  (select count(*) from public.languages where is_interface), 3::bigint,
   'Les langues d''interface n''ont pas changé'
 );
 select is(
@@ -544,7 +544,7 @@ select throws_ok($$ select public.admin_set_reference_active('academic_programs'
 select throws_ok($$ select public.admin_set_reference_active('resource_types', 'thesis', false) $$, 'P0001', 'protected_reference', 'Le type « thesis », câblé dans la base, ne se désactive pas');
 select throws_ok($$ select public.admin_set_reference_active('languages', 'fr', false) $$, 'P0001', 'protected_reference', 'Ni une langue d''interface');
 select throws_ok($$ select public.admin_set_reference_active('languages', 'en', false) $$, 'P0001', 'protected_reference', 'Ni l''autre');
-select is(public.admin_set_reference_active('languages', 'pt', false), null, 'Une langue de contenu se désactive');
+select is(public.admin_set_reference_active('languages', 'ar', false), null, 'Une langue de contenu se désactive');
 -- Avec un second domaine actif, le premier peut l'être.
 select is(public.admin_set_reference_active('academic_domains', 'zz_domaine', true), null, 'Un second domaine est activé');
 select is(public.admin_set_reference_active('academic_domains', 'sciences_technology', false), null, 'Le premier peut alors se désactiver');

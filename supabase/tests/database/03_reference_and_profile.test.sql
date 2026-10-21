@@ -36,8 +36,8 @@ select is(
   'Les pays portent un libellé anglais'
 );
 select is(
-  (select count(*) from public.languages where is_interface), 2::bigint,
-  'Deux langues d''interface : le français et l''anglais'
+  (select count(*) from public.languages where is_interface), 3::bigint,
+  'Trois langues d''interface : le français, l''anglais et le portugais'
 );
 select is(
   (select count(*) from public.subjects where program_code = 'computer_science'), 29::bigint,
