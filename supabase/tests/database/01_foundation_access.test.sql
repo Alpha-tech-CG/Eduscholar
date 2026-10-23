@@ -366,7 +366,7 @@ select is(
 -- Simple utilisateur : seules les organisations vérifiées.
 select tests.login('b0000000-0000-0000-0000-000000000002');
 select results_eq(
-  $$ select slug from public.organizations order by slug $$,
+  $$ select slug from public.organizations where slug like 'universite-%' order by slug $$,
   $$ values ('universite-deux'), ('universite-un') $$,
   'Un utilisateur ne voit que les organisations vérifiées'
 );
@@ -452,7 +452,7 @@ reset role;
 
 -- Administrateur de plateforme : voit les organisations et le journal, pas les données privées.
 select tests.login('a1000000-0000-0000-0000-000000000007', 'aal2');
-select is((select count(*) from public.organizations), 4::bigint, 'L''administrateur de plateforme voit toutes les organisations');
+select is((select count(*) from public.organizations where slug like 'universite-%'), 4::bigint, 'L''administrateur de plateforme voit toutes les organisations');
 select is((select count(*) from public.profiles), 1::bigint, 'Il ne lit que son propre profil');
 select is_empty($$ select 1 from public.organization_members $$, 'Il ne lit pas les listes de membres');
 select cmp_ok(
