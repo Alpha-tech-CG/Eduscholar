@@ -1,5 +1,5 @@
 import "server-only";
-import type { BibliographyLocale } from "./bibliography";
+import { DOCUMENT_LOCALES, isDocumentLocale, type BibliographyLocale } from "./bibliography";
 import { buildDocument, countLines, DOCUMENT_MAX_LINES, type ProjectDocument } from "./document";
 import { getProject, type Project } from "./queries";
 import { getCitationsBySection, getSectionContents } from "./section-queries";
@@ -20,8 +20,8 @@ export type LoadedDocument =
 /** Langue du document : celle demandée si elle est connue, sinon celle de l'interface. */
 export function documentLocale(requested: unknown, uiLocale: string): BibliographyLocale {
   const value = Array.isArray(requested) ? requested[0] : requested;
-  if (value === "fr" || value === "en") return value;
-  return uiLocale === "en" ? "en" : "fr";
+  if (isDocumentLocale(value)) return value;
+  return isDocumentLocale(uiLocale) ? uiLocale : DOCUMENT_LOCALES[0];
 }
 
 export async function loadDocument(

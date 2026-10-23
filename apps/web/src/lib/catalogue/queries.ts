@@ -3,7 +3,7 @@ import { cache } from "react";
 import { getSecondFactorState } from "@/lib/auth/second-factor";
 import { getCurrentUser } from "@/lib/auth/session";
 import type { Option } from "@/lib/profile/queries";
-import { getRawReference } from "@/lib/reference/data";
+import { getRawReference, referenceLabel } from "@/lib/reference/data";
 import { createSessionClient } from "@/lib/supabase/server";
 import { catalogueErrorCode } from "./errors";
 import { searchTerms, toTsQuery, type SearchFilters } from "./search";
@@ -390,11 +390,8 @@ export type CatalogueReference = {
   languages: Option[];
 };
 
-type Labels = Record<string, string>;
-const label = (labels: unknown, locale: string) => {
-  const values = (labels ?? {}) as Labels;
-  return values[locale] ?? values.fr ?? "";
-};
+const label = (labels: unknown, locale: string) =>
+  referenceLabel((labels ?? null) as Record<string, string> | null, locale);
 
 /** Types de ressources, licences et langues, dans la langue demandée. */
 export const getCatalogueReference = cache(async (locale: string): Promise<CatalogueReference> => {

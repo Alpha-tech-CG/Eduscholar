@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
 import { requireOnboardedUser } from "@/lib/profile/guard";
 import { documentLocale, loadDocument } from "@/lib/projects/document-loader";
+import { DOCUMENT_LOCALES } from "@/lib/projects/bibliography";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Projects.document");
@@ -56,7 +57,7 @@ export default async function ProjectDocumentPage({
 
         <nav aria-label={t("language")} className="flex flex-wrap items-center gap-4 text-sm">
           <span>{t("language")}</span>
-          {(["fr", "en"] as const).map((code) =>
+          {DOCUMENT_LOCALES.map((code) =>
             code === locale ? (
               <span key={code} aria-current="true" className="font-semibold">
                 {t(`languages.${code}`)}

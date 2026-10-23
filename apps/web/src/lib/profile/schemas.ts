@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { preferenceLocales } from "@/i18n/routing";
 
 // Validation du profil académique. La base refait tous ces contrôles
 // (clés étrangères, entrées actives, cohérence filière / spécialité / matières) :
@@ -26,7 +27,7 @@ export const profileSchema = z.object({
     z.string().trim().min(2, "institution_length").max(200, "institution_length"),
   ),
   goals: z.array(z.enum(PROFILE_GOALS, "invalid_choice")).max(PROFILE_GOALS.length),
-  preferredLocale: z.enum(["fr", "en"], "invalid_choice"),
+  preferredLocale: z.enum(preferenceLocales, "invalid_choice"),
   // Obligatoire tant que la déclaration n'a pas été enregistrée.
   ageConfirmed: z.boolean(),
 });

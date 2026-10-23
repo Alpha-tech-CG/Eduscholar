@@ -1,4 +1,4 @@
-import { getRawReference } from "@/lib/reference/data";
+import { getRawReference, referenceLabel } from "@/lib/reference/data";
 import "server-only";
 import { cache } from "react";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -62,8 +62,7 @@ export type ReferenceData = {
 type Labels = Record<string, string> | null;
 
 function label(labels: unknown, locale: string): string {
-  const values = (labels ?? {}) as NonNullable<Labels>;
-  return values[locale] ?? values.fr ?? "";
+  return referenceLabel((labels ?? null) as Labels, locale);
 }
 
 /** Référentiels dans la langue demandée. Les pays sont triés selon cette langue. */

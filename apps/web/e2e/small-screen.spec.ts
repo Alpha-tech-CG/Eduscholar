@@ -122,7 +122,22 @@ test.describe("petit écran", () => {
   test.setTimeout(120_000);
 
   test("les écrans publics tiennent dans 360 points", async ({ page }) => {
-    const paths = ["/fr", "/en", "/fr/sign-in", "/fr/sign-up", "/fr/forgot-password", "/fr/adresse-inconnue"];
+    const paths = [
+      "/fr",
+      "/en",
+      "/pt",
+      "/fr/sign-in",
+      "/pt/sign-in",
+      "/fr/sign-up",
+      "/fr/forgot-password",
+      "/fr/adresse-inconnue",
+      // Aide : les pages les plus longues, dans les trois langues.
+      "/fr/help",
+      "/en/help/account",
+      "/pt/help/project",
+      "/fr/help/sharing",
+      "/pt/help/data",
+    ];
     expect(await findings(page, paths)).toEqual({});
   });
 

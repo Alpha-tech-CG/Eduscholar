@@ -3,7 +3,7 @@
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { hasLocale } from "next-intl";
-import { routing } from "@/i18n/routing";
+import { isPreferenceLocale, routing } from "@/i18n/routing";
 import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthFormState } from "@/lib/auth/state";
 import { createSessionClient } from "@/lib/supabase/server";
@@ -87,11 +87,14 @@ export async function saveProfile(
   // ligne modifiée, rien n'a été enregistré.
   if (data?.length !== 1) return { status: "error", error: "unavailable" };
 
-  // La page suivante s'affiche dans la langue choisie.
+  // La page suivante s'affiche dans la langue choisie. Une langue de
+  // l'interface que la base n'admet pas encore comme préférence (le portugais)
+  // a été choisie dans le sélecteur : elle est gardée.
   const current_locale = await getLocale();
-  const locale = hasLocale(routing.locales, parsed.data.preferredLocale)
-    ? parsed.data.preferredLocale
-    : current_locale;
+  const locale =
+    isPreferenceLocale(current_locale) && hasLocale(routing.locales, parsed.data.preferredLocale)
+      ? parsed.data.preferredLocale
+      : current_locale;
 
   return redirect({
     href: { pathname: "/account", query: { notice: "profile-saved" } },

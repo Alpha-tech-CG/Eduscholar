@@ -1,5 +1,7 @@
 import en from "../../../messages/en.json";
 import fr from "../../../messages/fr.json";
+import pt from "../../../messages/pt.json";
+import { locales, type Locale } from "@/i18n/routing";
 import { offlinePageCsp, renderOfflinePage } from "@/lib/offline/offline-page";
 
 // Page hors ligne (ADR-0012) : produite une fois, au build, à partir des
@@ -7,11 +9,12 @@ import { offlinePageCsp, renderOfflinePage } from "@/lib/offline/offline-page";
 // applique pas. Le service worker la garde et la sert quand le réseau manque.
 export const dynamic = "force-static";
 
-const catalogues = { fr, en } as const;
+// Un catalogue par langue de l'interface : le type exige qu'aucune ne manque.
+const catalogues: Record<Locale, { Offline: typeof fr.Offline }> = { fr, en, pt };
 
 export function GET(): Response {
   const html = renderOfflinePage(
-    Object.entries(catalogues).map(([locale, messages]) => ({ locale, ...messages.Offline })),
+    locales.map((locale) => ({ locale, ...catalogues[locale].Offline })),
   );
   return new Response(html, {
     headers: {

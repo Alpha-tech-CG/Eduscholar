@@ -5,7 +5,7 @@ test.describe("langues", () => {
     page,
   }) => {
     await page.goto("/");
-    await expect(page).toHaveURL(/\/(fr|en)$/);
+    await expect(page).toHaveURL(/\/(fr|en|pt)$/);
   });
 
   test("le français et l'anglais sont servis avec la bonne langue", async ({

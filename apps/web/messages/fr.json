@@ -11,7 +11,9 @@
     "signIn": "Se connecter",
     "account": "Mon compte",
     "footer": "EduScholar — plateforme en construction.",
-    "offline": "Vous êtes hors ligne. Rien de nouveau ne peut être chargé ni enregistré."
+    "offline": "Vous êtes hors ligne. Rien de nouveau ne peut être chargé ni enregistré.",
+    "help": "Aide",
+    "footerNavigation": "Liens du pied de page"
   },
   "Home": {
     "title": "EduScholar",
@@ -20,7 +22,8 @@
   },
   "Locales": {
     "fr": "Français",
-    "en": "English"
+    "en": "English",
+    "pt": "Português"
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -932,8 +935,8 @@
   "DataExport": {
     "title": "Télécharger mes données",
     "intro": "Recevez une copie de vos données dans un fichier lisible par un programme (JSON).",
-    "contains": "Elle contient votre profil, votre bibliothèque, vos projets de recherche avec leurs sources, fiches de lecture et sections, vos propositions au catalogue et vos signalements.",
-    "excludes": "Elle ne contient ni les projets supprimés en attente d'effacement, ni le journal des événements de sécurité de votre compte : demandez-les à l'assistance.",
+    "contains": "Elle contient votre profil, votre bibliothèque, vos projets de recherche (sources, fiches de lecture, sections, tâches et versions soumises), vos commentaires, vos propositions au catalogue, vos signalements, vos organisations et les événements de sécurité de votre compte.",
+    "excludes": "Elle ne contient ni vos notifications, ni le document des versions que vous avez soumises (lisible dans l'application), ni la déclaration de droits et les commentaires joints à vos propositions au catalogue. Le fichier lui-même en donne la liste.",
     "trace": "Chaque téléchargement est noté dans le journal de sécurité de votre compte.",
     "password": "Mot de passe actuel",
     "passwordHint": "Il est redemandé pour que personne d'autre ne puisse emporter vos données depuis une session restée ouverte.",

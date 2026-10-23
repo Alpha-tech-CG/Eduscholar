@@ -181,9 +181,9 @@ export async function CoherenceReport({
           <section key={group.family} className="flex flex-col gap-3" data-testid={`family-${group.family}`}>
             <h2 className="text-lg font-semibold">{t(`families.${group.family}`)}</h2>
             <ul className="flex flex-col gap-3">
-              {group.findings.map((finding) => (
+              {group.findings.map((finding, index) => (
                 <li
-                  key={finding.code}
+                  key={`${finding.code}-${index}`}
                   data-testid="finding"
                   data-code={finding.code}
                   className="flex flex-col gap-2 rounded border border-foreground/20 p-3"

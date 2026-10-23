@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { z } from "zod";
+import { labelFallbacks } from "@/i18n/routing";
 import { createSessionClient } from "@/lib/supabase/server";
 
 // Référentiels de la plateforme (pays, langues, licences, types, niveaux,
@@ -47,7 +48,11 @@ export const getRawReference = cache(async (): Promise<RawReference> => {
   return parsed.success ? parsed.data : EMPTY;
 });
 
-/** Libellé dans la langue demandée, à défaut en français. */
+/** Libellé dans la langue demandée, à défaut en anglais, puis en français. */
 export function referenceLabel(labels: Record<string, string> | null, locale: string): string {
-  return labels?.[locale] ?? labels?.fr ?? "";
+  for (const language of labelFallbacks(locale)) {
+    const value = labels?.[language];
+    if (value) return value;
+  }
+  return "";
 }

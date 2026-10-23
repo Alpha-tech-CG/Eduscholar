@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { defaultLocale, isPreferenceLocale, preferenceLocales } from "@/i18n/routing";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
   AuthForm,
@@ -119,13 +120,11 @@ export default async function ProfilePage() {
           name="preferredLocale"
           label={t("preferredLocale")}
           placeholder={t("choose")}
-          options={[
-            { value: "fr", label: tLocales("fr") },
-            { value: "en", label: tLocales("en") },
-          ]}
-          defaultValue={profile?.preferredLocale ?? locale}
+          options={preferenceLocales.map((code) => ({ value: code, label: tLocales(code) }))}
+          defaultValue={profile?.preferredLocale ?? (isPreferenceLocale(locale) ? locale : defaultLocale)}
           required
         />
+
         {profile?.ageConfirmed ? null : (
           <CheckboxField name="ageConfirmed" label={t("ageConfirmed")} />
         )}

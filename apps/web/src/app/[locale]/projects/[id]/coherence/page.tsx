@@ -22,7 +22,10 @@ export default async function ProjectCoherencePage({ params }: PageProps<"/[loca
   const { id } = await params;
   await requireOnboardedUser(`/projects/${id}/coherence`);
 
-  // Le projet d'un autre et un projet inexistant répondent de la même façon.
+  // Propriété d'abord, avant toute lecture du rapport : `getProject` ne rend
+  // un projet qu'à son propriétaire (RLS). Un membre, un tiers, un projet
+  // inexistant reçoivent « introuvable » — même si le rapport, ensuite, ne
+  // pouvait pas être lu ou était limité.
   const project = await getProject(id);
   if (!project) notFound();
 

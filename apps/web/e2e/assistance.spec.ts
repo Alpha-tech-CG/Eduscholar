@@ -272,6 +272,23 @@ test.describe("assistance documentaire", () => {
       await finding(guide.page, "section_without_citation").getByRole("link", { name: `Introduction ${tag}` }).click();
       await expect(guide.page).toHaveURL(new RegExp(`/fr/shared/${projectId}/sections/${intro}$`));
       expect((await guide.page.goto(`/fr/projects/${projectId}/coherence`))?.status()).toBe(404);
+
+      // Même quand le rapport ne peut pas être lu (quota épuisé), la page du
+      // propriétaire reste introuvable pour un membre : la propriété passe avant.
+      sql(`
+        insert into private.rate_limit_buckets (bucket_key, window_start, hits)
+        values (
+          'project-coherence:user:' || left(encode(sha256(convert_to('project-coherence:${supervisor.id}', 'UTF8')), 'hex'), 40),
+          to_timestamp(floor(extract(epoch from clock_timestamp()) / 300) * 300),
+          1000
+        )
+        on conflict (bucket_key, window_start) do update set hits = 1000
+      `);
+      expect((await guide.page.goto(`/fr/projects/${projectId}/coherence`))?.status()).toBe(404);
+      // Sur sa propre page, le membre lit que le rapport est limité, sans rien d'autre.
+      await guide.page.goto(`/fr/shared/${projectId}/coherence`);
+      await expect(guide.page.getByRole("main").getByRole("alert")).toContainText("Trop de demandes");
+      await expect(guide.page.getByTestId("coherence-report")).toHaveCount(0);
       await guide.close();
 
       // --- Un membre à accès limité : ni lien, ni page ----------------------------------------

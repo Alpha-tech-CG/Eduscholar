@@ -7,7 +7,11 @@ import { z } from "zod";
 // Une réponse mal formée ne fait jamais planter l'écran : elle est lue comme
 // « indisponible », et un constat inconnu ou incomplet est simplement écarté.
 
-const uuid = z.uuid();
+// Identifiant : la forme que vérifie le reste de l'application, sans exiger
+// les bits de version de la RFC — un identifiant valable pour la base ne doit
+// pas rendre tout un rapport « indisponible ».
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const uuid = z.string().regex(UUID_PATTERN);
 const confidence = z.enum(["high", "medium", "low"]);
 export type Confidence = z.infer<typeof confidence>;
 
@@ -207,7 +211,7 @@ export function knownSourceFields(missing: string[]): SourceFieldKey[] {
 /** « owner » : pages de travail du propriétaire ; « member » : pages du projet partagé. */
 export type ReportScope = "owner" | "member";
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const UUID = UUID_PATTERN;
 
 /** Liens vers ce qu'un constat désigne. `null` quand la page n'existe pas pour ce lecteur. */
 export function reportLinks(scope: ReportScope, projectId: string) {

@@ -11,7 +11,9 @@
     "signIn": "Sign in",
     "account": "My account",
     "footer": "EduScholar — platform under construction.",
-    "offline": "You are offline. Nothing new can be loaded or saved."
+    "offline": "You are offline. Nothing new can be loaded or saved.",
+    "help": "Help",
+    "footerNavigation": "Footer links"
   },
   "Home": {
     "title": "EduScholar",
@@ -20,7 +22,8 @@
   },
   "Locales": {
     "fr": "Français",
-    "en": "English"
+    "en": "English",
+    "pt": "Português"
   },
   "NotFound": {
     "title": "Page not found",
@@ -932,8 +935,8 @@
   "DataExport": {
     "title": "Download my data",
     "intro": "Receive a copy of your data in a machine-readable file (JSON).",
-    "contains": "It contains your profile, your library, your research projects with their sources, reading notes and sections, your catalogue submissions and your reports.",
-    "excludes": "It contains neither deleted projects awaiting erasure nor your account's security event log: ask support for those.",
+    "contains": "It contains your profile, your library, your research projects (sources, reading notes, sections, tasks and submitted versions), your comments, your catalogue proposals, your reports, your organisations and your account security events.",
+    "excludes": "It does not contain your notifications, the document of the versions you submitted (readable in the application), or the rights statement and comments attached to your catalogue proposals. The file itself lists them.",
     "trace": "Each download is recorded in your account's security log.",
     "password": "Current password",
     "passwordHint": "It is asked again so that nobody else can take your data from a session left open.",

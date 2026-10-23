@@ -7,8 +7,10 @@ import { requireOnboardedUser } from "@/lib/profile/guard";
 import {
   buildBibliography,
   referenceText,
+  DOCUMENT_LOCALES,
   type BibliographyLocale,
 } from "@/lib/projects/bibliography";
+import { documentLocale } from "@/lib/projects/document-loader";
 import { getProject } from "@/lib/projects/queries";
 import { getAllSources } from "@/lib/projects/source-queries";
 
@@ -39,9 +41,7 @@ export default async function ProjectBibliographyPage({
   ]);
   // Langue de la bibliographie : celle du mémoire, qui peut différer de celle
   // de l'interface.
-  const requested = Array.isArray(lang) ? lang[0] : lang;
-  const locale: BibliographyLocale =
-    requested === "fr" || requested === "en" ? requested : uiLocale === "en" ? "en" : "fr";
+  const locale: BibliographyLocale = documentLocale(lang, uiLocale);
 
   const bibliography = sources ? buildBibliography(sources, locale) : null;
   const plainText = bibliography
@@ -69,7 +69,7 @@ export default async function ProjectBibliographyPage({
 
       <nav aria-label={t("language")} className="flex flex-wrap items-center gap-4 text-sm">
         <span>{t("language")}</span>
-        {(["fr", "en"] as const).map((code) =>
+        {DOCUMENT_LOCALES.map((code) =>
           code === locale ? (
             <span key={code} aria-current="true" className="font-semibold">
               {t(`languages.${code}`)}

@@ -2,6 +2,7 @@ import { promisify } from "node:util";
 import * as zlib from "node:zlib";
 
 const deflateRaw = promisify(zlib.deflateRaw);
+import { DOCUMENT_LANGUAGE_TAGS, isDocumentLocale } from "./bibliography";
 import type { ProjectDocument } from "./document";
 
 // Fichier DOCX écrit directement : c'est une archive ZIP de quelques fichiers
@@ -70,7 +71,7 @@ function documentXml(document: ProjectDocument): string {
 }
 
 function stylesXml(locale: string): string {
-  const language = locale === "en" ? "en-GB" : "fr-FR";
+  const language = isDocumentLocale(locale) ? DOCUMENT_LANGUAGE_TAGS[locale] : DOCUMENT_LANGUAGE_TAGS.fr;
   const style = (id: string, name: string, properties: string, runProperties = "", basedOn = "Normal") =>
     `<w:style w:type="paragraph" w:styleId="${id}"><w:name w:val="${name}"/>${id === "Normal" ? "" : `<w:basedOn w:val="${basedOn}"/><w:next w:val="Normal"/>`}<w:pPr>${properties}</w:pPr>${runProperties ? `<w:rPr>${runProperties}</w:rPr>` : ""}</w:style>`;
 

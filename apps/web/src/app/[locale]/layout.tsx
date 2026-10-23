@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { ConnectionStatus } from "@/components/offline/connection-status";
 import { ServiceWorkerRegistration } from "@/components/offline/service-worker-registration";
 import { Link } from "@/i18n/navigation";
@@ -90,30 +91,24 @@ export default async function LocaleLayout({
                 </li>
               </ul>
             </nav>
-            <nav aria-label={t("languageSwitcher")}>
-              <ul className="flex flex-wrap gap-x-3">
-                {routing.locales.map((target) => (
-                  <li key={target}>
-                    <Link
-                      href="/"
-                      locale={target}
-                      lang={target}
-                      hrefLang={target}
-                      aria-current={target === locale ? "true" : undefined}
-                      className={linkClass}
-                    >
-                      {tLocales(target)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            {/* Chaque langue est nommée dans sa propre langue ; le lien garde la page ouverte. */}
+            <LocaleSwitcher
+              label={t("languageSwitcher")}
+              current={locale}
+              names={Object.fromEntries(routing.locales.map((target) => [target, tLocales(target)]))}
+              className={linkClass}
+            />
           </header>
           <main id="main" className="flex flex-1 flex-col px-4">
             {children}
           </main>
-          <footer className="px-4 py-6 text-center text-sm opacity-70">
-            {t("footer")}
+          <footer className="flex flex-col items-center gap-1 px-4 py-6 text-center text-sm print:hidden">
+            <nav aria-label={t("footerNavigation")}>
+              <Link href="/help" className={linkClass}>
+                {t("help")}
+              </Link>
+            </nav>
+            <p className="opacity-70">{t("footer")}</p>
           </footer>
           <ServiceWorkerRegistration />
         </NextIntlClientProvider>

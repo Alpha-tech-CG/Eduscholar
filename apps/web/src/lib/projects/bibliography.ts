@@ -23,7 +23,21 @@ export type BibliographySource = {
   accessedOn: string | null;
 };
 
-export type BibliographyLocale = "fr" | "en";
+/**
+ * Langues dans lesquelles un mémoire se met en forme (mentions de la
+ * bibliographie, table des matières). Elles ne suivent pas les langues de
+ * l'interface : un mémoire s'écrit dans sa langue, quelle que soit celle de
+ * l'écran. Une langue de l'interface absente d'ici retombe sur la première.
+ */
+export const DOCUMENT_LOCALES = ["fr", "en"] as const;
+export type BibliographyLocale = (typeof DOCUMENT_LOCALES)[number];
+
+/** Étiquette de langue d'un document exporté (traitement de texte). */
+export const DOCUMENT_LANGUAGE_TAGS: Record<BibliographyLocale, string> = { fr: "fr-FR", en: "en-GB" };
+
+export function isDocumentLocale(value: unknown): value is BibliographyLocale {
+  return typeof value === "string" && (DOCUMENT_LOCALES as readonly string[]).includes(value);
+}
 
 export type Segment = { text: string; italic?: boolean };
 

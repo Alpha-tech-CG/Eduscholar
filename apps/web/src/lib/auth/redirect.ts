@@ -1,3 +1,5 @@
+import { LOCALE_PREFIX } from "@/i18n/routing";
+
 /**
  * Destination après connexion (modèle de menaces M-04).
  *
@@ -8,7 +10,7 @@
 export const DEFAULT_AFTER_SIGN_IN = "/account";
 
 const AUTH_PAGES = /^\/(sign-in|sign-up|forgot-password|reset-password|auth)(\/|$)/;
-const LOCALE_PREFIX = /^\/(fr|en)(?=\/|$)/;
+
 
 /**
  * Destination après la saisie du second facteur. Identique à `safeNextPath`,
