@@ -173,6 +173,8 @@ Détail dans `docs/security/initial-audit.md`.
 - Écrans des organisations (F-02) et des référentiels (F-03) ; assistance documentaire
   déterministe en base (Phase 6, ADR-0013), ses écrans en cours ; les résumés générés
   attendent une décision du porteur de projet (G-05).
+- Interface en français, anglais et portugais ; aide publique dans les trois langues
+  (F-04, F-05). Écrans de l'assistance documentaire (Phase 6).
 - La Phase 3 est complète. Restent la Phase 4 (encadrement et partage), la dette de
   sécurité avant production (D-01 à D-25) et la mise en place des environnements.
 - CI écrite, jamais exécutée : il n'existe pas de dépôt distant.

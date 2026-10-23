@@ -107,9 +107,9 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | F-01 | Mode faible connexion : application installable, service worker sans donnée privée, page hors ligne, bandeau de connexion, reprise de l'enregistrement dans l'éditeur, audit à 360 px (ADR-0012) | — | fait |
 | F-02 | Écrans des organisations : plateforme (créer, vérifier, suspendre, renommer, dissoudre, inviter le premier administrateur) et organisation (membres, invitations, rôles) | D-01, D-04 | fait |
 | F-03 | Référentiels configurables par l'administration : pays, niveaux, programmes, spécialités, matières (activer, désactiver, libellés par langue) | D-15 | fait — rien ne se supprime, un code ne change jamais, les licences restent en lecture seule. Non fait : programmes versionnés par pays et par année (§14.2) |
-| F-04 | Troisième langue d'interface (portugais) et vérification que rien n'est figé à deux langues ; formats de date et de nombre localisés | — | à faire |
-| F-05 | Aide et documentation dans les langues de l'interface | F-04 | à faire |
-| F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | à faire |
+| F-04 | Troisième langue d'interface (portugais) et vérification que rien n'est figé à deux langues ; formats de date et de nombre localisés | — | fait — portugais européen ; une seule liste des langues d'interface ; libellés des référentiels en repli anglais puis français. Restent : libellés portugais des référentiels, relecture par un locuteur natif, courriels et documents exportés en portugais |
+| F-05 | Aide et documentation dans les langues de l'interface | F-04 | fait — huit sujets, dans les trois langues |
+| F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | consultation hors ligne **écartée** (elle garderait sur l'appareil ce que la personne lit, contraire à l'ADR-0012) ; budget de performance en cours |
 
 ## Phase 6 — Intelligence documentaire
 
@@ -118,10 +118,10 @@ langage, aucun service externe, aucun texte généré ; tout est suggestion, un 
 
 | # | Tâche | Dépend de | État |
 |---|---|---|---|
-| G-01 | Doublons d'une fiche du catalogue (même DOI, même lien, titre proche) pour la modération | B-11 | fait pour la base ; écran en cours |
-| G-02 | Classification assistée : matières suggérées d'après les mots de la fiche | F-03 | fait pour la base ; écran en cours |
-| G-03 | Contrôles de cohérence d'un projet et alertes de lacunes de la littérature | C-09 | fait pour la base ; écran en cours |
-| G-04 | Recommandations tirées du seul profil et du seul projet de l'appelant | B-16 | fait pour la base ; écran en cours |
+| G-01 | Doublons d'une fiche du catalogue (même DOI, même lien, titre proche) pour la modération | B-11 | fait |
+| G-02 | Classification assistée : matières suggérées d'après les mots de la fiche | F-03 | fait — matières seulement, aucun niveau |
+| G-03 | Contrôles de cohérence d'un projet et alertes de lacunes de la littérature | C-09 | fait |
+| G-04 | Recommandations tirées du seul profil et du seul projet de l'appelant | B-16 | fait |
 | G-05 | Résumés sourcés générés par un modèle de langage | décision du porteur de projet | **non fait** — demande le choix d'un fournisseur, un consentement par projet, et de ne jamais envoyer un mémoire privé hors de la plateforme sans cet accord |
 
 ## Phases suivantes (non détaillées)
