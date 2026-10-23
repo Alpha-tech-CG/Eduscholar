@@ -1,0 +1,9 @@
+# Faux positifs de Gitleaks, examinés un par un (23 octobre 2026). Chaque ligne
+# vise une seule découverte, par son empreinte exacte : un nouveau secret, même
+# dans ces fichiers, reste signalé.
+#
+# Mot de passe fictif d'un test de validation de formulaire (marqué « valeur-fictive »).
+72fb5dcb35bb5c0b5313402bed9316a9bf8e8ed6:apps/web/tests/auth-schemas.test.ts:generic-api-key:29
+# Valeur sentinelle « canari » du test du contrôle du bundle client : elle sert
+# justement à vérifier qu'aucune valeur serveur n'atteint le navigateur.
+1290283c7c473aba72e982388aa741bebeafba65:scripts/check-client-bundle.test.mjs:generic-api-key:28

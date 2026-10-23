@@ -184,7 +184,18 @@ select throws_ok(
 );
 
 -- L'exception de la purge ne vaut que pour le journal d'audit : l'historique
--- de modération reste en ajout seul, même sous son marqueur.
+-- de modération reste en ajout seul, même sous son marqueur. Le test pose sa
+-- propre ligne : sur une base vide, une suppression qui ne touche rien ne
+-- prouverait rien.
+insert into public.resources
+  (id, type_code, title, authors, tags, language_code, program_code, source_kind, source_name,
+   official_url, access_status, editorial_status, visibility)
+values
+  ('15000000-0000-0000-0000-0000000000a1', 'article', 'Fiche du test des purges', array['Awa Diop'], '{}', 'fr',
+   'computer_science', 'contribution', 'Contribution', 'https://exemple.invalid/purge', 'unknown', 'pending', 'public')
+on conflict do nothing;
+insert into public.resource_status_history (resource_id, from_status, to_status, action)
+values ('15000000-0000-0000-0000-0000000000a1', null, 'pending', 'submitted');
 select set_config('eduscholar.scheduled_purge', 'audit', true);
 select throws_ok(
   $$ delete from public.resource_status_history $$,
