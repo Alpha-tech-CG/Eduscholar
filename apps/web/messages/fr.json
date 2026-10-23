@@ -44,7 +44,9 @@
       "title": "Créer un compte",
       "intro": "Votre profil et vos travaux restent privés. Vous choisissez ce que vous partagez.",
       "submit": "Créer mon compte",
-      "haveAccount": "Vous avez déjà un compte ?"
+      "haveAccount": "Vous avez déjà un compte ?",
+      "inviteOnly": "Pendant la phase pilote, l'accès à EduScholar se fait sur invitation. Si vous avez reçu une invitation, ouvrez le lien qu'elle contient ; sinon, l'inscription ouvrira plus tard.",
+      "legalNotice": "Avant de créer un compte, lisez la <privacy>politique de confidentialité</privacy>, la page <content>contenu, licences et retrait</content> et la page <minors>protection des mineurs</minors>."
     },
     "signIn": {
       "title": "Se connecter",
@@ -1707,6 +1709,23 @@
         "cited_authors": "auteur déjà cité dans votre projet",
         "project_keywords": "mots-clés ou matières des sources de votre projet"
       }
+    }
+  },
+  "Legal": {
+    "provisional": "Version provisoire, en cours de validation juridique.",
+    "frenchOnly": "Ce texte n'est disponible qu'en français pour l'instant.",
+    "updated": "Version du {date}",
+    "titles": {
+      "privacy": "Politique de confidentialité",
+      "content": "Contenu, licences et retrait",
+      "ai": "Assistance automatisée et consentement",
+      "minors": "Protection des mineurs"
+    },
+    "links": {
+      "privacy": "Confidentialité",
+      "content": "Contenu et retrait",
+      "ai": "Assistance automatisée",
+      "minors": "Mineurs"
     }
   }
 }

@@ -1,6 +1,6 @@
 # Environnements et variables
 
-**Mise à jour :** 6 octobre 2026 (B-10)
+**Mise à jour :** 23 octobre 2026 (pilote restreint : `SIGNUP_MODE`, contrôle juridique du build)
 **Références :** ADR-0006, ADR-0007 ; modèle de menaces M-13, M-41, M-45
 
 ## Règles
@@ -31,6 +31,7 @@
 | `CRON_SECRET` | **oui** | Facultative. Valeur aléatoire d'au moins 32 caractères que la tâche planifiée de l'hébergeur présente (`Authorization: Bearer …`) pour déclencher l'envoi du courriel des notifications (`/api/cron/notification-digest`). Sans elle, la route répond « introuvable » et aucun courriel de notification ne part. |
 | `TURNSTILE_SITE_KEY` | non | Facultative. Clé de site Cloudflare Turnstile (ADR-0011) : affiche le défi anti-robot et ouvre la politique de sécurité de contenu à son origine. À définir **avant** d'activer le défi dans le service d'authentification. Le secret correspondant ne se met pas ici : il se règle dans `[auth.captcha]` du projet hébergé. |
 | `PASSWORD_BREACH_CHECK` | non | Facultative. `1` active le contrôle des mots de passe compromis à l'inscription et au changement de mot de passe (seuls cinq caractères d'empreinte sortent). |
+| `SIGNUP_MODE` | non | Facultative. `open` (par défaut, variable absente ou vide) : la page d'inscription montre le formulaire. `invite_only` : la page explique que l'accès se fait sur invitation pendant la phase pilote et ne montre pas le formulaire. Toute autre valeur vaut `invite_only`. Ce n'est qu'un affichage : la barrière est le réglage « Allow new users to sign up » du service d'authentification. |
 | `CROSSREF_API_URL` | non | À ne pas définir. Vaut `https://api.crossref.org` ; seule autre valeur admise : un serveur de test sur `http://127.0.0.1`, et seulement si `CROSSREF_TEST_STUB=1` hors Vercel (tests de bout en bout). |
 | `TRUSTED_CLIENT_IP_HEADER` | non | Hors Vercel : nom de l'en-tête, écrasé par le proxy frontal, qui porte l'adresse du client. Absent : la limitation de débit par client devient commune à tous les visiteurs. |
 
@@ -40,6 +41,11 @@ document d'un projet et la copie des données d'un gros compte (dette D-25).
 
 Sur Vercel, `VERCEL` est défini par la plateforme et l'adresse du client est lue dans
 `x-vercel-forwarded-for`.
+
+`VERCEL_ENV`, défini lui aussi par la plateforme, n'est lu qu'au build, par
+`apps/web/next.config.ts` : quand il vaut `production`, le build échoue tant qu'une
+information de `apps/web/src/content/legal/entity.ts` est vide (pages juridiques). Hors de
+la production, une information vide s'affiche « [à compléter] ».
 
 ## En local
 

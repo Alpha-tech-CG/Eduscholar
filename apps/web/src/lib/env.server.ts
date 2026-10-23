@@ -40,6 +40,9 @@ const schema = z.object({
   TURNSTILE_SITE_KEY: z.string().regex(SITE_KEY_PATTERN).optional().catch(undefined),
   // Contrôle des mots de passe compromis (ADR-0011) : « 1 » pour l'activer.
   PASSWORD_BREACH_CHECK: z.enum(["0", "1"]).optional().catch(undefined),
+  // Affichage de la page d'inscription (pilote restreint) : lu par
+  // `signUpMode`, qui décide. La barrière reste le service d'authentification.
+  SIGNUP_MODE: z.string().max(40).optional().catch(undefined),
 });
 
 export type ServerEnv = z.infer<typeof schema>;
@@ -61,6 +64,7 @@ export function serverEnv(): ServerEnv {
     CRON_SECRET: process.env.CRON_SECRET || undefined,
     TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY || undefined,
     PASSWORD_BREACH_CHECK: process.env.PASSWORD_BREACH_CHECK || undefined,
+    SIGNUP_MODE: process.env.SIGNUP_MODE || undefined,
   });
 
   if (!parsed.success) {

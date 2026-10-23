@@ -124,6 +124,7 @@ Environment Variables), jamais dans la conversation. **Claude** pose les autres.
 | `TURNSTILE_SITE_KEY` | Claude | clé de site Turnstile (étape 2.4) |
 | `PASSWORD_BREACH_CHECK` | Claude | `1` |
 | `CROSSREF_MAILTO` | Claude | adresse de contact de l'équipe |
+| `SIGNUP_MODE` | Claude | `invite_only` (pilote restreint : la page d'inscription ne montre pas le formulaire ; la barrière reste le réglage du service d'authentification, étape 2.3) |
 
 Ne définissez **ni** `CROSSREF_API_URL`, **ni** `CROSSREF_TEST_STUB`, **ni**
 `TRUSTED_CLIENT_IP_HEADER` sur Vercel.
@@ -131,8 +132,10 @@ Ne définissez **ni** `CROSSREF_API_URL`, **ni** `CROSSREF_TEST_STUB`, **ni**
 ### 3.3 Tâche planifiée du courriel des notifications
 
 Une tâche Vercel Cron quotidienne appelle `/api/cron/notification-digest` ; Vercel envoie
-d'elle-même `Authorization: Bearer $CRON_SECRET`. **Claude** ajoute le fichier
-`apps/web/vercel.json` correspondant.
+d'elle-même `Authorization: Bearer $CRON_SECRET`. Fichier `apps/web/vercel.json` (fait) :
+tous les jours à **05:30 UTC**, heure de faible trafic en Europe et en Afrique. Les tâches
+Vercel ne tournent que sur le déploiement de production ; sans `CRON_SECRET`, la route
+répond « introuvable » et rien ne part.
 
 ### 3.4 Domaine et journaux — vous
 
@@ -167,9 +170,13 @@ d'elle-même `Authorization: Bearer $CRON_SECRET`. **Claude** ajoute le fichier
       déploiement antérieur dans Vercel. Une migration ne se défait pas d'un clic : chaque
       migration dit en tête comment la défaire ; aucune migration destructive sans
       sauvegarde du jour.
-- [ ] **Textes juridiques** : en pilote restreint, les pages de politique de
-      confidentialité et de conditions sont publiées marquées « version provisoire » et
-      citent Cloudflare (Turnstile) et Have I Been Pwned parmi les services tiers.
+- [ ] **Textes juridiques** : en pilote restreint, les pages `/legal/privacy`,
+      `/legal/content`, `/legal/ai` et `/legal/minors` sont publiées marquées « version
+      provisoire » et citent Cloudflare (Turnstile), Have I Been Pwned, le service d'envoi
+      des courriels, Vercel et Supabase parmi les services tiers (fait).
+- [ ] **Vous** : renseignez les informations de `apps/web/src/content/legal/entity.ts`
+      (entité responsable, contacts, autorité de contrôle, durées) : le build de
+      production Vercel **échoue** tant qu'une valeur est vide.
 - [ ] Le premier `super_admin` est désigné en base par vous, comme décrit dans
       `docs/security/administration.md`, avec un second facteur actif ; un second
       `super_admin` est désigné dans la foulée.

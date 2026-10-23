@@ -5,8 +5,11 @@
 **Tâche :** B-05
 **Références :** cahier §5, §8, §13 ; modèle de menaces M-29 à M-33 ; modèle d'autorisation §5.3
 
-Aucune fonction d'assistance automatisée n'existe dans le MVP de recherche. Cette
-politique fixe les règles avant qu'une seule soit construite (Phase 6).
+Depuis la Phase 6, l'assistance de la plateforme est **algorithmique et déterministe**
+(ADR-0013) : suggestions de classement, détection de doublons, contrôles de cohérence d'un
+projet, recommandations. Elle est calculée par la plateforme elle-même, sans modèle de
+langage ni service externe, et aucun contenu ne part vers un tiers. Cette politique fixe
+les règles que devra respecter toute fonction future faisant appel à un service externe.
 
 ## 1. Principes
 

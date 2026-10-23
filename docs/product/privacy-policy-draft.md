@@ -1,6 +1,6 @@
 # Politique de confidentialité — brouillon
 
-**Date :** 6 octobre 2026
+**Date :** 6 octobre 2026 ; mis à jour le 23 octobre 2026 (services tiers, témoin `es-device`, contenu de la copie des données)
 **Statut :** BROUILLON DE TRAVAIL — **à valider juridiquement avant toute ouverture au public**
 **Tâche :** B-05
 **Références :** cahier §6.2, §12.4, §13.3, §15 ; `authorization-model.md`
@@ -71,14 +71,16 @@ d'accès exceptionnel en cas d'incident ou de réquisition légale.]`
 - Un mode sans traitement externe existe pour les projets confidentiels.
 - Détail : `ai-consent-policy.md`.
 
-## 6. Sous-traitants
+## 6. Sous-traitants et services tiers
 
-| Rôle | Fournisseur | Lieu de traitement |
-|---|---|---|
-| Hébergement de l'application | Vercel | `[À COMPLÉTER : région]` |
-| Base de données, authentification, fichiers | Supabase | `[À COMPLÉTER : région]` |
-| Envoi des courriels | `[À CHOISIR]` | `[À COMPLÉTER]` |
-| Assistance automatisée | `[À CHOISIR]` | `[À COMPLÉTER]` |
+| Rôle | Fournisseur | Données concernées | Lieu de traitement |
+|---|---|---|---|
+| Hébergement de l'application | Vercel | Toutes les requêtes adressées à l'application, journaux d'accès | Union européenne |
+| Base de données, authentification, fichiers | Supabase | Compte, profil, travaux et toutes les données du service | Union européenne (Paris) |
+| Envoi des courriels | `[À CHOISIR]` | Adresse électronique et contenu des courriels du service (confirmation, avis de sécurité, invitations, notifications) | `[À COMPLÉTER]` |
+| Défi anti-robot | Cloudflare (Turnstile) | Adresse IP et signaux techniques du navigateur, sur les pages de connexion, d'inscription et de revérification du mot de passe | Réseau de Cloudflare |
+| Contrôle des mots de passe compromis | Have I Been Pwned (Pwned Passwords) | Les cinq premiers caractères de l'empreinte du mot de passe, rien d'autre : ni le mot de passe, ni l'adresse, ni aucune donnée personnelle | Sans objet : aucune donnée personnelle n'est transmise |
+| Assistance automatisée | Aucun | L'assistance actuelle est calculée par la plateforme elle-même, sans modèle de langage ni service externe (ADR-0013) : aucun contenu ne part vers un tiers | Sans objet |
 
 `[À TRAITER par le juriste : transferts internationaux de données, accords de
 sous-traitance, obligations de localisation des pays pilotes.]`
@@ -103,10 +105,12 @@ Depuis votre compte ou en nous écrivant, vous pouvez :
 
 - accéder à vos données et en obtenir une copie dans un format réutilisable : depuis
   « Mon compte », après avoir saisi votre mot de passe. La copie contient votre profil,
-  votre bibliothèque, vos projets de recherche, vos propositions et vos signalements.
-  Elle ne contient pas les projets supprimés en attente d'effacement ni le journal de
-  sécurité de votre compte, que vous pouvez nous demander. Chaque copie est notée dans
-  ce journal ;
+  votre bibliothèque, vos projets de recherche (sources, fiches de lecture, sections,
+  tâches, versions soumises, y compris les projets supprimés en attente d'effacement),
+  vos commentaires, vos propositions et vos signalements, vos organisations et les
+  événements de sécurité de votre compte. Elle dit elle-même ce qu'elle ne contient pas
+  (notifications, documents des versions soumises, déclarations jointes aux
+  propositions). Chaque copie est notée dans le journal de sécurité de votre compte ;
 - corriger votre profil ;
 - supprimer un projet, une note, ou votre compte entier ;
 - retirer un consentement (assistance automatisée, visibilité du profil, publication) ;
@@ -141,6 +145,10 @@ l'inscription est réservée aux personnes majeures selon la loi de leur pays.
 ## 11. Cookies
 
 - Cookies strictement nécessaires : session et sécurité. Ils ne demandent pas de consentement.
+- Parmi eux, le témoin `es-device` : un identifiant aléatoire, illisible par les scripts
+  et valable un an, qui reconnaît votre navigateur pour vous prévenir d'une connexion à
+  votre compte depuis un navigateur inconnu. La base n'en garde qu'une empreinte ; ni
+  adresse IP, ni nom d'appareil, ni lieu ne sont relevés.
 - Mesure d'usage : sans identification individuelle et sans partage avec des tiers.
 - Aucun cookie publicitaire.
 

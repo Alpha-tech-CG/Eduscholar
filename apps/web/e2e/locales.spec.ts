@@ -128,3 +128,55 @@ test.describe("aide en ligne", () => {
     });
   }
 });
+
+test.describe("pages juridiques provisoires", () => {
+  const banner = {
+    fr: "Version provisoire, en cours de validation juridique.",
+    en: "Provisional version, under legal review.",
+    pt: "Versão provisória, em validação jurídica.",
+  } as const;
+  const titles = {
+    fr: "Politique de confidentialité",
+    en: "Privacy policy",
+    pt: "Política de privacidade",
+  } as const;
+
+  for (const locale of ["fr", "en", "pt"] as const) {
+    test(`les quatre pages s'affichent en ${locale}, avec le bandeau, sans session`, async ({ page }) => {
+      for (const legal of ["privacy", "content", "ai", "minors"]) {
+        const response = await page.goto(`/${locale}/legal/${legal}`);
+        expect(response?.status(), legal).toBe(200);
+        await expect(page.locator("html")).toHaveAttribute("lang", locale);
+        await expect(page.getByTestId("legal-provisional")).toHaveText(banner[locale]);
+        // Le texte de fond est en français, et marqué comme tel.
+        await expect(page.getByTestId("legal-body")).toHaveAttribute("lang", "fr");
+        await expect(page.getByTestId("legal-french-only")).toHaveCount(locale === "fr" ? 0 : 1);
+        // Aucune mention de travail : seules les informations à fournir, bien visibles.
+        await expect(page.getByRole("main")).not.toContainText("À COMPLÉTER");
+        await expect(page.getByRole("main")).not.toContainText("BROUILLON");
+      }
+      await page.goto(`/${locale}/legal/privacy`);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(titles[locale]);
+      await expect(page.getByRole("main")).toContainText("Cloudflare (Turnstile)");
+      await expect(page.getByRole("main")).toContainText("Have I Been Pwned");
+      // Hors production, une information à fournir s'affiche « [à compléter] ».
+      await expect(page.getByTestId("legal-missing").first()).toHaveText("[à compléter]");
+      expect((await page.goto(`/${locale}/legal/inconnue`))?.status()).toBe(404);
+    });
+  }
+
+  test("liées depuis le pied de page et depuis l'inscription", async ({ page }) => {
+    await page.goto("/fr");
+    await page.getByRole("contentinfo").getByRole("link", { name: "Confidentialité" }).click();
+    await expect(page).toHaveURL(/\/fr\/legal\/privacy$/);
+
+    await page.goto("/fr/sign-up");
+    const notice = page.getByTestId("signup-legal");
+    await expect(notice.getByRole("link", { name: "politique de confidentialité" })).toHaveAttribute("href", "/fr/legal/privacy");
+    await expect(notice.getByRole("link", { name: "contenu, licences et retrait" })).toHaveAttribute("href", "/fr/legal/content");
+    await expect(notice.getByRole("link", { name: "protection des mineurs" })).toHaveAttribute("href", "/fr/legal/minors");
+    // Le serveur de test tourne avec l'inscription ouverte (SIGNUP_MODE absent) ;
+    // le mode « sur invitation » est vérifié par un test unitaire.
+    await expect(page.getByRole("button", { name: "Créer mon compte" })).toBeVisible();
+  });
+});

@@ -5,6 +5,12 @@ import {
   serviceWorkerHeaders,
   staticSecurityHeaders,
 } from "./src/lib/security/headers";
+import { assertLegalEntityComplete } from "./src/content/legal/check";
+import { LEGAL_ENTITY } from "./src/content/legal/entity";
+
+// Pages juridiques : la production Vercel ne se construit pas tant qu'une
+// information de l'entité responsable manque (src/content/legal/entity.ts).
+assertLegalEntityComplete(process.env, LEGAL_ENTITY);
 
 // next-intl lit sa configuration de requête par l'alias `next-intl/config`.
 // Son plugin officiel (`next-intl/plugin`) pose cet alias, mais il charge

@@ -137,6 +137,10 @@ test.describe("petit écran", () => {
       "/pt/help/project",
       "/fr/help/sharing",
       "/pt/help/data",
+      // Pages juridiques : les plus grands tableaux.
+      "/fr/legal/privacy",
+      "/pt/legal/content",
+      "/en/legal/ai",
     ];
     expect(await findings(page, paths)).toEqual({});
   });

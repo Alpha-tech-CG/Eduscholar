@@ -72,10 +72,17 @@ describe("catalogues de messages", () => {
       });
       for (const [key, value] of catalogue) {
         // Des valeurs d'exemple pour chaque argument : nombres pour les pluriels, texte sinon.
-        const values = Object.fromEntries(
+        const values: Record<string, unknown> = Object.fromEntries(
           argumentsOf(value).map((name) => [name, /count|days|members|admins|sections|sources|citations|tasks|flagged|page|pages|number|percent|total|year/.test(name) ? 2 : "x"]),
         );
-        const out = (t as unknown as (key: string, values: Record<string, unknown>) => string)(key, values);
+        // Un message à balises (« <privacy>…</privacy> ») se met en forme avec une fonction par balise.
+        const tags = [...value.matchAll(/<(\w+)>/g)].map((match) => match[1] ?? "");
+        for (const tag of tags) values[tag] = (chunks: string) => chunks;
+        const translate = t as unknown as {
+          (key: string, values: Record<string, unknown>): string;
+          markup: (key: string, values: Record<string, unknown>) => string;
+        };
+        const out = tags.length > 0 ? translate.markup(key, values) : translate(key, values);
         if (typeof out !== "string" || out.includes("{")) errors.push(`${key} : ${String(out)}`);
       }
       expect(errors).toEqual([]);
