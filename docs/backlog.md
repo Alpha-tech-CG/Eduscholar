@@ -109,7 +109,7 @@ Issue des revues de l'agent sécurité. Chaque ligne a une échéance.
 | F-03 | Référentiels configurables par l'administration : pays, niveaux, programmes, spécialités, matières (activer, désactiver, libellés par langue) | D-15 | fait — rien ne se supprime, un code ne change jamais, les licences restent en lecture seule. Non fait : programmes versionnés par pays et par année (§14.2) |
 | F-04 | Troisième langue d'interface (portugais) et vérification que rien n'est figé à deux langues ; formats de date et de nombre localisés | — | fait — portugais européen ; une seule liste des langues d'interface ; libellés des référentiels en repli anglais puis français. Restent : libellés portugais des référentiels, relecture par un locuteur natif, courriels et documents exportés en portugais |
 | F-05 | Aide et documentation dans les langues de l'interface | F-04 | fait — huit sujets, dans les trois langues |
-| F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | consultation hors ligne **écartée** (elle garderait sur l'appareil ce que la personne lit, contraire à l'ADR-0012) ; budget de performance en cours |
+| F-06 | Consultation hors ligne des fiches sous licence ouverte ; budget de performance mesuré | F-01 | budget **fait** (`npm run check:budget`, en intégration continue) ; consultation hors ligne **écartée** : elle garderait sur l'appareil ce que la personne lit, contraire à l'ADR-0012 |
 
 ## Phase 6 — Intelligence documentaire
 

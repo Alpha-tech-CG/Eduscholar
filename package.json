@@ -21,6 +21,7 @@
     "prepare": "git config core.hooksPath .githooks",
     "check:audit": "node scripts/check-audit.mjs",
     "check:bundle": "node scripts/check-client-bundle.mjs",
+    "check:budget": "node scripts/check-performance-budget.mjs",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "test:db": "supabase test db",

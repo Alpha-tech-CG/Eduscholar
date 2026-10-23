@@ -181,3 +181,67 @@ fichier du build, qui survivrait à la correction de la faille. La réponse à u
 comprend donc le changement de `VERSION` dans `public/sw.js`, qui vide ce cache partout.
 
 Ces corrections n'ont pas fait l'objet d'une seconde revue.
+
+## Budget de performance (F-06, 23 octobre 2026)
+
+Cette section remplace, pour le poids des pages, le point « Budget de performance mesuré »
+de « Reste à faire » ; le temps d'interaction, lui, n'est toujours pas mesuré.
+
+**Commande** : `npm run check:budget` à la racine, après `npm run build`, comme
+`check:bundle`. Elle tourne en intégration continue juste après le build
+(`.github/workflows/ci.yml`). Script : `scripts/check-performance-budget.mjs` ; calcul :
+`scripts/lib/budget-rules.mjs`, testé par `scripts/check-performance-budget.test.mjs`
+(inclus dans `npm test`).
+
+**Ce qui est mesuré**, pour chaque page de l'application : le JavaScript client que le HTML
+fait charger au premier affichage — socle commun (`rootMainFiles` de
+`.next/build-manifest.json`) et fichiers de chaque segment (`entryJSFiles` de
+`page_client-reference-manifest.js`) — et ses feuilles de style (`entryCSSFiles`), en
+octets bruts, gzip (niveau 9) et brotli (qualité 11). Le manifeste est lu sans être
+exécuté. La règle a été vérifiée contre le HTML réellement servi par `next start`. Les
+polyfills `noModule`, ignorés des navigateurs récents, sont exclus. Le contrôle imprime un
+tableau du plus lourd au plus léger, et sort en erreur au-delà d'un seuil en nommant la
+page, la mesure et l'écart ; un seuil pour une page disparue est aussi une erreur.
+
+**Seuils** (`apps/web/performance-budget.json`, en octets compressés), fixés sur la mesure
+du 23 octobre 2026 avec une marge d'environ 11 % pour le JavaScript et 15 % pour le CSS :
+
+| Pages | JS gzip | JS brotli | CSS gzip | CSS brotli |
+|---|---|---|---|---|
+| toutes (par défaut) | 174 000 | 150 000 | 4 800 | 4 150 |
+| `/_not-found`, `/_global-error` (socle seul) | 150 000 | 128 500 | défaut | défaut |
+
+Mesure de référence : de 128,0 Kio (accueil, aide, recherche) à 132,5 Kio brotli (éditeur
+de section) ; socle commun 111,9 Kio brotli, dont l'essentiel est React et le routeur de
+Next.js ; feuille de style unique de 3,5 Kio brotli. Aucune page n'a de seuil propre :
+après la correction ci-dessous, aucune ne s'écarte assez des autres pour le justifier.
+Relever un seuil se justifie dans le message de commit.
+
+**Correction faite en mesurant** : l'éditeur de section pesait 204,3 Kio brotli (898 Kio
+bruts), parce que le composant client importait deux constantes de
+`lib/projects/section-schemas.ts`, qui construit des schémas `zod` au chargement : toute la
+bibliothèque partait au navigateur. `countWords` et `SECTION_BODY_MAX` vivent désormais
+dans `lib/projects/section-text.ts`, sans dépendance (réexportés par `section-schemas.ts`).
+L'éditeur est revenu à 132,5 Kio brotli (−35 %). Le contrôle le rattrape : remettre
+l'ancien import le fait échouer (+39,5 % en brotli).
+
+**Ce qui n'est pas mesuré** :
+
+- le temps réel d'affichage et d'interaction sur un appareil lent ou un réseau lent (durée
+  d'analyse et d'exécution du JavaScript, LCP, INP) : il faudrait un navigateur limité en
+  processeur et en débit, et des mesures répétées ; ce contrôle ne donne qu'un poids ;
+- le HTML et les données de page du routeur (`?_rsc=`), dont les messages traduits passés
+  aux composants clients ; les images, les polices ; le JavaScript chargé plus tard, à la
+  demande ;
+- la compression réellement appliquée par l'hébergeur, qui compresse à la volée et peut
+  faire un peu moins bien que les niveaux maximaux utilisés ici ;
+- le gain du cache du service worker aux visites suivantes.
+
+## F-06 : consultation hors ligne des fiches — écartée
+
+Lire hors ligne les fiches sous licence ouverte obligerait à garder sur l'appareil celles
+que la personne a choisies : le contenu est public, mais la liste de ce qu'elle lit ne l'est
+pas. Sur un appareil partagé, cette liste survivrait à la déconnexion et serait lisible par
+quiconque l'ouvre après elle, ce que la décision « aucune donnée privée sur l'appareil »
+exclut. Ce volet de F-06 n'est donc pas construit ; il ne se rouvre que par un nouvel ADR,
+avec une réponse à cette question.

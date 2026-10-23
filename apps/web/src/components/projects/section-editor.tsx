@@ -10,7 +10,7 @@ import {
   updateSection,
   type SectionVersion,
 } from "@/lib/projects/section-actions";
-import { countWords, SECTION_BODY_MAX } from "@/lib/projects/section-schemas";
+import { countWords, SECTION_BODY_MAX } from "@/lib/projects/section-text";
 
 // Éditeur d'une section : enregistrement automatique, et sortie de conflit sans
 // recharger la page. Sans script, le formulaire s'envoie comme avant.

@@ -1,0 +1,17 @@
+{
+  "_note": "Budget de performance (ADR-0012). Octets compressés chargés au premier affichage d'une page : JavaScript client et feuilles de style. Contrôle : npm run check:budget, après npm run build. Seuils fixés le 23 octobre 2026 sur la mesure du jour, marge d'environ 11 % (JavaScript) et 15 % (CSS). Relever un seuil se justifie dans le message de commit.",
+  "default": {
+    "js": { "gzip": 174000, "brotli": 150000 },
+    "css": { "gzip": 4800, "brotli": 4150 }
+  },
+  "pages": {
+    "/_not-found": {
+      "_note": "Pages d'erreur du framework : le socle commun seul (mesuré 133 586 o gzip, 114 578 o brotli).",
+      "js": { "gzip": 150000, "brotli": 128500 }
+    },
+    "/_global-error": {
+      "_note": "Idem /_not-found.",
+      "js": { "gzip": 150000, "brotli": 128500 }
+    }
+  }
+}

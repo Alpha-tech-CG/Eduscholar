@@ -62,6 +62,9 @@ jobs:
           export SUPABASE_URL="https://$(openssl rand -hex 12).invalid"
           npm run build
           npm run check:bundle
+      - name: Budget de performance des pages
+        # Poids du JavaScript et des styles au premier affichage (ADR-0012).
+        run: npm run check:budget
       - name: Démarrer l'instance Supabase locale
         run: npx supabase start
       - name: Tests par appel direct à l'API

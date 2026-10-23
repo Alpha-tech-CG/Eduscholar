@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { SECTION_BODY_MAX } from "./section-text";
 
 // Plan du mémoire : sections et sources citées. Les bornes reprennent celles de
 // la base, qui reste seule à faire foi.
+// Côté navigateur, importer section-text.ts, jamais ce module (il embarque zod).
+
+export { countWords, SECTION_BODY_MAX } from "./section-text";
 
 export const SECTION_LEVELS = ["1", "2", "3"] as const;
-export const SECTION_BODY_MAX = 30000;
 
 const empty = (value: unknown) => (typeof value === "string" && value.trim() === "" ? undefined : value);
 
@@ -40,9 +43,4 @@ export function numberSections(levels: number[]): string[] {
       .map((count) => Math.max(1, count))
       .join(".");
   });
-}
-
-/** Nombre de mots d'un texte. */
-export function countWords(text: string | null): number {
-  return text ? (text.match(/[\p{L}\p{N}]+(?:[\u2019'-][\p{L}\p{N}]+)*/gu) ?? []).length : 0;
 }
