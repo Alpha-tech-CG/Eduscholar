@@ -73,7 +73,7 @@ insert into public.platform_roles (user_id, role) values
 -- ---------------------------------------------------------------------------
 -- Référentiels du catalogue
 -- ---------------------------------------------------------------------------
-select is((select count(*) from public.resource_types where is_active), 6::bigint, 'Six types de ressources actifs pour le MVP');
+select is((select count(*) from public.resource_types where is_active), 14::bigint, 'Les quatorze types de ressources du cahier §6.4 sont actifs');
 select is((select count(*) from public.licenses), 11::bigint, 'Onze licences au référentiel');
 select is(
   (select can_host from public.licenses where code = 'unknown'), 'no',
@@ -144,7 +144,7 @@ select tests.login('a0000000-0000-0000-0000-00000000ca01');
 select throws_ok($$ select public.submit_resource(tests.payload('{"official_url": "javascript:alert(1)"}')) $$, '23514', null, 'Une adresse javascript: est refusée');
 select throws_ok($$ select public.submit_resource(tests.payload('{"official_url": "https://exemple.invalid/a b"}')) $$, '23514', null, 'Une adresse avec espace est refusée');
 select throws_ok($$ select public.submit_resource(tests.payload('{"title": "ab"}')) $$, '23514', null, 'Un titre trop court est refusé');
-select throws_ok($$ select public.submit_resource(tests.payload('{"type_code": "dataset"}')) $$, '23514', 'invalid_type', 'Un type désactivé est refusé');
+select throws_ok($$ select public.submit_resource(tests.payload('{"type_code": "zz_inconnu"}')) $$, '23514', 'invalid_type', 'Un type inconnu est refusé');
 select throws_ok($$ select public.submit_resource(tests.payload('{"license_code": "gratuit"}')) $$, '23514', 'invalid_license', 'Une licence inconnue du référentiel est refusée');
 select throws_ok($$ select public.submit_resource(tests.payload('{"subject_codes": ["cuisine"]}')) $$, '23514', 'invalid_subject', 'Une matière étrangère à la filière est refusée');
 select throws_ok($$ select public.submit_resource(tests.payload('{"level_codes": ["upper_secondary"]}')) $$, '23514', 'invalid_level', 'Un niveau désactivé est refusé');
@@ -156,7 +156,7 @@ select isnt(
   'Une proposition en attente ne bloque pas celle d''un même DOI : rien ne se sonde ni ne se réserve'
 );
 select throws_ok($$ select public.submit_resource(tests.payload('{"access_status": "gratuit"}')) $$, '23514', null, 'Un statut d''accès hors liste est refusé');
-select throws_ok($$ select public.submit_resource(tests.payload('{"thesis_degree": "master"}')) $$, '23514', null, 'Un niveau de diplôme n''a de sens que pour une thèse');
+select throws_ok($$ select public.submit_resource(tests.payload('{"thesis_degree": "master"}')) $$, '23514', null, 'Un niveau de diplôme n''a de sens que pour une thèse ou un mémoire');
 
 -- La contributrice lit ses soumissions, sans voir les notes internes.
 select is((select count(*) from public.resources where id in (select id from tests.ids)), 3::bigint, 'A lit ses trois soumissions en attente');

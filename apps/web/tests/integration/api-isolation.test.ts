@@ -786,6 +786,68 @@ describe("catalogue, par appel direct à l'API", () => {
     await fatou.client.rpc("delete_collection", { collection_id: collectionId });
   });
 
+  it("notes, tags, historique et import restent au titulaire, par appel direct", async () => {
+    const created = await fatou.client.rpc("create_project", { payload: { title: `Import ${run}` } });
+    expect(created.error).toBeNull();
+    const projectId = created.data as string;
+    const resourceId = randomUUID();
+
+    // Aucune écriture directe, même pour le titulaire.
+    const direct = await Promise.all([
+      fatou.client.from("favorite_tags").insert({ user_id: fatou.id, resource_id: resourceId, tag: "x" } as never),
+      fatou.client.from("resource_views").insert({ user_id: fatou.id, resource_id: resourceId } as never),
+      fatou.client.from("library_settings").insert({ user_id: fatou.id, history_enabled: false } as never),
+      fatou.client.from("resource_views").delete().eq("user_id", fatou.id),
+      fatou.client.from("resource_favorites").update({ note: "directe" } as never).eq("user_id", fatou.id),
+    ]);
+    for (const result of direct) expect(result.error).not.toBeNull();
+
+    // Fatou désactive son historique ; Bob ne lit ni son réglage, ni son historique, ni ses tags.
+    expect((await fatou.client.rpc("set_history_enabled", { enabled: false })).error).toBeNull();
+    for (const table of ["favorite_tags", "resource_views", "library_settings"] as const) {
+      const read = await bob.client.from(table).select("user_id").eq("user_id", fatou.id);
+      expect(read.data ?? [], table).toEqual([]);
+    }
+    const bobTags = await bob.client.rpc("my_library_tags");
+    expect(bobTags.data ?? []).toEqual([]);
+
+    // Bob n'importe rien dans le projet de Fatou ; un visiteur n'appelle ni l'import ni l'historique.
+    const entries = [{ source_type: "other", title: `Intrus ${run}` }];
+    const intrusion = await bob.client.rpc("import_project_sources", { project_id: projectId, entries });
+    expect(intrusion.error).not.toBeNull();
+    expect((await anonymous.rpc("import_project_sources", { project_id: projectId, entries })).error).not.toBeNull();
+    expect((await anonymous.rpc("record_resource_view", { resource_id: resourceId })).error).not.toBeNull();
+    expect((await anonymous.from("resource_views").select("user_id").limit(1)).error).not.toBeNull();
+
+    // Fatou, elle, importe dans son projet.
+    const imported = await fatou.client.rpc("import_project_sources", {
+      project_id: projectId,
+      entries: [{ source_type: "book", title: `Livre importé ${run}` }],
+    });
+    expect(imported.error).toBeNull();
+    expect(imported.data).toEqual({ created: 1, rejected: [] });
+    const sources = await fatou.client.from("project_sources").select("title, resource_id").eq("project_id", projectId);
+    expect(sources.data).toEqual([{ title: `Livre importé ${run}`, resource_id: null }]);
+    const intruder = await fatou.client.from("project_sources").select("id").eq("title", `Intrus ${run}`);
+    expect(intruder.data ?? []).toEqual([]);
+
+    // Limite de débit tenue en base : 20 appels en 15 minutes, même tout refusés ;
+    // plus de 200 entrées par appel refusées.
+    const tooMany = Array.from({ length: 201 }, (_, i) => ({ title: `T${i}` }));
+    expect((await fatou.client.rpc("import_project_sources", { project_id: projectId, entries: tooMany })).error?.message).toBe(
+      "invalid_payload",
+    );
+    for (let call = 2; call <= 20; call += 1) {
+      const invalid = await fatou.client.rpc("import_project_sources", { project_id: projectId, entries: [{ title: "" }] });
+      expect(invalid.error, `appel ${call}`).toBeNull();
+    }
+    const limited = await fatou.client.rpc("import_project_sources", { project_id: projectId, entries: [{ title: "" }] });
+    expect(limited.error?.message).toBe("rate_limited");
+
+    await fatou.client.rpc("set_history_enabled", { enabled: true });
+    await fatou.client.rpc("delete_project", { project_id: projectId });
+  });
+
   it("un projet de recherche n'est lisible que de son propriétaire, par appel direct", async () => {
     const created = await fatou.client.rpc("create_project", {
       payload: { title: `Projet privé ${run}`, owner_id: bob.id, status: "completed" },
@@ -1354,5 +1416,74 @@ describe("compte suspendu, service d'authentification en appel direct", () => {
     } finally {
       await admin.auth.admin.deleteUser(actor.id);
     }
+  });
+});
+
+describe("catalogue public (ADR-0014), par appel direct à l'API", () => {
+  let carla: Actor;
+  let pendingId = "";
+
+  beforeAll(async () => {
+    carla = await createActor("carla");
+    await carla.client
+      .from("profiles")
+      .update({
+        country_code: "SN",
+        level_code: "bachelor_3",
+        program_code: "computer_science",
+        age_confirmed_at: new Date().toISOString(),
+      })
+      .eq("user_id", carla.id);
+    const submitted = await carla.client.rpc("submit_resource" as never, {
+      payload: {
+        type_code: "article",
+        title: `Zzpublicapi ${run}`,
+        authors: ["Carla Mendes"],
+        language_code: "fr",
+        program_code: "computer_science",
+        official_url: "https://exemple.invalid/publicapi",
+        access_status: "open_access",
+        license_code: "cc-by-4.0",
+        rights_declared: true,
+      },
+    } as never);
+    pendingId = submitted.data as unknown as string;
+    expect(pendingId).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  afterAll(async () => {
+    if (carla) await admin.auth.admin.deleteUser(carla.id);
+  });
+
+  it("un visiteur cherche, mais une proposition en attente n'existe pas pour lui", async () => {
+    const search = await anonymous.rpc("public_search_resources", { payload: { terms: ["zzpublicapi"] } });
+    expect(search.error).toBeNull();
+    expect((search.data as { total: number }).total).toBe(0);
+    const one = await anonymous.rpc("public_resource", { resource_id: pendingId });
+    expect(one.error).toBeNull();
+    expect(one.data).toBeNull();
+  });
+
+  it("aucune fiche rendue ne porte le contributeur ni l'organisation", async () => {
+    const { data } = await anonymous.rpc("public_home_sections");
+    const text = JSON.stringify(data);
+    expect(text).not.toContain("submitted_by");
+    expect(text).not.toContain("organization_id");
+    expect(text).not.toContain(carla.id);
+  });
+
+  it("un visiteur n'appelle pas les fonctions des comptes", async () => {
+    expect((await anonymous.rpc("search_resources", { payload: {} })).error).not.toBeNull();
+    expect((await anonymous.rpc("reference_data")).error).not.toBeNull();
+  });
+
+  it("un compte connecté n'appelle pas les fonctions du visiteur : il lit sous RLS", async () => {
+    expect((await carla.client.rpc("public_resource", { resource_id: pendingId })).error).not.toBeNull();
+    expect((await carla.client.rpc("public_search_resources", { payload: {} })).error).not.toBeNull();
+  });
+
+  it("une demande mal formée est refusée sans détail", async () => {
+    const { error } = await anonymous.rpc("public_search_resources", { payload: { terms: ["a;b"] } });
+    expect(error?.message).toBe("invalid_payload");
   });
 });

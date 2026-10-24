@@ -71,8 +71,9 @@ pipeline du §6.6, et « retirée », que le cahier range parmi les statuts d'ac
 | Signalement | le sien | le sien | tous |
 | Identité du signaleur | non | non | non |
 
-Un visiteur anonyme ne lit pas le catalogue par l'API. La recherche publique (B-16) sera
-servie par le serveur.
+Un visiteur anonyme ne lit aucune table du catalogue. Il cherche et consulte les fiches
+publiées et publiques par des fonctions dédiées, appelées par le serveur (ADR-0014, section
+« Catalogue public » ci-dessous).
 
 L'identité du contributeur et celle du signaleur sont des colonnes sans droit de lecture.
 PostgreSQL refusant une politique qui référence une telle colonne, les politiques passent
@@ -154,9 +155,9 @@ durée qu'indique l'en-tête `Retry-After`.
 
 ## Recherche et fiche publiée
 
-La recherche (`/search`) et la fiche (`/resources/[id]`) sont réservées aux comptes
-connectés au profil complété. La recherche sans compte est reportée : elle demande un
-cache côté serveur et une limitation de débit devant l'API (dette D-15).
+Avec une session, la recherche (`/search`) et la fiche (`/resources/[id]`) sont celles des
+comptes au profil complété, décrites ici. Sans session, les mêmes adresses servent la
+version publique (section suivante).
 
 - **Index** : la colonne `search_vector` est tenue par un déclencheur — titre (poids A),
   auteurs, mots-clés et institution (B), résumé (C), sans accents ni analyse
@@ -193,6 +194,42 @@ Limites connues :
 - Hors écritures latine, grecque et cyrillique, le retrait des signes diacritiques peut
   différer entre l'application et l'index.
 
+## Catalogue public (ADR-0014)
+
+Accueil (`/`), recherche (`/search`) et fiche (`/resources/[id]`) sans compte.
+
+- **Lecture** : `public_search_resources`, `public_resource`, `public_home_sections`,
+  `public_sitemap_resources`, `public_reference_data`, exécutables par `anon` seul. Le
+  serveur les appelle avec la clé publique, sans cookie (`createAnonymousClient`).
+- **Ce qui est rendu** : titre, auteurs, résumé, type, langue, niveaux, filière, matières,
+  mots-clés, pays, institution, année, diplôme, DOI, lien officiel, licence, statut
+  d'accès, origine, date de vérification, dates de publication et de modification, et le
+  badge « institution vérifiée ». Jamais le contributeur, l'organisation, l'identifiant
+  chez la source, les champs modifiés depuis l'import, les notes, l'historique ni les
+  signalements.
+- **Filtres** : mots, pays, niveau, filière, type, langue, statut d'accès. Mêmes règles
+  que la recherche des comptes (huit mots, vingt fiches par page, décompte plafonné à
+  cinq mille).
+- **Débit** : 300 recherches et 600 pages (accueil, fiche) par cinq minutes et par
+  adresse, dans l'application (`public-search`, `public-page`). En base, toutes les requêtes du serveur viennent de la même
+  adresse : la base borne le travail d'un appel, pas leur nombre.
+- **Accueil** : six fiches récentes, six populaires, six institutionnelles vérifiées.
+  Populaire : au moins trois favoris de comptes actifs créés depuis sept jours,
+  recalculés chaque nuit (`eduscholar-popularity`), classées par leur nombre, jamais
+  affiché.
+  Institution vérifiée : origine `organization` et organisation au statut `verified` au
+  moment de la lecture.
+- **Fiche** : métadonnées (titre, description, adresse canonique, versions fr, en, pt,
+  Open Graph) et données structurées schema.org (`ScholarlyArticle`, `Thesis`, `Book`…,
+  `CreativeWork` à défaut), avec le nonce de la CSP. Une fiche non publiée, réservée ou
+  inexistante répond 404, sans titre ni résumé. Le visiteur est invité à se connecter
+  pour garder, citer ou signaler.
+- **Référencement** : `/sitemap.xml` (pages fixes et seize mille fiches au plus, trois
+  langues chacune ; liste des fiches gardée cinq minutes) et `/robots.txt` (espaces des comptes, modération, administration,
+  recherche et API fermés), construits sur `APP_URL`, lus à chaque demande.
+- **Sous session** : comportement inchangé. La recherche des comptes ne filtre ni par
+  pays ni par filière ; l'accueil ne propose donc ces deux filtres qu'aux visiteurs.
+
 ## Bibliothèque personnelle
 
 Favoris (`resource_favorites`) et collections (`collections`, `collection_items`) sont
@@ -218,9 +255,10 @@ du rôle serveur. Rien n'en est écrit au journal d'audit.
 | `/contributions`, `/contributions/[id]` | Suivre, corriger ou retirer ses propositions |
 | `/moderation`, `/moderation/[id]` | File d'attente (par pages de 20, les plus anciennes d'abord, filtrable par mots), signalements, décision et correction |
 | `/moderation/import` | Importer une fiche par son DOI (modérateurs) |
-| `/search` | Rechercher parmi les fiches publiées |
+| `/` | Accueil public : recherche, récentes, populaires, institutions vérifiées |
+| `/search` | Rechercher parmi les fiches publiées (avec ou sans compte) |
 | `/library`, `/library/collections/[id]` | Favoris et collections privées |
-| `/resources/[id]` | Fiche publiée et signalement |
+| `/resources/[id]` | Fiche publiée ; actions et signalement pour les comptes |
 
 Les pages de modération répondent « introuvable » à qui n'est pas modérateur. Ce n'est
 qu'un aiguillage : chaque lecture passe par la RLS, chaque décision par la base.
@@ -233,8 +271,7 @@ activé la validation en deux étapes avant de recevoir le rôle.
 
 ## Non couvert
 
-- Recherche et page publique d'une ressource : B-16.
-- Signalement depuis la page d'une ressource : avec B-16.
+- Collections thématiques et pages de filière publiques (cahier §4.1, §6.1).
 - Demande de retrait par une personne sans compte : Phase 2.
 - Catalogue institutionnel (fiches réservées à une organisation) : les règles de lecture
   existent, pas les fonctions d'écriture.

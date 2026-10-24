@@ -185,11 +185,12 @@ test.describe("recherche dans le catalogue", () => {
     await expect(page.getByRole("heading", { name: "1 résultat" })).toBeVisible();
   });
 
-  test("la recherche et les fiches exigent une session", async ({ page }) => {
+  test("sans session, la recherche et les fiches sont publiques (ADR-0014)", async ({ page }) => {
+    // Le détail est couvert par public-catalogue.spec.ts.
     await page.goto("/fr/search?q=test");
-    await expect(page).toHaveURL(/\/fr\/sign-in\?next=%2Fsearch/);
-    await page.goto(`/fr/resources/${randomUUID()}`);
-    await expect(page).toHaveURL(/\/fr\/sign-in/);
+    await expect(page).toHaveURL(/\/fr\/search\?q=test/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Rechercher dans le catalogue");
+    expect((await page.goto(`/fr/resources/${randomUUID()}`))?.status()).toBe(404);
   });
 
   test("en anglais, les libellés suivent la langue", async ({ page }) => {

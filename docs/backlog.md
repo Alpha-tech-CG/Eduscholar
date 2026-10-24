@@ -30,7 +30,7 @@ Une tâche n'est démarrée qu'après validation de son plan (méthode de `CLAUD
 | B-13 | Schéma du catalogue : ressources, sources, licences, tags, statuts d'accès et éditoriaux | B-09 | fait — licences, types, fiches, données internes, historique, signalements ; les tags viendront avec la recherche (B-16) |
 | B-14 | Administration et modération : vérifier, publier, retirer une ressource, avec audit | B-13 | fait — proposition, suivi par le contributeur, file de modération, décisions motivées et journalisées, séparation des tâches ; l'attribution des rôles reste manuelle (D-01) |
 | B-15 | Import manuel et premier connecteur (OpenAlex ou Crossref) | B-13, B-06 | fait — import par DOI via Crossref, réservé aux modérateurs ; OpenAlex (clé et budget à décider) et l'import en lot restent à faire |
-| B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | fait — recherche plein texte, cinq filtres, fiche publiée, signalement ; réservée aux comptes connectés |
+| B-16 | Recherche avec au moins trois filtres, fiche ressource avec origine et statut d'accès | B-13 | fait — recherche plein texte, cinq filtres, fiche publiée, signalement ; ouverte sans compte depuis le lot 1 (ADR-0014 : accueil public, fiche indexable, plan du site) |
 | B-17 | Favoris et collections privées | B-13 | fait — favoris, collections, ajout depuis la fiche, strictement privés |
 
 ## Phase 3 — Atelier de recherche
@@ -123,6 +123,14 @@ langage, aucun service externe, aucun texte généré ; tout est suggestion, un 
 | G-03 | Contrôles de cohérence d'un projet et alertes de lacunes de la littérature | C-09 | fait |
 | G-04 | Recommandations tirées du seul profil et du seul projet de l'appelant | B-16 | fait |
 | G-05 | Résumés sourcés générés par un modèle de langage | décision du porteur de projet | **non fait** — demande le choix d'un fournisseur, un consentement par projet, et de ne jamais envoyer un mémoire privé hors de la plateforme sans cet accord |
+
+## Écarts au cahier comblés
+
+| # | Tâche | État |
+|---|---|---|
+| Lot 5 | Types de ressources du §6.4 : mémoire séparé de la thèse, sept types réservés activés | fait — `memoir` (licence, master) et `thesis` (doctorat) ; fiches `thesis` de licence ou de master reclassées sans perte ; formulaire de contribution, filtres et bibliographie couverts. Restent : libellés portugais des types, correspondances Crossref vers les nouveaux types (`book-chapter`, `report`, `dataset`, `posted-content`), APA distinguant thèse de doctorat et mémoire |
+| Lot 6 | Profil §6.2 : région ; paramètres de confidentialité | fait — région en texte libre normalisé (privée, exportée) ; écran `/account/privacy` : nom affiché et profil public, rien de public par défaut, changement journalisé. Reste : aucune page ne montre encore un profil public ; rien n'est exposé à `anon` |
+| Lot 7 | Bibliothèque §6.5 et import §6.10 : notes, tags personnels, historique, export, import de références | fait — notes privées (favori, élément de collection) ; tags personnels avec filtre (10 par favori, 100 par compte) ; historique de consultation privé, effaçable, désactivable, purgé à douze mois, exporté et supprimé avec le compte ; export des favoris ou d'une collection en BibTeX, RIS, CSV (formules neutralisées) et APA ; import BibTeX et RIS vers les sources d'un projet, avec aperçu et rapport des refus, sans fiche au catalogue ni stockage du fichier. Hors lot : annotations sur le texte intégral (aucun fichier hébergé), synchronisation multi-appareils propre (la bibliothèque est déjà en base), tags sur les éléments de collection, styles autres qu'APA à l'export |
 
 ## Phases suivantes (non détaillées)
 

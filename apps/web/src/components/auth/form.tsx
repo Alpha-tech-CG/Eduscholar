@@ -341,3 +341,50 @@ export function CheckboxGroup({ name, legend, options, defaultValues }: Checkbox
     </fieldset>
   );
 }
+
+type ToggleFieldProps = {
+  name: string;
+  label: string;
+  hint?: string;
+  defaultChecked: boolean;
+};
+
+/** Case à cocher facultative, avec son état initial et une explication. */
+export function ToggleField({ name, label, hint, defaultChecked }: ToggleFieldProps) {
+  const t = useTranslations("Auth");
+  const { state } = useContext(FormStateContext);
+  const id = `${name}-${useId()}`;
+  const error = state.status === "error" ? state.fields?.[name] : undefined;
+  // Après une erreur, la case reprend la valeur envoyée.
+  const checked = state.status === "error" && state.values ? state.values[name] === "on" : defaultChecked;
+  const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-error` : null]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="flex items-start gap-2">
+        <input
+          id={id}
+          type="checkbox"
+          name={name}
+          defaultChecked={checked}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy || undefined}
+          className="mt-1 size-4"
+        />
+        <span className="font-medium">{label}</span>
+      </label>
+      {hint ? (
+        <p id={`${id}-hint`} className="text-sm opacity-70">
+          {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p id={`${id}-error`} className="text-sm text-red-800 dark:text-red-300">
+          {t(`fieldErrors.${error}`)}
+        </p>
+      ) : null}
+    </div>
+  );
+}

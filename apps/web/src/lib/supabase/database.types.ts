@@ -52,13 +52,13 @@ isOneToOne: false
                   ]
                 },"collection_items": {
                   Row: {
-                    "added_at": string,"collection_id": string,"resource_id": string
+                    "added_at": string,"collection_id": string,"note": string | null,"note_updated_at": string | null,"resource_id": string
                   }
                   Insert: {
-                    "added_at"?: string,"collection_id": string,"resource_id": string
+                    "added_at"?: string,"collection_id": string,"note"?: string | null,"note_updated_at"?: string | null,"resource_id": string
                   }
                   Update: {
-                    "added_at"?: string,"collection_id"?: string,"resource_id"?: string
+                    "added_at"?: string,"collection_id"?: string,"note"?: string | null,"note_updated_at"?: string | null,"resource_id"?: string
                   }
                   Relationships: [
                     {
@@ -114,6 +114,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"favorite_tags": {
+                  Row: {
+                    "created_at": string,"resource_id": string,"tag": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"resource_id": string,"tag": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"resource_id"?: string,"tag"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "favorite_tags_favorite_fkey"
+      columns: ["user_id","resource_id"]
+isOneToOne: false
+      referencedRelation: "resource_favorites"
+      referencedColumns: ["user_id","resource_id"]
+    }
+                  ]
                 },"known_devices": {
                   Row: {
                     "device_hash": string,"first_seen_at": string,"last_seen_at": string,"user_id": string
@@ -136,6 +155,19 @@ isOneToOne: false
                   }
                   Update: {
                     "code"?: string,"is_active"?: boolean,"is_interface"?: boolean,"labels"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"library_settings": {
+                  Row: {
+                    "history_enabled": boolean,"updated_at": string,"user_id": string
+                  }
+                  Insert: {
+                    "history_enabled"?: boolean,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "history_enabled"?: boolean,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -289,13 +321,13 @@ isOneToOne: true
                   ]
                 },"profiles": {
                   Row: {
-                    "age_confirmed_at": string | null,"country_code": string | null,"created_at": string,"goals": (string)[],"institution_name": string | null,"level_code": string | null,"onboarded_at": string | null,"preferred_locale": string,"program_code": string | null,"specialty_code": string | null,"subject_codes": (string)[],"updated_at": string,"user_id": string
+                    "age_confirmed_at": string | null,"country_code": string | null,"created_at": string,"goals": (string)[],"institution_name": string | null,"level_code": string | null,"onboarded_at": string | null,"preferred_locale": string,"program_code": string | null,"region": string | null,"specialty_code": string | null,"subject_codes": (string)[],"updated_at": string,"user_id": string
                   }
                   Insert: {
-                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id": string
+                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"region"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id"?: string
+                    "age_confirmed_at"?: string | null,"country_code"?: string | null,"created_at"?: string,"goals"?: (string)[],"institution_name"?: string | null,"level_code"?: string | null,"onboarded_at"?: string | null,"preferred_locale"?: string,"program_code"?: string | null,"region"?: string | null,"specialty_code"?: string | null,"subject_codes"?: (string)[],"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -540,13 +572,13 @@ isOneToOne: false
                   ]
                 },"resource_favorites": {
                   Row: {
-                    "created_at": string,"resource_id": string,"user_id": string
+                    "created_at": string,"note": string | null,"note_updated_at": string | null,"resource_id": string,"user_id": string
                   }
                   Insert: {
-                    "created_at"?: string,"resource_id": string,"user_id": string
+                    "created_at"?: string,"note"?: string | null,"note_updated_at"?: string | null,"resource_id": string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"resource_id"?: string,"user_id"?: string
+                    "created_at"?: string,"note"?: string | null,"note_updated_at"?: string | null,"resource_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -626,6 +658,25 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"resource_views": {
+                  Row: {
+                    "resource_id": string,"user_id": string,"viewed_at": string
+                  }
+                  Insert: {
+                    "resource_id": string,"user_id": string,"viewed_at"?: string
+                  }
+                  Update: {
+                    "resource_id"?: string,"user_id"?: string,"viewed_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "resource_views_resource_id_fkey"
+      columns: ["resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"resources": {
                   Row: {
@@ -878,6 +929,9 @@ isOneToOne: false
               "email": string,"unsubscribe_token": string
             }[]
                            },
+"clear_resource_views":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "connector_gate":
 { Args: { "p_daily_limit": number,"p_source": string }; Returns: string
                            },
@@ -917,6 +971,9 @@ isOneToOne: false
 "delete_project_task":
 { Args: { "task_id": string }; Returns: undefined
                            },
+"delete_resource_view":
+{ Args: { "resource_id": string }; Returns: undefined
+                           },
 "delete_thesis_section":
 { Args: { "section_id": string }; Returns: undefined
                            },
@@ -931,6 +988,9 @@ isOneToOne: false
                            },
 "import_connector_resource":
 { Args: { "actor_id": string,"payload": Json }; Returns: Json
+                           },
+"import_project_sources":
+{ Args: { "entries": Json,"project_id": string }; Returns: Json
                            },
 "invitation_preview":
 { Args: { "token": string }; Returns: Json
@@ -982,6 +1042,11 @@ isOneToOne: false
 "my_known_devices":
 { Args: Record<PropertyKey, never>; Returns: {
               "first_seen_at": string,"last_seen_at": string
+            }[]
+                           },
+"my_library_tags":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "favorite_count": number,"tag": string
             }[]
                            },
 "my_notification_preferences":
@@ -1058,6 +1123,21 @@ isOneToOne: false
 "project_versions":
 { Args: { "project_id": string }; Returns: Json
                            },
+"public_home_sections":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"public_reference_data":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"public_resource":
+{ Args: { "resource_id": string }; Returns: Json
+                           },
+"public_search_resources":
+{ Args: { "payload": Json }; Returns: Json
+                           },
+"public_sitemap_resources":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "purge_deleted_projects":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1068,6 +1148,9 @@ isOneToOne: false
                            },
 "record_auth_event":
 { Args: { "p_kind": string }; Returns: undefined
+                           },
+"record_resource_view":
+{ Args: { "resource_id": string }; Returns: undefined
                            },
 "recovery_codes_status":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -1129,8 +1212,20 @@ isOneToOne: false
 "set_collection_item":
 { Args: { "collection_id": string,"present": boolean,"resource_id": string }; Returns: undefined
                            },
+"set_collection_item_note":
+{ Args: { "collection_id": string,"note": string,"resource_id": string }; Returns: undefined
+                           },
 "set_favorite":
 { Args: { "favorite": boolean,"resource_id": string }; Returns: undefined
+                           },
+"set_favorite_note":
+{ Args: { "note": string,"resource_id": string }; Returns: undefined
+                           },
+"set_favorite_tag":
+{ Args: { "present": boolean,"resource_id": string,"tag": string }; Returns: undefined
+                           },
+"set_history_enabled":
+{ Args: { "enabled": boolean }; Returns: undefined
                            },
 "set_member_scope":
 { Args: { "payload": Json,"project_id": string,"user_id": string }; Returns: undefined

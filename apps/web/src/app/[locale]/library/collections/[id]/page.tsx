@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { AuthForm, OptionalTextField } from "@/components/auth/form";
 import { AuthPageShell } from "@/components/auth/page-shell";
+import { LibraryExportLinks } from "@/components/library/export-links";
+import { ItemDetails } from "@/components/library/item-details";
 import { SavedList } from "@/components/library/saved-list";
 import { Link } from "@/i18n/navigation";
 import { deleteCollection, setCollectionItem, updateCollection } from "@/lib/library/actions";
@@ -19,6 +21,7 @@ const NOTICES = {
   updated: "collectionUpdated",
   "item-removed": "itemRemoved",
   "item-added": "itemAdded",
+  "note-saved": "noteSaved",
 } as const;
 
 export default async function CollectionPage({
@@ -34,7 +37,7 @@ export default async function CollectionPage({
   if (!found) notFound();
   const { collection, saved } = found;
 
-  const t = await getTranslations("Library");
+  const [t, locale] = await Promise.all([getTranslations("Library"), getLocale()]);
   const noticeKey =
     typeof notice === "string" && Object.hasOwn(NOTICES, notice)
       ? NOTICES[notice as keyof typeof NOTICES]
@@ -61,10 +64,20 @@ export default async function CollectionPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("items", { count: saved.total })}</h2>
+        {saved.total > 0 ? (
+          <LibraryExportLinks label={t("exportCollection")} locale={locale} collectionId={collection.id} />
+        ) : null}
         <SavedList
           saved={saved}
           emptyLabel={t("itemsEmpty")}
           pathname={`/library/collections/${collection.id}`}
+          details={(resourceId) => (
+            <ItemDetails
+              resourceId={resourceId}
+              note={saved.notes[resourceId] ?? null}
+              collectionId={collection.id}
+            />
+          )}
           removeForm={(resourceId) => (
             <AuthForm
               action={setCollectionItem}

@@ -10,10 +10,21 @@ type SavedListProps = {
   pathname: string;
   /** Formulaire de retrait d'un élément, que sa fiche soit encore publiée ou non. */
   removeForm: (resourceId: string) => ReactNode;
+  /** Note et tags personnels d'un élément, et leurs formulaires. */
+  details?: (resourceId: string) => ReactNode;
+  /** Paramètres gardés par les liens de pagination (filtre par tag). */
+  query?: Record<string, string>;
 };
 
 /** Liste de fiches gardées : favoris ou contenu d'une collection. */
-export async function SavedList({ saved, emptyLabel, pathname, removeForm }: SavedListProps) {
+export async function SavedList({
+  saved,
+  emptyLabel,
+  pathname,
+  removeForm,
+  details,
+  query = {},
+}: SavedListProps) {
   const [t, tAccess] = await Promise.all([
     getTranslations("Library"),
     getTranslations("Catalogue.accessStatus"),
@@ -29,7 +40,10 @@ export async function SavedList({ saved, emptyLabel, pathname, removeForm }: Sav
   }
   if (shown === 0) return <p className="opacity-70">{emptyLabel}</p>;
 
-  const pageHref = (page: number) => (page > 1 ? { pathname, query: { page: String(page) } } : pathname);
+  const pageHref = (page: number) =>
+    page > 1 || Object.keys(query).length > 0
+      ? { pathname, query: page > 1 ? { ...query, page: String(page) } : query }
+      : pathname;
 
   return (
     <div className="flex flex-col gap-3">
@@ -55,6 +69,7 @@ export async function SavedList({ saved, emptyLabel, pathname, removeForm }: Sav
                 {tAccess(resource.accessStatus as "unknown")}
               </span>
             </p>
+            {details ? details(resource.id) : null}
             {removeForm(resource.id)}
           </li>
         ))}
@@ -65,6 +80,7 @@ export async function SavedList({ saved, emptyLabel, pathname, removeForm }: Sav
             className="flex flex-col gap-2 rounded border border-dashed border-foreground/30 p-3"
           >
             <p className="opacity-80">{t("unavailable")}</p>
+            {details ? details(id) : null}
             {removeForm(id)}
           </li>
         ))}

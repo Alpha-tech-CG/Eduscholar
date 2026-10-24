@@ -117,7 +117,7 @@ export async function buildPersonalDataExport(
     const profile = await readAll(
       supabase,
       "profiles",
-      "preferred_locale, country_code, level_code, program_code, specialty_code, subject_codes, institution_name, goals, age_confirmed_at, onboarded_at, created_at, updated_at",
+      "preferred_locale, country_code, region, level_code, program_code, specialty_code, subject_codes, institution_name, goals, age_confirmed_at, onboarded_at, created_at, updated_at",
       ["user_id"],
       me,
     );
@@ -129,14 +129,25 @@ export async function buildPersonalDataExport(
     const roles = await readAll(supabase, "platform_roles", "role, granted_at", ["granted_at", "role"], me);
 
     const favorites = await readAll(
-      supabase, "resource_favorites", "resource_id, created_at", ["created_at", "resource_id"], me,
+      supabase, "resource_favorites", "resource_id, note, note_updated_at, created_at",
+      ["created_at", "resource_id"], me,
+    );
+    // Tags personnels, historique de consultation et réglage de la bibliothèque.
+    const favoriteTags = await readAll(
+      supabase, "favorite_tags", "resource_id, tag, created_at", ["resource_id", "tag"], me,
+    );
+    const resourceViews = await readAll(
+      supabase, "resource_views", "resource_id, viewed_at", ["viewed_at", "resource_id"], me,
+    );
+    const librarySettings = await readAll(
+      supabase, "library_settings", "history_enabled, updated_at", ["user_id"], me,
     );
     const collections = await readAll(
       supabase, "collections", "id, name, description, created_at, updated_at", ["created_at", "id"],
       { column: "owner_id", values: [user.id] },
     );
     const collectionItems = await readByIds(
-      supabase, "collection_items", "collection_id, resource_id, added_at",
+      supabase, "collection_items", "collection_id, resource_id, note, note_updated_at, added_at",
       ["collection_id", "resource_id"], "collection_id", collections.map((row) => String(row.id)),
     );
 
@@ -212,7 +223,14 @@ export async function buildPersonalDataExport(
       profile: profile[0] ?? null,
       public_profile: publicProfile[0] ?? null,
       platform_roles: roles,
-      library: { favorites, collections, collection_items: collectionItems },
+      library: {
+        favorites,
+        favorite_tags: favoriteTags,
+        collections,
+        collection_items: collectionItems,
+        consultation_history: resourceViews,
+        settings: librarySettings[0] ?? { history_enabled: true },
+      },
       research: {
         projects,
         sources,

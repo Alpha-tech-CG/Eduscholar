@@ -158,21 +158,53 @@ select is_empty(
   'Toute fonction de public et private fixe un search_path vide'
 );
 
--- Aucune fonction applicative exécutable par anon ou par PUBLIC.
+-- Aucune fonction applicative exécutable par PUBLIC.
 select is_empty(
   $$
     select p.oid::regprocedure::text
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname in ('public', 'private')
-      and (has_function_privilege('anon', p.oid, 'execute')
-        or exists (
+      and exists (
           select 1
           from aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
           where a.grantee = 0 and a.privilege_type = 'EXECUTE'
-        ))
+        )
   $$,
-  'Aucune fonction de public ou private exécutable par anon ou PUBLIC'
+  'Aucune fonction de public ou private exécutable par PUBLIC'
+);
+
+-- anon n'exécute que les lectures du catalogue public (ADR-0014) : liste fermée.
+-- Toutes sont `stable` : aucune n'écrit.
+select is(
+  (select string_agg(ligne, E'\n' order by ligne collate "C")
+   from (
+     select format('%s.%s(%s) %s', n.nspname, p.proname,
+                   pg_get_function_identity_arguments(p.oid), p.provolatile) as ligne
+     from pg_proc p
+     join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname in ('public', 'private')
+       and has_function_privilege('anon', p.oid, 'execute')
+   ) q),
+  (select string_agg(x, E'\n' order by x collate "C") from unnest(array[
+    'private.public_home_sections() s',
+    'private.public_reference_data() s',
+    'private.public_resource(p_resource_id uuid) s',
+    'private.public_search_resources(p jsonb) s',
+    'private.public_sitemap_resources() s',
+    'public.public_home_sections() s',
+    'public.public_reference_data() s',
+    'public.public_resource(resource_id uuid) s',
+    'public.public_search_resources(payload jsonb) s',
+    'public.public_sitemap_resources() s'
+  ]) as x),
+  'Les fonctions exécutables par anon sont celles attendues, toutes en lecture seule'
+);
+
+-- anon n'a, sur le schéma interne, que l'usage nécessaire aux enveloppes.
+select ok(
+  not has_schema_privilege('anon', 'private', 'CREATE'),
+  'anon ne crée rien dans le schéma private'
 );
 
 -- Realtime : aucune table publiée.
@@ -226,6 +258,9 @@ select is(
     'public.academic_domains | academic_domains_select_authenticated | SELECT | {authenticated}',
     'public.collection_items | collection_items_select | SELECT | {authenticated}',
     'public.collections | collections_select | SELECT | {authenticated}',
+    'public.favorite_tags | favorite_tags_select | SELECT | {authenticated}',
+    'public.library_settings | library_settings_select | SELECT | {authenticated}',
+    'public.resource_views | resource_views_select | SELECT | {authenticated}',
     'public.resource_favorites | resource_favorites_select | SELECT | {authenticated}',
     'public.research_projects | research_projects_select | SELECT | {authenticated}',
     'public.section_citations | section_citations_select | SELECT | {authenticated}',
@@ -278,6 +313,7 @@ select is(
     'public.profiles.level_code',
     'public.profiles.preferred_locale',
     'public.profiles.program_code',
+    'public.profiles.region',
     'public.profiles.specialty_code',
     'public.profiles.subject_codes'
   ]) as x),
@@ -377,6 +413,24 @@ select is(
     'public.set_collection_item(collection_id uuid, resource_id uuid, present boolean)',
     'public.set_favorite(resource_id uuid, favorite boolean)',
     'public.update_collection(collection_id uuid, name text, description text)',
+    'private.clear_resource_views()',
+    'private.delete_resource_view(p_resource_id uuid)',
+    'private.import_project_sources(p_project_id uuid, p_entries jsonb)',
+    'private.my_library_tags()',
+    'private.record_resource_view(p_resource_id uuid)',
+    'private.set_collection_item_note(p_collection_id uuid, p_resource_id uuid, p_note text)',
+    'private.set_favorite_note(p_resource_id uuid, p_note text)',
+    'private.set_favorite_tag(p_resource_id uuid, p_tag text, p_present boolean)',
+    'private.set_history_enabled(p_enabled boolean)',
+    'public.clear_resource_views()',
+    'public.delete_resource_view(resource_id uuid)',
+    'public.import_project_sources(project_id uuid, entries jsonb)',
+    'public.my_library_tags()',
+    'public.record_resource_view(resource_id uuid)',
+    'public.set_collection_item_note(collection_id uuid, resource_id uuid, note text)',
+    'public.set_favorite_note(resource_id uuid, note text)',
+    'public.set_favorite_tag(resource_id uuid, tag text, present boolean)',
+    'public.set_history_enabled(enabled boolean)',
     'private.are_valid_tags(p_values text[])',
     'private.is_clean_text_array(p_values text[], p_max_items integer, p_max_length integer)',
     'private.moderate_resource(p_resource_id uuid, p_action text, p_reason text)',

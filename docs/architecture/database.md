@@ -116,6 +116,11 @@ une nouvelle table n'est accessible à aucun rôle de l'API sans `GRANT` explici
 | `20261006007800_document_intelligence.sql` | Doublons, classification assistée, cohérence d'un projet, recommandations |
 | `20261006007900_document_intelligence_index_rights.sql` | Le rôle serveur exécute les fonctions des index : l'import n'est pas cassé |
 | `20261006008000_reference_and_intelligence_hardening.sql` | Corrections de revue des deux lots |
+| `20261006008200_resource_types_memoir.sql` | Type `memoir` séparé de `thesis` (diplôme cohérent avec le type, fiches de licence et de master reclassées), sept types réservés activés, types câblés protégés par déclencheur, reprise d'un mémoire, d'un chapitre ou d'un rapport dans un projet |
+| `20261006008210_profile_region_and_privacy.sql` | Région du profil (texte libre normalisé, privé) ; nom affiché nettoyé, profil public seulement avec un nom, changement de visibilité journalisé |
+| `20261006008220_account_events_profile_visibility.sql` | La publication et le retrait du profil figurent parmi les événements du compte |
+| `20261006008500_library_enriched.sql` | Bibliothèque enrichie (lot 7) : notes privées sur les favoris et les éléments de collection, tags personnels, historique de consultation avec réglage et purge à douze mois, import de références vers les sources d'un projet |
+| `20261006008510_library_import_hardening.sql` | Revue du lot 7 : limite de débit de l'import en base (20 appels par 15 minutes, 2 000 entrées par jour, `private.source_import_calls`), 200 entrées par appel, prévalidation sans exception (`private.is_importable_source`) |
 | `20261006001400_review_hardening.sql` | Corrections de la revue de sécurité : essais de second facteur bornés et rejeu refusé, facteur antérieur au rôle, contraintes et séparation des tâches du catalogue |
 
 ## Tables
@@ -138,6 +143,7 @@ Champs académiques (B-11), tous privés :
 | Colonne | Type | Contrainte |
 |---|---|---|
 | `country_code` | text | Référence `countries` ; entrée active |
+| `region` | text | Facultative ; 2 à 100 caractères, espaces normalisés, sans caractère de commande, invisible ou bidirectionnel, sans `<` `>`, sans formule de tableur en tête, au moins un caractère qui n'est ni espace, ni ponctuation, ni chiffre ; jamais affichée à un tiers |
 | `level_code` | text | Référence `education_levels` ; entrée active (le lycée est désactivé) |
 | `program_code` | text | Référence `academic_programs` ; entrée active |
 | `specialty_code` | text | Spécialité de la filière choisie |
@@ -160,12 +166,16 @@ Partie publiable du profil, séparée parce que la RLS filtre des lignes et non 
 | Colonne | Type | Contrainte |
 |---|---|---|
 | `user_id` | uuid | Clé primaire ; référence `profiles`, cascade ; non modifiable |
-| `display_name` | text | 1 à 80 caractères, ou nul |
+| `display_name` | text | 1 à 80 caractères, ou nul ; mêmes règles de propreté que `profiles.region` |
 | `is_public` | boolean | Défaut `false` |
 | `updated_at` | timestamptz | |
 
-Accès : le titulaire lit et modifie sa ligne ; un utilisateur connecté lit les lignes dont
-`is_public` est vrai. Aucun accès anonyme à ce stade.
+Accès : le titulaire lit et modifie sa ligne (compte actif, profil complété) ; un
+utilisateur connecté lit les lignes dont `is_public` est vrai. Aucun accès anonyme.
+Un profil public a un nom affiché (`profile_public_public_requires_name`). Chaque
+changement de `is_public` écrit `profile.published` ou `profile.unpublished`
+(catégorie `security`, sans le nom) ; le titulaire le retrouve dans la copie de ses
+données. Réglage dans l'application : `/account/privacy`.
 
 ### `public.platform_roles`
 
@@ -764,7 +774,12 @@ s'écrivent pas. Une ligne désactivée, et les enfants d'un parent désactivé,
 rendus par `reference_data()` ni acceptés comme NOUVEAU choix ; les profils et fiches
 qui la portent déjà la gardent. Protégés contre la désactivation : la dernière ligne
 active d'une table, la dernière matière et la dernière spécialité d'une filière active,
-les types `article`, `book` et `thesis` qu'écrit le connecteur, les langues d'interface.
+les types `article`, `book`, `thesis` et `memoir` (déclencheur `resource_types_protect_wired`,
+sur tout chemin d'écriture), les langues d'interface.
+
+Types de ressources (cahier §6.4) : les quatorze types sont actifs. `thesis` est la thèse
+(diplôme `doctorate` ou non précisé), `memoir` le mémoire (`bachelor`, `master` ou non
+précisé) ; aucun autre type ne porte de diplôme (`resources_thesis_degree_by_type`).
 
 ### Assistance documentaire (Phase 6, ADR-0013)
 
@@ -774,6 +789,45 @@ les types `article`, `book` et `thesis` qu'écrit le connecteur, les langues d'i
 nouvelle. `private.fold_text` et `private.normalize_url`, pures, servent deux index sur
 `resources` ; le rôle serveur les exécute, parce que l'import par connecteur écrit des
 fiches.
+
+### Bibliothèque enrichie (lot 7, cahier §6.5)
+
+Toutes privées à leur titulaire : RLS forcée, lecture de ses propres lignes, aucune
+écriture directe (authenticated n'a que `SELECT`), ni la modération ni le rôle serveur
+n'y lisent. Écritures par fonctions nommées (`private.*` SECURITY DEFINER, enveloppes
+`public.*` SECURITY INVOKER). Suppression du compte : tout part en cascade depuis
+`auth.users`.
+
+| Objet | Contenu | Bornes |
+|---|---|---|
+| `resource_favorites.note`, `collection_items.note` (+ `note_updated_at`) | Note privée sur un favori, sur un élément de collection | 2 000 caractères, texte propre (`is_clean_long_text`) ; vide efface |
+| `public.favorite_tags` (`user_id`, `resource_id`, `tag`) | Tags personnels d'un favori, distincts de `resources.tags` ; clé étrangère composite vers le favori, `on delete cascade` | 40 caractères, ni `,` ni `;`, espaces réduites ; unique sans casse par favori ; 10 par favori ; 100 tags distincts par compte ; un tag déjà employé garde sa graphie |
+| `public.resource_views` (`user_id`, `resource_id`, `viewed_at`) | Dernière consultation d'une fiche publiée et publique, à l'heure près | une ligne par fiche ; réécrite au plus une fois par heure ; 1 000 lignes par compte (les plus anciennes partent) ; purge à douze mois |
+| `public.library_settings` (`user_id`, `history_enabled`) | Réglage de l'historique ; sans ligne, il est activé | désactiver efface l'historique |
+
+Fonctions : `set_favorite_note`, `set_collection_item_note`, `set_favorite_tag`,
+`my_library_tags` (100 lignes au plus), `record_resource_view` (silencieux pour une fiche
+non publiée, inexistante, ou un historique désactivé ; refuse un compte au profil non
+complété), `delete_resource_view`, `clear_resource_views`, `set_history_enabled`,
+`import_project_sources`.
+
+`import_project_sources(project_id, entries)` : 1 à 200 objets (500 avant la migration 008510 ; l'application découpe un fichier de 500 entrées en lots de 200) au format de
+`add_project_source`, chacun passé à `private.add_project_source` dans un sous-bloc —
+une entrée refusée n'annule pas les autres. Propriété du projet vérifiée d'abord
+(« introuvable » pour le projet d'autrui), plafond de 300 sources par projet et quota de
+600 ajouts par jour conservés. Depuis 008510 : 20 appels par 15 minutes et 2 000 entrées par jour et par compte, comptées même refusées, contrôlés au début ; chaque entrée prévalidée sans exception avant tout sous-bloc. Une source déjà présente (même DOI, ou même titre et même
+année) est refusée `duplicate`. Réponse : `{created, rejected: [{index, code}]}`, codes
+`duplicate`, `invalid`, `limit_reached`, `rate_limited` — aucun détail interne. Rien n'est
+écrit au catalogue (`resource_id` reste nul).
+
+Purge : `private.purge_old_resource_views()`, tâche pg_cron `eduscholar-views-purge`
+(4 h 12 UTC, rôle `postgres` ; refusée à toute autre session). Copie des données
+personnelles : notes, tags, historique et réglage figurent dans `library`.
+
+Hors base : l'export (BibTeX, RIS, CSV, APA) se calcule à la demande
+(`apps/web/src/lib/library/citation-export.ts`), le fichier importé n'est jamais stocké
+(`reference-import.ts`, analyse en mémoire, 1 Mo et 500 entrées au plus). Les annotations
+sur le texte intégral sont hors lot : la plateforme n'héberge pas de fichiers.
 
 ## Fonctions du schéma `private`
 

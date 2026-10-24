@@ -24,6 +24,15 @@ const requestConfig = "./src/i18n/request.ts";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      // Fixé explicitement : l'import de références admet un fichier d'un
+      // mégaoctet (IMPORT_MAX_BYTES), refusé au-delà par l'application avec un
+      // message clair ; la marge couvre l'enveloppe multipart. Toute autre
+      // action borne ses champs bien en deçà.
+      bodySizeLimit: "1.2mb",
+    },
+  },
   turbopack: {
     resolveAlias: {
       "next-intl/config": requestConfig,

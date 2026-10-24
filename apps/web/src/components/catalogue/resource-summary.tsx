@@ -1,8 +1,18 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
-import { getCatalogueReference, type Resource } from "@/lib/catalogue/queries";
+import type { PublicResource } from "@/lib/catalogue/public-resource";
+import { getCatalogueReference } from "@/lib/catalogue/queries";
 import { getReferenceData } from "@/lib/profile/queries";
 
-type ResourceSummaryProps = { resource: Resource };
+/** Ce que la fiche affiche : une fiche lue sous session ou une fiche publique. */
+export type SummaryResource = Omit<
+  PublicResource,
+  "verifiedInstitution" | "publishedAt" | "updatedAt" | "sourceKind"
+> & {
+  /** Champs modifiés depuis l'import : lus sous session seulement. */
+  editedFields?: string[];
+};
+
+type ResourceSummaryProps = { resource: SummaryResource };
 
 /**
  * Fiche d'une ressource : description, classement, provenance, licence et
@@ -54,7 +64,7 @@ export async function ResourceSummary({ resource }: ResourceSummaryProps) {
     // Ce que la plateforme a changé depuis l'import : la source ne le dit pas ainsi.
     [
       t("editedSinceImport"),
-      resource.editedFields
+      (resource.editedFields ?? [])
         .flatMap((field) => (Object.hasOwn(editedLabels, field) ? [editedLabels[field]] : []))
         .join(", ") || null,
     ],

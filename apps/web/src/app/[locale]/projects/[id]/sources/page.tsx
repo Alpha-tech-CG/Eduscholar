@@ -58,6 +58,11 @@ export default async function ProjectSourcesPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("list", { count: listing.total })}</h2>
+        <p>
+          <Link href={`/projects/${project.id}/sources/import`} className="underline underline-offset-4">
+            {t("toImport")}
+          </Link>
+        </p>
         {listing.total > 0 ? (
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             <li>

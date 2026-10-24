@@ -7,7 +7,12 @@ import { getAdminSession } from "@/lib/admin/queries";
 import { getLastRecoveryCodeUse } from "@/lib/auth/recovery-codes";
 import { isModerator } from "@/lib/catalogue/queries";
 import { getUnreadNotificationCount } from "@/lib/notifications/queries";
-import { getOwnProfile, getReferenceData, type Option } from "@/lib/profile/queries";
+import {
+  getOwnProfile,
+  getOwnPublicProfile,
+  getReferenceData,
+  type Option,
+} from "@/lib/profile/queries";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Account");
@@ -38,10 +43,12 @@ export default async function AccountPage({
   const admin = (await getAdminSession()).rank >= 2;
   const lastRecoveryUse = await getLastRecoveryCodeUse();
   const unreadNotifications = await getUnreadNotificationCount();
+  const publicProfile = await getOwnPublicProfile();
 
   const rows: Array<[string, string | null]> = [
     [t("email"), user.email ?? null],
     [t("country"), labelOf(reference.countries, profile.countryCode)],
+    [t("region"), profile.region],
     [t("level"), labelOf(reference.levels, profile.levelCode)],
     [t("program"), labelOf(reference.programs, profile.programCode)],
     [
@@ -61,6 +68,11 @@ export default async function AccountPage({
       {notice === "profile-saved" ? (
         <p role="status" className="rounded border border-foreground/20 p-3">
           {t("profileSaved")}
+        </p>
+      ) : null}
+      {notice === "privacy-saved" ? (
+        <p role="status" className="rounded border border-foreground/20 p-3">
+          {t("privacySaved")}
         </p>
       ) : null}
 
@@ -84,7 +96,11 @@ export default async function AccountPage({
         </p>
       ) : null}
 
-      <p className="opacity-70">{t("privacy")}</p>
+      <p className="opacity-70" data-testid="privacy-summary">
+        {publicProfile?.isPublic && publicProfile.displayName
+          ? t("privacyPublic", { name: publicProfile.displayName })
+          : t("privacy")}
+      </p>
 
       <div className="flex flex-wrap items-center gap-3">
         <Link
@@ -166,6 +182,11 @@ export default async function AccountPage({
         <li>
           <Link href="/account/security" className="underline underline-offset-4">
             {t("security")}
+          </Link>
+        </li>
+        <li>
+          <Link href="/account/privacy" className="underline underline-offset-4">
+            {t("privacySettings")}
           </Link>
         </li>
         <li>

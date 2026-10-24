@@ -72,6 +72,13 @@ export default async function ProfilePage() {
           defaultValue={profile?.countryCode ?? undefined}
           required
         />
+        <OptionalTextField
+          name="region"
+          label={t("region")}
+          hint={t("regionHint")}
+          defaultValue={profile?.region ?? undefined}
+          maxLength={100}
+        />
         <SelectField
           name="levelCode"
           label={t("level")}

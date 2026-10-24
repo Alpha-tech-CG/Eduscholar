@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthPageShell } from "@/components/auth/page-shell";
+import { PublicSearchForm, PublicSearchResults } from "@/components/catalogue/public-search";
 import { ResourceCard } from "@/components/catalogue/resource-card";
 import { Link } from "@/i18n/navigation";
 import { checkAttempt } from "@/lib/auth/rate-limit";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getPublicSearchOptions } from "@/lib/catalogue/public-options";
+import { searchPublicResources } from "@/lib/catalogue/public-queries";
 import { getCatalogueReference, searchResources } from "@/lib/catalogue/queries";
 import {
+  parsePublicSearchParams,
   parseSearchParams,
   SEARCH_PAGE_SIZE,
   SEARCHABLE_ACCESS_STATUSES,
@@ -21,7 +26,43 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const field = "rounded border border-foreground/30 bg-background px-3 py-2";
 
-export default async function SearchPage({ searchParams }: PageProps<"/[locale]/search">) {
+export default async function SearchPage(props: PageProps<"/[locale]/search">) {
+  // Sans session : la recherche publique (ADR-0014). Avec une session, même
+  // incomplète, la recherche des comptes et ses redirections.
+  if (!(await getCurrentUser())) return <PublicSearchPage {...props} />;
+  return <AccountSearchPage {...props} />;
+}
+
+async function PublicSearchPage({ params, searchParams }: PageProps<"/[locale]/search">) {
+  const { locale } = await params;
+  const [t, { options, reference }, raw] = await Promise.all([
+    getTranslations("Catalogue.search"),
+    getPublicSearchOptions(locale),
+    searchParams,
+  ]);
+  const filters = parsePublicSearchParams(raw, reference);
+  // Limite par adresse, avant toute lecture : refus et panne du compteur
+  // donnent le même message.
+  const allowed = (await checkAttempt("public-search")) === "allowed";
+  const result = allowed
+    ? await searchPublicResources(filters)
+    : { resources: [], total: 0, capped: false, failed: false };
+  const typeLabel = (code: string) => options.types.find((item) => item.code === code)?.label ?? code;
+
+  return (
+    <AuthPageShell wide title={t("title")} intro={t("publicIntro")}>
+      <PublicSearchForm action={`/${locale}/search`} filters={filters} options={options} />
+      <PublicSearchResults filters={filters} result={result} limited={!allowed} typeLabel={typeLabel} />
+      <p className="text-sm">
+        <Link href={{ pathname: "/sign-in", query: { next: "/search" } }} className="underline underline-offset-4">
+          {t("publicNotice")}
+        </Link>
+      </p>
+    </AuthPageShell>
+  );
+}
+
+async function AccountSearchPage({ searchParams }: PageProps<"/[locale]/search">) {
   const { user, profile } = await requireOnboardedUser("/search");
   const locale = await getLocale();
   const [t, tAccess, reference, catalogue, params] = await Promise.all([

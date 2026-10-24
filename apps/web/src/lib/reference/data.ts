@@ -2,7 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { z } from "zod";
 import { labelFallbacks } from "@/i18n/routing";
-import { createSessionClient } from "@/lib/supabase/server";
+import { hasSessionCookie } from "@/lib/auth/session-cookie";
+import { createAnonymousClient, createSessionClient } from "@/lib/supabase/server";
 
 // Référentiels de la plateforme (pays, langues, licences, types, niveaux,
 // domaines, programmes, spécialités, matières). La base les rend en une fois,
@@ -41,8 +42,13 @@ const EMPTY: RawReference = {
 
 /** Une lecture par requête de page. Vide si la base refuse ou ne répond pas. */
 export const getRawReference = cache(async (): Promise<RawReference> => {
-  const supabase = await createSessionClient();
-  const { data, error } = await supabase.rpc("reference_data");
+  // Un visiteur lit les mêmes référentiels par la fonction publique
+  // (ADR-0014) ; une session périmée aussi, plutôt qu'une page sans libellés.
+  let result = (await hasSessionCookie())
+    ? await (await createSessionClient()).rpc("reference_data")
+    : null;
+  if (!result || result.error) result = await createAnonymousClient().rpc("public_reference_data");
+  const { data, error } = result;
   if (error) return EMPTY;
   const parsed = schema.safeParse(data);
   return parsed.success ? parsed.data : EMPTY;

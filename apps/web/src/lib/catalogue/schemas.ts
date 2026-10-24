@@ -14,6 +14,22 @@ export const ACCESS_STATUSES = [
 ] as const;
 
 export const THESIS_DEGREES = ["bachelor", "master", "doctorate"] as const;
+export type ThesisDegree = (typeof THESIS_DEGREES)[number];
+
+/**
+ * Diplômes admis par type (contrainte resources_thesis_degree_by_type) : une
+ * thèse prépare un doctorat, un mémoire une licence ou un master. Les autres
+ * types n'ont pas de diplôme : la valeur saisie est ignorée.
+ */
+export const DEGREES_BY_TYPE: Readonly<Record<string, readonly ThesisDegree[]>> = {
+  thesis: ["doctorate"],
+  memoir: ["bachelor", "master"],
+};
+
+/** Diplôme à enregistrer pour ce type : vide si le type n'en porte pas. */
+export function degreeForType(typeCode: string, degree: ThesisDegree | undefined): string {
+  return Object.hasOwn(DEGREES_BY_TYPE, typeCode) ? (degree ?? "") : "";
+}
 
 export const MODERATION_ACTIONS = [
   "start_review",
@@ -107,6 +123,11 @@ export const resourceSchema = z.object({
   contributorComment: z.preprocess(empty, z.string().trim().max(2000, "too_long").optional()),
   permissionProof: z.preprocess(empty, z.string().trim().max(2000, "too_long").optional()),
   rightsDeclared: z.literal(true, "rights_required"),
+}).superRefine((value, context) => {
+  const allowed = Object.hasOwn(DEGREES_BY_TYPE, value.typeCode) ? DEGREES_BY_TYPE[value.typeCode] : undefined;
+  if (value.thesisDegree && allowed && !allowed.includes(value.thesisDegree)) {
+    context.addIssue({ code: "custom", path: ["thesisDegree"], message: "invalid_choice" });
+  }
 });
 
 export type ResourceInput = z.infer<typeof resourceSchema>;
@@ -120,7 +141,7 @@ export function toResourcePayload(input: ResourceInput) {
     authors: input.authors,
     institution_name: input.institutionName ?? "",
     publication_year: input.publicationYear === undefined ? "" : String(input.publicationYear),
-    thesis_degree: input.typeCode === "thesis" ? (input.thesisDegree ?? "") : "",
+    thesis_degree: degreeForType(input.typeCode, input.thesisDegree),
     language_code: input.languageCode,
     country_code: input.countryCode ?? "",
     program_code: input.programCode,

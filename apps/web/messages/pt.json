@@ -18,7 +18,26 @@
   "Home": {
     "title": "EduScholar",
     "tagline": "Encontrar, organizar, produzir.",
-    "status": "A plataforma está em construção."
+    "intro": "Artigos, teses, cursos e relatórios: cada recurso indica a sua origem, a sua licença e o seu estado de acesso. A pesquisa não exige conta.",
+    "searchHeading": "Pesquisar no catálogo",
+    "query": "Palavras pesquisadas",
+    "queryHint": "Título, autor, palavra-chave. Todas as palavras são pesquisadas, sem ter em conta os acentos.",
+    "country": "País",
+    "level": "Nível",
+    "program": "Área de estudo",
+    "any": "Todos",
+    "submit": "Pesquisar",
+    "recentHeading": "Recursos recentes",
+    "popularHeading": "Recursos populares",
+    "popularNote": "Os mais guardados como favoritos pelos membros. Nenhum nome é mostrado.",
+    "institutionalHeading": "Recursos institucionais verificados",
+    "institutionalNote": "Publicados por instituições cuja identidade foi verificada pela plataforma.",
+    "empty": "Ainda não há recursos.",
+    "accountHeading": "Com uma conta",
+    "accountIntro": "Guarde recursos como favoritos, organize-os em coleções e cite-os nos seus projetos.",
+    "signIn": "Iniciar sessão",
+    "signUp": "Criar uma conta",
+    "rateLimited": "Demasiadas páginas consultadas em pouco tempo a partir da sua ligação. Tente novamente dentro de alguns minutos."
   },
   "Locales": {
     "fr": "Français",
@@ -138,7 +157,7 @@
       "second_factor_setup_required": "Esta função exige a verificação em dois passos. Ative-a em «Segurança da conta» e abra novamente a ligação do convite.",
       "read_only_reference": "Esta lista de referência apenas se consulta: não se altera a partir deste ecrã.",
       "last_active": "É a última linha ativa desta lista de referência: não pode ser desativada. Ative primeiro outra.",
-      "protected_reference": "Esta linha é necessária ao funcionamento da plataforma (tipo «tese ou dissertação», língua da interface): não se desativa.",
+      "protected_reference": "Esta linha é necessária ao funcionamento da plataforma (tipos «tese», «dissertação», «artigo», «livro», língua da interface): não se desativa.",
       "reference_code_taken": "Já existe uma linha com este código. Para a alterar, utilize «Editar» nessa linha."
     },
     "fieldErrors": {
@@ -165,7 +184,10 @@
       "invalid_reference_code": "Este código não tem a forma esperada, ou já está a ser usado.",
       "invalid_reference_label": "Designação obrigatória em francês e em inglês: 120 caracteres no máximo, sem < nem >.",
       "invalid_position": "Indique um número inteiro de 0 a 99999.",
-      "invalid_isced": "Indique um algarismo de 0 a 8, ou deixe em branco."
+      "invalid_isced": "Indique um algarismo de 0 a 8, ou deixe em branco.",
+      "region_invalid": "A região deve ter entre 2 e 100 caracteres, sem < nem >, e não pode começar por =, +, @ ou -.",
+      "display_name_invalid": "O nome apresentado deve ter no máximo 80 caracteres, sem < nem >, e não pode começar por =, +, @ ou -.",
+      "display_name_required": "Um perfil público precisa de um nome apresentado."
     },
     "secondFactor": {
       "title": "Segurança da conta",
@@ -260,7 +282,11 @@
     "sharedProjects": "Projetos partilhados comigo",
     "notifications": "{count, plural, =0 {Notificações} one {Notificações (# não lida)} other {Notificações (# não lidas)}}",
     "organizations": "As minhas organizações",
-    "recommendations": "Recomendações para mim"
+    "recommendations": "Recomendações para mim",
+    "region": "Região",
+    "privacyPublic": "O seu perfil público mostra apenas o seu nome: {name}. O resto do perfil só é visível para si.",
+    "privacySettings": "Privacidade",
+    "privacySaved": "As suas definições de privacidade foram guardadas."
   },
   "Profile": {
     "title": "O meu perfil",
@@ -290,7 +316,9 @@
     "submit": "Guardar o meu perfil",
     "pending": "A guardar…",
     "back": "Voltar à minha conta",
-    "signOut": "Terminar a sessão"
+    "signOut": "Terminar a sessão",
+    "region": "Região (facultativo)",
+    "regionHint": "Por exemplo: Luanda, Maputo. Nunca é mostrada a outras pessoas."
   },
   "DeleteAccount": {
     "title": "Eliminar a minha conta",
@@ -317,7 +345,7 @@
       "institutionHint": "Universidade, laboratório ou organismo que publica o recurso.",
       "abstract": "Resumo",
       "year": "Ano de publicação",
-      "thesisDegree": "Grau em preparação (tese ou dissertação)",
+      "thesisDegree": "Grau em preparação (doutoramento para uma tese; licenciatura ou mestrado para uma dissertação)",
       "language": "Língua do documento",
       "country": "País",
       "program": "Curso",
@@ -546,7 +574,12 @@
       "resultsHeading": "Resultados",
       "unavailable": "A pesquisa está temporariamente indisponível. Tente novamente dentro de instantes.",
       "resultsCapped": "Mais de {count, number} resultados: precise a sua pesquisa",
-      "toRecommendations": "Ver as recomendações"
+      "toRecommendations": "Ver as recomendações",
+      "program": "Área de estudo",
+      "country": "País",
+      "publicIntro": "Recursos publicados e verificados pela moderação. Cada recurso indica a sua origem, a sua licença e o seu estado de acesso.",
+      "publicNotice": "Inicie sessão para guardar recursos como favoritos ou citá-los num projeto.",
+      "verifiedInstitution": "Instituição verificada"
     },
     "resource": {
       "title": "Recurso",
@@ -559,7 +592,12 @@
       "reportSubmit": "Enviar a denúncia",
       "reported": "Obrigado: a sua denúncia foi transmitida à moderação.",
       "choose": "Escolher…",
-      "pending": "Um momento…"
+      "pending": "Um momento…",
+      "signInHeading": "Guardar ou citar este recurso",
+      "signInIntro": "Inicie sessão para o adicionar aos favoritos, a uma coleção ou a um projeto, ou para o assinalar.",
+      "signIn": "Iniciar sessão",
+      "backToHome": "Voltar ao início",
+      "rateLimited": "Demasiadas páginas consultadas em pouco tempo a partir da sua ligação. Tente novamente dentro de alguns minutos."
     }
   },
   "Library": {
@@ -610,7 +648,54 @@
     "pagination": "Páginas",
     "previous": "Página anterior",
     "next": "Página seguinte",
-    "page": "Página {page} de {pages}"
+    "page": "Página {page} de {pages}",
+    "toHistory": "O meu histórico de consulta",
+    "tagFilter": "Filtrar por etiqueta",
+    "allFavorites": "Todos os favoritos",
+    "tagWithCount": "{tag} ({count})",
+    "tagEmpty": "Nenhum favorito tem esta etiqueta.",
+    "exportFavorites": "Exportar os meus favoritos:",
+    "exportCollection": "Exportar esta coleção:",
+    "exportFormats": {
+      "bib": "BibTeX",
+      "ris": "RIS",
+      "csv": "CSV",
+      "apa": "Bibliografia APA"
+    },
+    "noteSaved": "A nota foi guardada.",
+    "tagAdded": "A etiqueta foi adicionada.",
+    "tagRemoved": "A etiqueta foi retirada.",
+    "tagsLabel": "Etiquetas",
+    "noteLabel": "Nota privada",
+    "noteHint": "Visível só para si. {max} caracteres no máximo. Esvazie o campo para apagar a nota.",
+    "editNoteAndTags": "Nota e etiquetas",
+    "editNote": "Nota",
+    "saveNote": "Guardar a nota",
+    "addTag": "Adicionar a etiqueta",
+    "tagLabel": "Nova etiqueta",
+    "tagHint": "{max} caracteres no máximo, sem vírgula nem ponto e vírgula; {count} etiquetas por favorito.",
+    "tagsFull": "Este favorito já tem {count} etiquetas.",
+    "removeTag": "Retirar a etiqueta «{tag}»",
+    "history": {
+      "title": "Histórico de consulta",
+      "intro": "Os recursos que abriu, do mais recente ao mais antigo, à hora. Só você o vê; é apagado ao fim de doze meses.",
+      "settingHeading": "Registo",
+      "isEnabled": "O histórico está ativado.",
+      "isDisabled": "O histórico está desativado: nada é registado.",
+      "disable": "Desativar e apagar o histórico",
+      "enable": "Ativar o histórico",
+      "list": "Recursos consultados ({count})",
+      "empty": "Nenhuma consulta registada.",
+      "viewedAt": "Consultado em {date}",
+      "deleteEntry": "Apagar do histórico",
+      "clearHeading": "Apagar tudo",
+      "clear": "Apagar todo o histórico",
+      "clearConfirm": "Quero apagar todo o meu histórico de consulta.",
+      "entryDeleted": "O recurso foi apagado do histórico.",
+      "cleared": "O histórico foi apagado.",
+      "enabledNotice": "O histórico está ativado.",
+      "disabledNotice": "O histórico foi desativado e apagado."
+    }
   },
   "Projects": {
     "title": "Os meus projetos de investigação",
@@ -762,7 +847,8 @@
       },
       "loadFailed": "Não foi possível carregar as fontes. Tente novamente dentro de instantes; nada foi alterado.",
       "withdrawn": "Esta fonte tinha sido retomada de uma ficha que já não consta do catálogo. A sua referência é conservada; verifique a fonte antes de a citar ou de seguir a sua ligação.",
-      "toBibliography": "Bibliografia"
+      "toBibliography": "Bibliografia",
+      "toImport": "Importar referências (BibTeX, RIS)"
     },
     "matrix": {
       "title": "Matriz de literatura",
@@ -932,6 +1018,63 @@
       "versions": "Versões submetidas ao orientador",
       "tasks": "Tarefas e prazos",
       "coherence": "Verificações de coerência"
+    },
+    "import": {
+      "title": "Importar referências",
+      "intro": "Adicione às fontes do projeto «{project}» referências exportadas de um gestor bibliográfico.",
+      "toSources": "Voltar às fontes do projeto",
+      "toBibliography": "Ver a bibliografia",
+      "rulePrivate": "As referências tornam-se fontes privadas deste projeto; nada é publicado no catálogo.",
+      "ruleLimits": "Ficheiro BibTeX ou RIS de um megabyte no máximo, 500 referências no máximo; um projeto tem 300 fontes no máximo.",
+      "ruleNoStorage": "O ficheiro não é guardado: é lido e depois esquecido.",
+      "file": "Ficheiro BibTeX ou RIS",
+      "fileHint": "Extensões .bib, .ris ou .txt. Sem ficheiro, cole o texto abaixo.",
+      "paste": "Ou cole as referências",
+      "preview": "Ver a pré-visualização",
+      "pending": "Um momento…",
+      "confirm": "{count, plural, one {Importar # referência} other {Importar # referências}}",
+      "restart": "Escolher outro ficheiro",
+      "previewSummary": "Ficheiro {format}: {accepted, plural, =0 {nenhuma referência importável} one {# referência importável} other {# referências importáveis}}, {rejected, plural, =0 {nenhuma recusada} one {# recusada} other {# recusadas}}. Nada foi importado ainda.",
+      "acceptedHeading": "{count, plural, one {Referência a importar} other {Referências a importar}}",
+      "rejectedHeading": "{count, plural, one {# entrada recusada} other {# entradas recusadas}}",
+      "rejectedEntry": "Entrada {number}: {reason}",
+      "rejectedEntryWithLabel": "Entrada {number} — {label}: {reason}",
+      "dropped": "Campos deixados de fora por serem inválidos: {fields}.",
+      "verifyNotice": "Verifique cada fonte depois da importação: as referências vêm do ficheiro tal como estão, e a plataforma não completa nada.",
+      "done": "{count, plural, =0 {Nenhuma referência importada.} one {# referência importada nas fontes do projeto.} other {# referências importadas nas fontes do projeto.}}",
+      "fields": {
+        "publicationYear": "ano",
+        "containerTitle": "revista ou obra",
+        "publisher": "editora",
+        "volume": "volume",
+        "issue": "número",
+        "pages": "páginas",
+        "doi": "DOI",
+        "url": "endereço",
+        "accessedOn": "data de consulta"
+      },
+      "reasons": {
+        "missing_title": "título em falta",
+        "invalid": "entrada inválida",
+        "too_many_fields": "demasiados campos",
+        "syntax": "entrada mal formada",
+        "duplicate_in_file": "duplicado no ficheiro",
+        "too_many_entries": "além de 500 entradas, não lida",
+        "duplicate": "já está nas fontes do projeto",
+        "limit_reached": "o projeto atingiu 300 fontes",
+        "rate_limited": "demasiadas fontes adicionadas hoje"
+      },
+      "errors": {
+        "session_expired": "A sua sessão expirou. Volte a iniciar sessão.",
+        "validation": "O pedido é inválido.",
+        "too_large": "O ficheiro tem mais de um megabyte.",
+        "unknown_format": "Este texto não é BibTeX nem RIS.",
+        "empty": "Escolha um ficheiro ou cole referências.",
+        "rate_limited": "Demasiadas tentativas. Tente de novo dentro de alguns minutos.",
+        "not_found": "Este projeto não foi encontrado.",
+        "limit_reached": "O projeto atingiu o número máximo de fontes.",
+        "unavailable": "Não foi possível importar. Tente de novo dentro de instantes; nada foi alterado."
+      }
     }
   },
   "DataExport": {
@@ -1727,5 +1870,17 @@
       "ai": "Assistência automatizada",
       "minors": "Menores"
     }
+  },
+  "Privacy": {
+    "title": "Privacidade",
+    "intro": "Por predefinição, nada do seu perfil é público. Pode escolher um nome apresentado e decidir torná-lo visível.",
+    "displayName": "Nome apresentado (facultativo)",
+    "displayNameHint": "No máximo 80 caracteres. Pode ser um pseudónimo.",
+    "isPublic": "Tornar o meu perfil público",
+    "isPublicHint": "Apenas o nome apresentado fica visível para os outros utilizadores com sessão iniciada. O seu país, região, instituição, curso e projetos continuam privados. Nenhum visitante sem sessão o vê.",
+    "requestsNote": "Quando pede acesso a um projeto, o responsável vê o seu endereço eletrónico e o seu nome apresentado, mesmo que o perfil não seja público.",
+    "submit": "Guardar",
+    "pending": "A guardar…",
+    "back": "Voltar à minha conta"
   }
 }

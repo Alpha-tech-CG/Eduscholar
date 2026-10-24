@@ -10,6 +10,7 @@ import { createSessionClient } from "@/lib/supabase/server";
 export type Profile = {
   preferredLocale: string;
   countryCode: string | null;
+  region: string | null;
   levelCode: string | null;
   programCode: string | null;
   specialtyCode: string | null;
@@ -28,7 +29,7 @@ export const getOwnProfile = cache(async (): Promise<Profile | null> => {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "preferred_locale, country_code, level_code, program_code, specialty_code, subject_codes, institution_name, goals, age_confirmed_at, onboarded_at",
+      "preferred_locale, country_code, region, level_code, program_code, specialty_code, subject_codes, institution_name, goals, age_confirmed_at, onboarded_at",
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -37,6 +38,7 @@ export const getOwnProfile = cache(async (): Promise<Profile | null> => {
   return {
     preferredLocale: data.preferred_locale,
     countryCode: data.country_code,
+    region: data.region,
     levelCode: data.level_code,
     programCode: data.program_code,
     specialtyCode: data.specialty_code,
@@ -46,6 +48,23 @@ export const getOwnProfile = cache(async (): Promise<Profile | null> => {
     ageConfirmed: data.age_confirmed_at !== null,
     onboarded: data.onboarded_at !== null,
   };
+});
+
+export type PublicProfileSettings = { displayName: string | null; isPublic: boolean };
+
+/** Réglages de confidentialité du titulaire (table profile_public), sous sa session. */
+export const getOwnPublicProfile = cache(async (): Promise<PublicProfileSettings | null> => {
+  const user = await getCurrentUser();
+  if (!user) return null;
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase
+    .from("profile_public")
+    .select("display_name, is_public")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return { displayName: data.display_name, isPublic: data.is_public };
 });
 
 export type Option = { code: string; label: string };

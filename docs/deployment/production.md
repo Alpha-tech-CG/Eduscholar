@@ -180,8 +180,20 @@ répond « introuvable » et rien ne part.
 - [ ] Le premier `super_admin` est désigné en base par vous, comme décrit dans
       `docs/security/administration.md`, avec un second facteur actif ; un second
       `super_admin` est désigné dans la foulée.
+- [ ] **Catalogue public (ADR-0014)** : dans Supabase, *Project Settings → Data API →
+      Exposed schemas* ne contient que `public` (ni `private`, ni `graphql_public`, ni
+      `storage`). Les fonctions du visiteur vivent dans `private` et ne doivent être
+      atteintes que par leurs enveloppes de `public`.
+- [ ] La tâche `eduscholar-popularity` figure dans `cron.job`, active, sous `postgres`
+      (`select jobname, schedule, active from cron.job`).
 
 ## 6. Ouverture publique (plus tard)
 
 Après la validation juridique : réactiver l'inscription, retirer la mention « version
 provisoire », relancer la vérification de l'ADR-0011.
+
+Avant d'annoncer le catalogue public largement : placer une **limite de débit réseau
+devant l'API Supabase** (règles de pare-feu ou de passerelle par adresse sur
+`/rest/v1/rpc/public_*`). Les limites par adresse de l'application (recherche 300 et pages
+600 par cinq minutes) ne s'appliquent pas à un appel direct avec la clé publique
+(ADR-0014, « Conséquences »).

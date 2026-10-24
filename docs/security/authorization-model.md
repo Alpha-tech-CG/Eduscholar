@@ -227,13 +227,19 @@ Règles associées :
 | Lire `profiles` (profil complet) | ✖ | `soi` | ✖ |
 | Modifier son profil | ✖ | `soi` | ✖ |
 | Favoris, collections, notes, annotations, historique : toute opération | ✖ | `soi` | ✖ |
+| Notes privées, tags personnels, historique de consultation et son réglage (`resource_favorites.note`, `collection_items.note`, `favorite_tags`, `resource_views`, `library_settings`) | ✖ | `soi`, lecture par RLS, écriture par `set_favorite_note`, `set_collection_item_note`, `set_favorite_tag`, `record_resource_view`, `delete_resource_view`, `clear_resource_views`, `set_history_enabled` | ✖ |
+| Exporter sa bibliothèque (BibTeX, RIS, CSV, APA) | ✖ | `soi`, route serveur sous sa session, même site, limite `export` | ✖ |
+| Importer des références dans un projet (`import_project_sources`) | ✖ | propriétaire du projet ; limites en base (200 entrées par appel, 20 appels par 15 min, 2 000 entrées par jour) et dans l'application (`reference-import`, 20 par 15 min) | ✖ |
 | Notifications : lire, marquer lues | ✖ | `soi` | ✖ |
 | Créer une notification | ✖ | ✖ | `F` (système) |
 | Exporter ses données | ✖ | `soi`, sous sa propre session | ✖ |
 | Supprimer son compte | ✖ | `soi`, par `F` après ré-authentification | ✖ |
 
 Par défaut, `profile_public` est vide : ni l'établissement, ni la filière, ni les projets
-ne sont publics (cahier §6.2). L'administration des comptes (suspension) passe par une
+ne sont publics (cahier §6.2). `profile_public` ne porte que le nom affiché et le choix de
+le publier ; un profil public a un nom ; chaque changement de visibilité est journalisé ;
+`anon` n'y a aucun accès. La région, comme le reste de `profiles`, reste privée.
+L'administration des comptes (suspension) passe par une
 fonction privilégiée qui ne renvoie que l'identifiant, l'adresse et l'état du compte.
 
 La suppression d'un compte ne supprime aucune ligne d'`audit_logs`. Les identifiants y
@@ -520,8 +526,19 @@ Règles :
 - Leur propriétaire est un rôle qui n'est pas soumis à la RLS des tables qu'elles lisent,
   pour éviter toute récursion entre politiques.
 - Droit d'exécution : retiré explicitement à `public`, `anon` et `authenticated`, puis
-  accordé fonction par fonction. `anon` n'en exécute aucune : les politiques `anon` ne
-  portent que sur le statut et la visibilité des ressources publiées et des référentiels.
+  accordé fonction par fonction. `anon` n'en exécute aucune, hors de la liste fermée
+  de l'ADR-0014 ci-dessous. Il n'existe aucune politique `anon` : le visiteur ne lit
+  aucune table.
+
+**Lectures du visiteur (ADR-0014).** Seule exception au refus fait à `anon`, liste
+fermée et testée (`00_configuration`, `36_public_catalogue`) : `public_search_resources`,
+`public_resource`, `public_home_sections`, `public_sitemap_resources`,
+`public_reference_data`, et leurs fonctions de `private`. Toutes sont `stable` (aucune
+écriture), ne rendent que les fiches `published` et `public`, et uniquement leurs colonnes
+de description : jamais `submitted_by`, `organization_id`, l'identifiant chez la source,
+les notes internes, l'historique ni les signalements. `anon` a l'usage du schéma
+`private` pour atteindre ces fonctions, et aucun autre droit sur ce qu'il contient. Ni
+`authenticated` ni `service_role` ne les exécutent.
 
 ### 7.5 Fonctions privilégiées
 
@@ -531,6 +548,12 @@ Inventaire fermé. Chaque fonction contrôle elle-même l'appelant, applique la 
 Export : celui d'un projet par son propriétaire n'est pas journalisé, pour la même
 raison que ses autres actions ; la copie de toutes ses données l'est, par un événement de
 sécurité que le titulaire lit et que l'administration ne peut pas rattacher à un contenu.
+
+Bibliothèque enrichie (lot 7) : les fonctions ci-dessus suivent la même règle — rien au
+journal quand le titulaire agit. `private.source_import_calls` (date et nombre d'entrées de
+chaque appel d'import, gardés un jour) n'est lisible d'aucun rôle de l'API ; la purge de
+l'historique (`purge_old_resource_views`, tâche `eduscholar-views-purge`) n'est exécutable
+que par `postgres`.
 
 Exception à l'audit : les fonctions de la bibliothèque personnelle et celles des projets
 de recherche n'écrivent rien au journal quand c'est le titulaire qui agit. Le journal est
@@ -663,7 +686,12 @@ Fixée dans la première migration et la configuration du projet, contrôlée en
 
 ### 7.7 Recherche
 
-La recherche publique ne lit que les ressources `published` de visibilité publique. Aucune
+La recherche publique ne lit que les ressources `published` de visibilité publique.
+Sans compte, elle passe par `public_search_resources` (ADR-0014), appelée par le serveur
+sous le rôle `anon`, limitée par adresse dans l'application (300 recherches par cinq
+minutes). La popularité affichée à l'accueil agrège chaque nuit les favoris (classe F)
+de comptes actifs créés depuis sept jours, sans jamais rendre un nombre, et seulement à
+partir de trois favoris par fiche. Aucune
 table des classes E, F, G, H, J n'alimente un index ou une vue de recherche (ADR-0004).
 La recherche dans sa propre bibliothèque ou son propre projet est une requête distincte,
 soumise aux politiques de ces tables.

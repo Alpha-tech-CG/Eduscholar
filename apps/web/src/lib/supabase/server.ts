@@ -56,6 +56,25 @@ export function createServiceClient(): SupabaseClient<Database> {
 }
 
 /**
+ * Client du visiteur (rôle `anon`), sans session ni cookie (ADR-0014).
+ *
+ * Il ne sert qu'aux lectures du catalogue public : la base ne lui ouvre que
+ * les fonctions `public_*`, en lecture seule, sur les fiches publiées et
+ * publiques. Aucune table ne lui est lisible.
+ */
+export function createAnonymousClient(): SupabaseClient<Database> {
+  const env = serverEnv();
+
+  return createClient<Database>(env.SUPABASE_URL, env.SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+/**
  * Vérifie un mot de passe sans toucher à la session en cours : le client
  * utilisé ne lit ni n'écrit aucun cookie.
  */

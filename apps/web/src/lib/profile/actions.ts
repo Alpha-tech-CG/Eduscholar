@@ -8,7 +8,7 @@ import { getFullySignedInUser } from "@/lib/auth/session";
 import type { AuthFormState } from "@/lib/auth/state";
 import { createSessionClient } from "@/lib/supabase/server";
 import { getOwnProfile } from "./queries";
-import { profileFieldErrors, profileSchema } from "./schemas";
+import { privacySchema, profileFieldErrors, profileSchema } from "./schemas";
 
 function text(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -36,6 +36,7 @@ export async function saveProfile(
   const current = await getOwnProfile();
   const parsed = profileSchema.safeParse({
     countryCode: text(formData, "countryCode"),
+    region: text(formData, "region"),
     levelCode: text(formData, "levelCode"),
     programCode: text(formData, "programCode"),
     specialtyCode: text(formData, "specialtyCode"),
@@ -63,6 +64,7 @@ export async function saveProfile(
     .from("profiles")
     .update({
       country_code: parsed.data.countryCode,
+      region: parsed.data.region ?? null,
       level_code: parsed.data.levelCode,
       program_code: parsed.data.programCode,
       specialty_code: parsed.data.specialtyCode ?? null,
@@ -99,5 +101,51 @@ export async function saveProfile(
   return redirect({
     href: { pathname: "/account", query: { notice: "profile-saved" } },
     locale,
+  });
+}
+
+/**
+ * Enregistre les réglages de confidentialité : nom affiché et profil public.
+ *
+ * Écriture sous le jeton de l'utilisateur : la RLS la limite à sa ligne, à un
+ * compte actif dont le profil est complété ; la base refait les contrôles du
+ * nom et journalise le changement de visibilité.
+ */
+export async function savePrivacy(
+  _previous: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const user = await getFullySignedInUser();
+  if (!user) return { status: "error", error: "session_expired" };
+
+  const values = {
+    displayName: text(formData, "displayName").slice(0, 200),
+    isPublic: text(formData, "isPublic") === "on" ? "on" : "",
+  };
+  const parsed = privacySchema.safeParse({
+    displayName: values.displayName,
+    isPublic: values.isPublic === "on",
+  });
+  if (!parsed.success) {
+    return { status: "error", error: "validation", fields: profileFieldErrors(parsed.error), values };
+  }
+
+  const supabase = await createSessionClient();
+  const { data, error } = await supabase
+    .from("profile_public")
+    .update({ display_name: parsed.data.displayName ?? null, is_public: parsed.data.isPublic })
+    .eq("user_id", user.id)
+    .select("user_id");
+
+  if (error) {
+    if (error.code === "23514") return { status: "error", error: "validation", values };
+    return { status: "error", error: "unavailable", values };
+  }
+  // Sans ligne modifiée (compte suspendu, profil non complété), rien n'est enregistré.
+  if (data?.length !== 1) return { status: "error", error: "unavailable", values };
+
+  return redirect({
+    href: { pathname: "/account", query: { notice: "privacy-saved" } },
+    locale: await getLocale(),
   });
 }

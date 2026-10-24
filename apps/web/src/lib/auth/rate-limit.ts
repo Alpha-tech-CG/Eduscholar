@@ -62,6 +62,18 @@ const RULES = {
   search: {
     account: { limit: 150, windowSeconds: 5 * MINUTE },
   },
+  // Recherche sans compte (ADR-0014) : par adresse, seule clé disponible.
+  // Large, pour qu'un campus derrière une même adresse ne se bloque pas ; elle
+  // borne un robot. Sans en-tête d'adresse fiable, la limite vaut pour tous
+  // les visiteurs ensemble (client-address.ts).
+  "public-search": {
+    ip: { limit: 300, windowSeconds: 5 * MINUTE },
+  },
+  // Accueil et fiche publique, sans compte (ADR-0014) : une lecture de page.
+  // Très large ; borne un aspirateur, pas un lecteur ni un moteur.
+  "public-page": {
+    ip: { limit: 600, windowSeconds: 5 * MINUTE },
+  },
   // Recherche d'un compte par un administrateur : chaque essai est journalisé.
   "admin-lookup": {
     account: { limit: 60, windowSeconds: 15 * MINUTE },
@@ -69,6 +81,11 @@ const RULES = {
   // Exports (document d'un projet, données personnelles) : lectures lourdes.
   export: {
     account: { limit: 30, windowSeconds: 15 * MINUTE },
+  },
+  // Import de références (BibTeX, RIS) dans un projet : analyse d'un fichier
+  // d'un mégaoctet au plus, aperçu et import comptés ensemble.
+  "reference-import": {
+    account: { limit: 20, windowSeconds: 15 * MINUTE },
   },
   // Affichage du document complet d'un projet : la même lecture que l'export.
   document: {

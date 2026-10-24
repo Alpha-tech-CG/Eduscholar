@@ -18,7 +18,26 @@
   "Home": {
     "title": "EduScholar",
     "tagline": "Find, organise, produce.",
-    "status": "The platform is under construction."
+    "intro": "Articles, theses, courses and reports: every resource states its origin, licence and access status. Searching requires no account.",
+    "searchHeading": "Search the catalogue",
+    "query": "Search terms",
+    "queryHint": "Title, author, keyword. All words are searched, regardless of accents.",
+    "country": "Country",
+    "level": "Level",
+    "program": "Field of study",
+    "any": "All",
+    "submit": "Search",
+    "recentHeading": "Recent resources",
+    "popularHeading": "Popular resources",
+    "popularNote": "Most often saved as favourites by members. No names are shown.",
+    "institutionalHeading": "Verified institutional resources",
+    "institutionalNote": "Published by institutions whose identity the platform has verified.",
+    "empty": "No resources yet.",
+    "accountHeading": "With an account",
+    "accountIntro": "Save resources as favourites, organise them into collections and cite them in your projects.",
+    "signIn": "Sign in",
+    "signUp": "Create an account",
+    "rateLimited": "Too many pages viewed in a short time from your connection. Try again in a few minutes."
   },
   "Locales": {
     "fr": "Français",
@@ -138,7 +157,7 @@
       "second_factor_setup_required": "This role requires two-step verification. Turn it on from “Account security”, then open the invitation link again.",
       "read_only_reference": "This reference list is read-only: it cannot be changed from this screen.",
       "last_active": "This is the last active entry of this reference list: it cannot be deactivated. Activate another one first.",
-      "protected_reference": "This entry is required for the platform to work (“thesis or dissertation” type, interface language): it cannot be deactivated.",
+      "protected_reference": "This entry is required for the platform to work (“thesis”, “dissertation”, “article”, “book” types, interface language): it cannot be deactivated.",
       "reference_code_taken": "An entry already has this code. To change it, use “Edit” on that entry."
     },
     "fieldErrors": {
@@ -165,7 +184,10 @@
       "invalid_reference_code": "This code does not have the expected form, or it is already taken.",
       "invalid_reference_label": "A label is required in French and in English: 120 characters at most, without < or >.",
       "invalid_position": "Enter a whole number from 0 to 99999.",
-      "invalid_isced": "Enter a digit from 0 to 8, or leave empty."
+      "invalid_isced": "Enter a digit from 0 to 8, or leave empty.",
+      "region_invalid": "The region must be 2 to 100 characters long, without < or >, and must not start with =, +, @ or -.",
+      "display_name_invalid": "The display name must be at most 80 characters long, without < or >, and must not start with =, +, @ or -.",
+      "display_name_required": "A public profile needs a display name."
     },
     "secondFactor": {
       "title": "Account security",
@@ -260,7 +282,11 @@
     "sharedProjects": "Projects shared with me",
     "notifications": "{count, plural, =0 {Notifications} one {Notifications (# unread)} other {Notifications (# unread)}}",
     "organizations": "My organisations",
-    "recommendations": "Recommendations for me"
+    "recommendations": "Recommendations for me",
+    "region": "Region",
+    "privacyPublic": "Your public profile only shows your name: {name}. The rest of your profile is visible to you only.",
+    "privacySettings": "Privacy",
+    "privacySaved": "Your privacy settings have been saved."
   },
   "Profile": {
     "title": "My profile",
@@ -290,7 +316,9 @@
     "submit": "Save my profile",
     "pending": "Saving…",
     "back": "Back to my account",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "region": "Region (optional)",
+    "regionHint": "For example: Dakar, Île-de-France. Never shown to other people."
   },
   "DeleteAccount": {
     "title": "Delete my account",
@@ -317,7 +345,7 @@
       "institutionHint": "University, laboratory or body that publishes the resource.",
       "abstract": "Abstract",
       "year": "Year of publication",
-      "thesisDegree": "Degree (thesis or dissertation)",
+      "thesisDegree": "Degree (doctorate for a thesis; bachelor's or master's for a dissertation)",
       "language": "Language of the document",
       "country": "Country",
       "program": "Programme",
@@ -546,7 +574,12 @@
       "resultsHeading": "Results",
       "unavailable": "Search is temporarily unavailable. Try again in a moment.",
       "resultsCapped": "More than {count, number} results: narrow your search",
-      "toRecommendations": "See recommendations"
+      "toRecommendations": "See recommendations",
+      "program": "Field of study",
+      "country": "Country",
+      "publicIntro": "Resources published and checked by moderation. Every resource states its origin, licence and access status.",
+      "publicNotice": "Sign in to save resources as favourites or cite them in a project.",
+      "verifiedInstitution": "Verified institution"
     },
     "resource": {
       "title": "Resource",
@@ -559,7 +592,12 @@
       "reportSubmit": "Send report",
       "reported": "Thank you: your report has been passed on to the moderators.",
       "choose": "Choose…",
-      "pending": "One moment…"
+      "pending": "One moment…",
+      "signInHeading": "Save or cite this resource",
+      "signInIntro": "Sign in to add it to your favourites, a collection or a project, or to report it.",
+      "signIn": "Sign in",
+      "backToHome": "Back to home",
+      "rateLimited": "Too many pages viewed in a short time from your connection. Try again in a few minutes."
     }
   },
   "Library": {
@@ -610,7 +648,54 @@
     "pagination": "Pages",
     "previous": "Previous page",
     "next": "Next page",
-    "page": "Page {page} of {pages}"
+    "page": "Page {page} of {pages}",
+    "toHistory": "My viewing history",
+    "tagFilter": "Filter by tag",
+    "allFavorites": "All favourites",
+    "tagWithCount": "{tag} ({count})",
+    "tagEmpty": "No favourite has this tag.",
+    "exportFavorites": "Export my favourites:",
+    "exportCollection": "Export this collection:",
+    "exportFormats": {
+      "bib": "BibTeX",
+      "ris": "RIS",
+      "csv": "CSV",
+      "apa": "APA bibliography"
+    },
+    "noteSaved": "The note has been saved.",
+    "tagAdded": "The tag has been added.",
+    "tagRemoved": "The tag has been removed.",
+    "tagsLabel": "Tags",
+    "noteLabel": "Private note",
+    "noteHint": "Only you can see it. {max} characters at most. Empty the field to delete the note.",
+    "editNoteAndTags": "Note and tags",
+    "editNote": "Note",
+    "saveNote": "Save the note",
+    "addTag": "Add the tag",
+    "tagLabel": "New tag",
+    "tagHint": "{max} characters at most, no comma or semicolon; {count} tags per favourite.",
+    "tagsFull": "This favourite already has {count} tags.",
+    "removeTag": "Remove the tag “{tag}”",
+    "history": {
+      "title": "Viewing history",
+      "intro": "The resources you have opened, most recent first, to the nearest hour. Only you can see it; it is deleted after twelve months.",
+      "settingHeading": "Recording",
+      "isEnabled": "History is on.",
+      "isDisabled": "History is off: nothing is recorded.",
+      "disable": "Turn off and delete history",
+      "enable": "Turn on history",
+      "list": "Viewed resources ({count})",
+      "empty": "No views recorded.",
+      "viewedAt": "Viewed on {date}",
+      "deleteEntry": "Remove from history",
+      "clearHeading": "Delete everything",
+      "clear": "Delete all history",
+      "clearConfirm": "I want to delete my whole viewing history.",
+      "entryDeleted": "The resource has been removed from your history.",
+      "cleared": "Your history has been deleted.",
+      "enabledNotice": "History is on.",
+      "disabledNotice": "History is off and has been deleted."
+    }
   },
   "Projects": {
     "title": "My research projects",
@@ -762,7 +847,8 @@
       },
       "loadFailed": "The sources could not be loaded. Try again in a moment; nothing has been changed.",
       "withdrawn": "This source was taken from a record that is no longer in the catalogue. Your reference is kept; check the source before citing it or following its link.",
-      "toBibliography": "Bibliography"
+      "toBibliography": "Bibliography",
+      "toImport": "Import references (BibTeX, RIS)"
     },
     "matrix": {
       "title": "Literature matrix",
@@ -932,6 +1018,63 @@
       "versions": "Versions submitted to the supervisor",
       "tasks": "Tasks and deadlines",
       "coherence": "Consistency checks"
+    },
+    "import": {
+      "title": "Import references",
+      "intro": "Add references exported from a reference manager to the sources of the project “{project}”.",
+      "toSources": "Back to the project sources",
+      "toBibliography": "See the bibliography",
+      "rulePrivate": "References become private sources of this project; nothing is published in the catalogue.",
+      "ruleLimits": "BibTeX or RIS file of one megabyte at most, 500 references at most; a project holds 300 sources at most.",
+      "ruleNoStorage": "The file is not kept: it is read, then forgotten.",
+      "file": "BibTeX or RIS file",
+      "fileHint": "Extensions .bib, .ris or .txt. Without a file, paste the text below.",
+      "paste": "Or paste the references",
+      "preview": "Preview",
+      "pending": "One moment…",
+      "confirm": "{count, plural, one {Import # reference} other {Import # references}}",
+      "restart": "Choose another file",
+      "previewSummary": "{format} file: {accepted, plural, =0 {no importable reference} one {# importable reference} other {# importable references}}, {rejected, plural, =0 {none rejected} one {# rejected} other {# rejected}}. Nothing has been imported yet.",
+      "acceptedHeading": "{count, plural, one {Reference to import} other {References to import}}",
+      "rejectedHeading": "{count, plural, one {# entry rejected} other {# entries rejected}}",
+      "rejectedEntry": "Entry {number}: {reason}",
+      "rejectedEntryWithLabel": "Entry {number} — {label}: {reason}",
+      "dropped": "Fields left out because they are invalid: {fields}.",
+      "verifyNotice": "Check each source after the import: references come from the file as they are, and the platform completes nothing.",
+      "done": "{count, plural, =0 {No reference imported.} one {# reference imported into the project sources.} other {# references imported into the project sources.}}",
+      "fields": {
+        "publicationYear": "year",
+        "containerTitle": "journal or book",
+        "publisher": "publisher",
+        "volume": "volume",
+        "issue": "issue",
+        "pages": "pages",
+        "doi": "DOI",
+        "url": "address",
+        "accessedOn": "access date"
+      },
+      "reasons": {
+        "missing_title": "missing title",
+        "invalid": "invalid entry",
+        "too_many_fields": "too many fields",
+        "syntax": "malformed entry",
+        "duplicate_in_file": "duplicate in the file",
+        "too_many_entries": "beyond 500 entries, not read",
+        "duplicate": "already in the project sources",
+        "limit_reached": "the project has reached 300 sources",
+        "rate_limited": "too many sources added today"
+      },
+      "errors": {
+        "session_expired": "Your session has expired. Please sign in again.",
+        "validation": "The request is invalid.",
+        "too_large": "The file is larger than one megabyte.",
+        "unknown_format": "This text is neither BibTeX nor RIS.",
+        "empty": "Choose a file or paste references.",
+        "rate_limited": "Too many attempts. Try again in a few minutes.",
+        "not_found": "This project cannot be found.",
+        "limit_reached": "The project has reached the maximum number of sources.",
+        "unavailable": "The import could not be done. Try again shortly; nothing has been changed."
+      }
     }
   },
   "DataExport": {
@@ -1727,5 +1870,17 @@
       "ai": "Automated assistance",
       "minors": "Minors"
     }
+  },
+  "Privacy": {
+    "title": "Privacy",
+    "intro": "By default, nothing in your profile is public. You can choose a display name and decide to make it visible.",
+    "displayName": "Display name (optional)",
+    "displayNameHint": "At most 80 characters. It can be a pseudonym.",
+    "isPublic": "Make my profile public",
+    "isPublicHint": "Only the display name becomes visible to other signed-in users. Your country, region, institution, programme and projects stay private. Visitors who are not signed in never see it.",
+    "requestsNote": "When you request access to a project, its owner sees your email address and display name, even if your profile is not public.",
+    "submit": "Save",
+    "pending": "Saving…",
+    "back": "Back to my account"
   }
 }

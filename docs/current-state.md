@@ -119,12 +119,15 @@ Détail dans `docs/security/initial-audit.md`.
   connexion, essais bornés et rejeu refusé en base, imposée aux rôles privilégiés.
 - Catalogue (B-13) et modération (B-14) : proposition d'une ressource, suivi par le
   contributeur, file de modération, décisions motivées et journalisées, signalements.
-  Voir `docs/architecture/catalogue.md`. Aucune fiche n'est encore visible du public :
-  la recherche et la fiche publique sont l'objet de B-16.
+  Voir `docs/architecture/catalogue.md`.
 - Import par DOI (B-15) : un modérateur importe une fiche depuis Crossref ; elle entre
   en file de modération avec sa provenance.
 - Recherche (B-16) : recherche plein texte avec cinq filtres, fiche publiée affichant
   origine, licence et statut d'accès, signalement depuis la fiche.
+- Catalogue public (lot 1, ADR-0014) : sans compte, l'accueil cherche (pays, niveau,
+  filière), montre les fiches récentes, populaires et institutionnelles vérifiées ; la
+  fiche publiée est indexable (métadonnées, versions linguistiques, JSON-LD) ;
+  `/sitemap.xml` et `/robots.txt`.
 - Bibliothèque personnelle (B-17) : favoris et collections privées.
 - Le MVP du catalogue (B-13 à B-17) est complet.
 - Phase 3 découpée en cinq tâches (C-01 à C-05). C-01 fait : projet de recherche privé,

@@ -94,6 +94,44 @@ export function toTsQuery(query: string): string | null {
   return terms.length > 0 ? terms.map((term) => `${term}:*`).join(" & ") : null;
 }
 
+/** Recherche sans compte (ADR-0014) : filière et pays au lieu de la matière. */
+export type PublicSearchFilters = Omit<SearchFilters, "subjectCode"> & {
+  programCode: string | null;
+  countryCode: string | null;
+};
+
+export type PublicSearchReference = Omit<SearchReference, "subjects"> & {
+  programs: readonly string[];
+  countries: readonly string[];
+};
+
+export function parsePublicSearchParams(
+  params: RawParams,
+  reference: PublicSearchReference,
+): PublicSearchFilters {
+  const common = parseSearchParams(params, { ...reference, subjects: [] });
+  return {
+    query: common.query,
+    typeCode: common.typeCode,
+    languageCode: common.languageCode,
+    accessStatus: common.accessStatus,
+    levelCode: common.levelCode,
+    page: common.page,
+    programCode: oneOf(first(params.program), reference.programs),
+    countryCode: oneOf(first(params.country), reference.countries),
+  };
+}
+
+export function toPublicSearchParams(
+  filters: PublicSearchFilters,
+  page: number,
+): Record<string, string> {
+  const params = toSearchParams({ ...filters, subjectCode: null }, page);
+  if (filters.programCode) params.program = filters.programCode;
+  if (filters.countryCode) params.country = filters.countryCode;
+  return params;
+}
+
 /** Paramètres d'adresse d'une recherche, pour les liens de pagination. */
 export function toSearchParams(filters: SearchFilters, page: number): Record<string, string> {
   const params: Record<string, string> = {};
